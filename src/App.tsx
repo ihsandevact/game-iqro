@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { AppLayout } from './components/layout/AppLayout';
 import { JourneyMap } from './games/iqro/components/JourneyMap';
 import { StageModal } from './games/iqro/components/StageModal';
+import { SplashScreen } from './components/splash/SplashScreen';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
 import { useProgressStore } from './core/storage/useProgressStore';
@@ -18,6 +20,7 @@ export function App() {
     isStageUnlocked,
   } = useProgressStore();
 
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
 
   // Get currently selected Iqro book (defaults to level 1)
@@ -38,6 +41,18 @@ export function App() {
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col font-sans select-none">
+      {/* Playful Animated Duolingo-style Splash Screen */}
+      <AnimatePresence>
+        {isAppLoading && (
+          <SplashScreen
+            onComplete={() => setIsAppLoading(false)}
+            equippedHat={progress.equippedHat}
+            equippedGlasses={progress.equippedGlasses}
+            equippedCape={progress.equippedCape}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Top Navigation Bar */}
       <Navbar
         currentLevel={progress.currentIqroLevel}
