@@ -5,6 +5,7 @@ import { Stage } from '../../../core/types/gameTypes';
 import { soundManager } from '../../../core/audio/soundManager';
 import { ListenTapGame } from './minigames/ListenTapGame';
 import { BubblePopGame } from './minigames/BubblePopGame';
+import { LetterTracingGame } from './minigames/LetterTracingGame';
 import { CelebrationModal } from './CelebrationModal';
 
 interface StageModalProps {
@@ -85,6 +86,11 @@ export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComple
               >
                 {currentQuestion.type === 'bubble-pop' ? (
                   <BubblePopGame
+                    question={currentQuestion}
+                    onCorrect={handleQuestionCorrect}
+                  />
+                ) : currentQuestion.type === 'tracing' ? (
+                  <LetterTracingGame
                     question={currentQuestion}
                     onCorrect={handleQuestionCorrect}
                   />

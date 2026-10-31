@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IqroLevelId, UserProgress } from '../types/gameTypes';
+import { IqroLevelId, UserProgress, CostumeItem, CostumeCategory } from '../types/gameTypes';
 import { soundManager } from '../audio/soundManager';
 
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
@@ -8,10 +8,14 @@ const DEFAULT_PROGRESS: UserProgress = {
   currentIqroLevel: 1,
   completedStages: {},
   starsTotal: 0,
-  gemsTotal: 25, // Initial welcome gift gems
+  gemsTotal: 75, // Generous starting gems so kids can test costumes right away!
   streakDays: 1,
   soundEnabled: true,
   bgmEnabled: true,
+  equippedHat: 'hat-default',
+  equippedGlasses: 'glasses-none',
+  equippedCape: 'cape-none',
+  unlockedItems: ['hat-default', 'glasses-none', 'cape-none'],
 };
 
 export function useProgressStore() {
@@ -44,7 +48,7 @@ export function useProgressStore() {
       const existing = prev.completedStages[stageId];
       const prevStars = existing?.stars || 0;
       const additionalStars = Math.max(0, stars - prevStars);
-      const earnedGems = stars * 10;
+      const earnedGems = stars * 15;
 
       return {
         ...prev,
@@ -69,12 +73,44 @@ export function useProgressStore() {
     });
   };
 
+  const buyCostume = (item: CostumeItem): boolean => {
+    if (progress.gemsTotal < item.price) {
+      soundManager.playGentleWrong();
+      return false;
+    }
+
+    soundManager.playCorrect();
+    setProgress(prev => {
+      const newUnlocked = prev.unlockedItems.includes(item.id)
+        ? prev.unlockedItems
+        : [...prev.unlockedItems, item.id];
+
+      return {
+        ...prev,
+        gemsTotal: prev.gemsTotal - item.price,
+        unlockedItems: newUnlocked,
+        ...(item.category === 'hat' ? { equippedHat: item.id } : {}),
+        ...(item.category === 'glasses' ? { equippedGlasses: item.id } : {}),
+        ...(item.category === 'cape' ? { equippedCape: item.id } : {}),
+      };
+    });
+    return true;
+  };
+
+  const equipCostume = (category: CostumeCategory, itemId: string) => {
+    soundManager.playPop();
+    setProgress(prev => ({
+      ...prev,
+      ...(category === 'hat' ? { equippedHat: itemId } : {}),
+      ...(category === 'glasses' ? { equippedGlasses: itemId } : {}),
+      ...(category === 'cape' ? { equippedCape: itemId } : {}),
+    }));
+  };
+
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
     if (defaultUnlocked) return true;
-    // Unlocked if previous stage was completed
     if (progress.completedStages[stageId]) return true;
 
-    // Check custom stage sequences
     if (stageId === 'iqro1-u1-s1') return true;
     if (stageId === 'iqro1-u1-s2') return !!progress.completedStages['iqro1-u1-s1'];
     if (stageId === 'iqro1-u1-s3') return !!progress.completedStages['iqro1-u1-s2'];
@@ -91,6 +127,8 @@ export function useProgressStore() {
     setIqroLevel,
     completeStage,
     toggleSound,
+    buyCostume,
+    equipCostume,
     isStageUnlocked,
   };
 }

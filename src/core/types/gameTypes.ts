@@ -1,6 +1,6 @@
 export type IqroLevelId = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type StageType = 'learn' | 'listen-tap' | 'bubble-pop' | 'matching' | 'boss-challenge';
+export type StageType = 'learn' | 'listen-tap' | 'bubble-pop' | 'tracing' | 'matching' | 'boss-challenge';
 
 export interface Question {
   id: string;
@@ -15,6 +15,7 @@ export interface Question {
     isCorrect: boolean;
   }[];
   hint?: string;
+  tracingPaths?: string[];   // SVG paths for letter tracing
 }
 
 export interface Stage {
@@ -47,6 +48,17 @@ export interface IqroBook {
   units: Unit[];
 }
 
+export type CostumeCategory = 'hat' | 'glasses' | 'cape';
+
+export interface CostumeItem {
+  id: string;
+  name: string;
+  category: CostumeCategory;
+  price: number;
+  icon: string;
+  description: string;
+}
+
 export interface UserProgress {
   currentIqroLevel: IqroLevelId;
   completedStages: Record<string, { stars: number; highscore: number }>;
@@ -55,4 +67,8 @@ export interface UserProgress {
   streakDays: number;
   soundEnabled: boolean;
   bgmEnabled: boolean;
+  equippedHat: string;
+  equippedGlasses: string;
+  equippedCape: string;
+  unlockedItems: string[];
 }

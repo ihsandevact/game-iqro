@@ -51,14 +51,11 @@ export const IQRO_BOOKS: IqroBook[] = [
               },
               {
                 id: 'q3',
-                type: 'listen-tap',
-                promptText: 'Sentuh huruf BA lagi!',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf BA!',
                 targetLetter: 'بَ',
                 targetName: 'Ba',
-                options: [
-                  { letter: 'اَ', name: 'A', isCorrect: false },
-                  { letter: 'بَ', name: 'Ba', isCorrect: true }
-                ]
+                options: []
               }
             ]
           },

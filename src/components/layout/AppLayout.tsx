@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
-import { BookOpen, Compass, Award, Heart, HelpCircle, Volume2 } from 'lucide-react';
+import { BookOpen, Compass, Award, Heart, HelpCircle, Volume2, ShoppingBag } from 'lucide-react';
 import { BoniMascot } from '../mascot/BoniMascot';
+import { BoniWardrobe } from '../wardrobe/BoniWardrobe';
 import { HIJAIYAH_LIST } from '../../games/iqro/data/hijaiyahData';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
+import { CostumeItem, CostumeCategory } from '../../core/types/gameTypes';
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  gemsTotal: number;
+  unlockedItems: string[];
+  equippedHat: string;
+  equippedGlasses: string;
+  equippedCape: string;
+  onBuyItem: (item: CostumeItem) => boolean;
+  onEquipItem: (category: CostumeCategory, itemId: string) => void;
 }
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<'journey' | 'dictionary' | 'rewards'>('journey');
+export const AppLayout: React.FC<AppLayoutProps> = ({
+  children,
+  gemsTotal,
+  unlockedItems,
+  equippedHat,
+  equippedGlasses,
+  equippedCape,
+  onBuyItem,
+  onEquipItem,
+}) => {
+  const [activeTab, setActiveTab] = useState<'journey' | 'wardrobe' | 'dictionary' | 'rewards'>('journey');
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
 
   const handlePlayLetter = (latin: string, letter: string) => {
@@ -46,6 +64,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <button
               onClick={() => {
                 soundManager.playPop();
+                setActiveTab('wardrobe');
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
+                activeTab === 'wardrobe'
+                  ? 'bg-duo-purple/15 text-duo-purpleDark border-2 border-duo-purple'
+                  : 'text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5 text-duo-purple" />
+              <span>Toko Kostum</span>
+            </button>
+
+            <button
+              onClick={() => {
+                soundManager.playPop();
                 setActiveTab('dictionary');
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
@@ -74,11 +107,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </button>
           </div>
 
-          {/* Left Sidebar Mascot */}
+          {/* Left Sidebar Mascot (Dressed in currently equipped items!) */}
           <div className="flex flex-col items-center p-3 bg-white border-2 border-slate-200 rounded-3xl shadow-sm text-center">
             <BoniMascot
               mood="idle"
               size="sm"
+              equippedHat={equippedHat}
+              equippedGlasses={equippedGlasses}
+              equippedCape={equippedCape}
               showSpeechBubble={true}
               speechText="Boni siap menemanimu belajar Iqro!"
             />
@@ -86,11 +122,24 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
         </aside>
 
-        {/* Center Main Stage (Where Duolingo Path Lives) */}
+        {/* Center Main Stage */}
         <main className="flex-1 max-w-2xl w-full px-2 sm:px-4 py-4 flex flex-col items-center">
           {activeTab === 'journey' && children}
 
-          {/* Tab 2: Kamus Huruf Hijaiyah Interaktif untuk Balita */}
+          {/* Tab: Toko Kostum Boni */}
+          {activeTab === 'wardrobe' && (
+            <BoniWardrobe
+              gemsTotal={gemsTotal}
+              unlockedItems={unlockedItems}
+              equippedHat={equippedHat}
+              equippedGlasses={equippedGlasses}
+              equippedCape={equippedCape}
+              onBuyItem={onBuyItem}
+              onEquipItem={onEquipItem}
+            />
+          )}
+
+          {/* Tab: Kamus Huruf Hijaiyah Interaktif */}
           {activeTab === 'dictionary' && (
             <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-6 shadow-sm">
               <div className="text-center mb-6">
@@ -129,7 +178,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </div>
           )}
 
-          {/* Tab 3: Piala & Prestasi */}
+          {/* Tab: Piala & Prestasi */}
           {activeTab === 'rewards' && (
             <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-6 text-center shadow-sm">
               <Award className="w-16 h-16 text-amber-500 mx-auto mb-3 animate-bounce" />
@@ -222,6 +271,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         >
           <Compass className="w-6 h-6" />
           <span>Belajar</span>
+        </button>
+
+        <button
+          onClick={() => {
+            soundManager.playPop();
+            setActiveTab('wardrobe');
+          }}
+          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl font-black text-xs transition ${
+            activeTab === 'wardrobe' ? 'text-duo-purple' : 'text-slate-400'
+          }`}
+        >
+          <ShoppingBag className="w-6 h-6" />
+          <span>Toko</span>
         </button>
 
         <button

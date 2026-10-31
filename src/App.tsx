@@ -13,6 +13,8 @@ export function App() {
     setIqroLevel,
     completeStage,
     toggleSound,
+    buyCostume,
+    equipCostume,
     isStageUnlocked,
   } = useProgressStore();
 
@@ -36,7 +38,7 @@ export function App() {
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col font-sans select-none">
-      {/* Top Poki/Duolingo Navigation Bar */}
+      {/* Top Navigation Bar */}
       <Navbar
         currentLevel={progress.currentIqroLevel}
         onSelectLevel={handleSelectLevel}
@@ -48,7 +50,15 @@ export function App() {
       />
 
       {/* Main Responsive Game Layout */}
-      <AppLayout>
+      <AppLayout
+        gemsTotal={progress.gemsTotal}
+        unlockedItems={progress.unlockedItems}
+        equippedHat={progress.equippedHat}
+        equippedGlasses={progress.equippedGlasses}
+        equippedCape={progress.equippedCape}
+        onBuyItem={buyCostume}
+        onEquipItem={equipCostume}
+      >
         <JourneyMap
           currentBook={currentBook}
           completedStages={progress.completedStages}
