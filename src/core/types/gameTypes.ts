@@ -72,4 +72,5 @@ export interface UserProgress {
   equippedGlasses: string;
   equippedCape: string;
   unlockedItems: string[];
+  unlockedAllLevels?: boolean;
 }

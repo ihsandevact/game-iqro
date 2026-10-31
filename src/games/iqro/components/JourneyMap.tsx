@@ -1,6 +1,6 @@
 import React from 'react';
-import { Sparkles, Trophy } from 'lucide-react';
-import { IqroBook, Stage } from '../../../core/types/gameTypes';
+import { Sparkles, Trophy, Lock } from 'lucide-react';
+import { IqroBook, IqroLevelId, Stage } from '../../../core/types/gameTypes';
 import { LevelNode } from './LevelNode';
 
 interface JourneyMapProps {
@@ -8,6 +8,8 @@ interface JourneyMapProps {
   completedStages: Record<string, { stars: number; highscore: number }>;
   isStageUnlocked: (stageId: string, defaultUnlocked?: boolean) => boolean;
   onSelectStage: (stage: Stage) => void;
+  isBookUnlocked?: (level: IqroLevelId) => boolean;
+  onSwitchToBook?: (level: IqroLevelId) => void;
 }
 
 export const JourneyMap: React.FC<JourneyMapProps> = ({
@@ -15,9 +17,41 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
   completedStages,
   isStageUnlocked,
   onSelectStage,
+  isBookUnlocked,
+  onSwitchToBook,
 }) => {
   // Winding serpentine offsets in pixels for each successive step
   const windingOffsets = [0, -40, -65, -35, 0, 35, 65, 40];
+
+  // Check if book is locked by curriculum progression
+  if (isBookUnlocked && !isBookUnlocked(currentBook.level)) {
+    return (
+      <div className="w-full max-w-md mx-auto py-10 px-4 text-center">
+        <div className="bg-white rounded-3xl border-2 border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col items-center">
+          <div className="w-20 h-20 rounded-3xl bg-amber-50 border-2 border-amber-200 flex items-center justify-center text-amber-500 mb-4 shadow-sm">
+            <Lock className="w-10 h-10 stroke-[2.5]" />
+          </div>
+          <span className="text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-100 px-3 py-1 rounded-full mb-2">
+            Tingkat Masih Terkunci
+          </span>
+          <h3 className="text-xl font-black text-slate-800 mb-2">
+            {currentBook.title} Belum Terbuka
+          </h3>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 mb-5 max-w-xs leading-relaxed">
+            Selesaikan 22 tahapan dan lulus ujian wisuda di Iqro 1 untuk membuka gerbang petualangan {currentBook.title}!
+          </p>
+          {onSwitchToBook && (
+            <button
+              onClick={() => onSwitchToBook(1)}
+              className="py-3 px-6 bg-duo-green hover:bg-duo-greenDark text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-duo-green transition active:translate-y-0.5"
+            >
+              Lanjutkan Belajar Iqro 1
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const hasPlayableStages = currentBook.units.some((u) =>
     u.stages.some((s) => s.questions && s.questions.length > 0)
@@ -40,7 +74,7 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
             Materi {currentBook.subtitle} sedang disiapkan.
           </p>
           <p className="text-xs font-bold text-duo-green bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-2xl">
-            ⭐ Ayo selesaikan 21 tahap Iqro 1 hingga wisuda!
+            ⭐ Ayo selesaikan 22 tahap Iqro 1 hingga wisuda!
           </p>
         </div>
       </div>

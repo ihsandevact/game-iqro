@@ -22,6 +22,8 @@ export function App() {
     buyCostume,
     equipCostume,
     isStageUnlocked,
+    isBookUnlocked,
+    toggleUnlockAllLevels,
     resetCurrentLevel,
     resetAllProgress,
   } = useProgressStore();
@@ -66,6 +68,7 @@ export function App() {
       <Navbar
         currentLevel={progress.currentIqroLevel}
         onSelectLevel={handleSelectLevel}
+        isBookUnlocked={isBookUnlocked}
         gems={progress.gemsTotal}
         streak={progress.streakDays}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -87,6 +90,8 @@ export function App() {
           completedStages={progress.completedStages}
           isStageUnlocked={isStageUnlocked}
           onSelectStage={handleSelectStage}
+          isBookUnlocked={isBookUnlocked}
+          onSwitchToBook={handleSelectLevel}
         />
       </AppLayout>
 
@@ -122,6 +127,8 @@ export function App() {
         equippedHat={progress.equippedHat}
         equippedGlasses={progress.equippedGlasses}
         equippedCape={progress.equippedCape}
+        unlockedAllLevels={!!progress.unlockedAllLevels}
+        onToggleUnlockAllLevels={toggleUnlockAllLevels}
       />
 
       {/* iOS Safari Guide Modal */}

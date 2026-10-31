@@ -157,8 +157,8 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
           </button>
         </div>
 
-        {/* Items Grid: Card Vertikal 3D Rapih & Luas (Desktop 4 Kolom, Mobile 2 Kolom) */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4.5">
+        {/* Items List: Susunan Vertikal Kebawah (Satu Per Satu, Rapi & Elegan, Bebas Grid Gantung) */}
+        <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
           {filteredItems.map((item) => {
             const isUnlocked = unlockedItems.includes(item.id);
             const isEquipped =
@@ -170,9 +170,9 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
             return (
               <motion.div
                 key={item.id}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 className={`
-                  p-4 sm:p-5 rounded-3xl border-2 flex flex-col justify-between transition relative
+                  p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl border-2 flex flex-col sm:flex-row items-center justify-between gap-4 transition relative
                   ${
                     isEquipped
                       ? 'bg-emerald-50/70 border-duo-green shadow-sm ring-2 ring-duo-green/20'
@@ -182,60 +182,70 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
                   }
                 `}
               >
-                {/* Equipped Badge */}
-                {isEquipped && (
-                  <div className="absolute top-3 right-3 bg-duo-green text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                    <span>Aktif</span>
+                {/* Left: Icon Box + Name + Description */}
+                <div className="flex items-center gap-3.5 sm:gap-4.5 w-full sm:w-auto flex-1 min-w-0">
+                  {/* Big Icon Preview */}
+                  <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-3xl sm:text-4xl shadow-inner shrink-0 relative">
+                    {item.icon}
+                    {isEquipped && (
+                      <div className="absolute -top-1.5 -right-1.5 bg-duo-green text-white p-1 rounded-full shadow-sm">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* Big Centered Icon Preview */}
-                <div className="w-18 h-18 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-3xl sm:text-4xl shadow-inner mt-1 mb-3">
-                  {item.icon}
+                  {/* Name & Description */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h4 className="font-black text-sm sm:text-base text-slate-800 leading-snug">
+                        {item.name}
+                      </h4>
+                      {isEquipped && (
+                        <span className="inline-flex items-center gap-1 bg-duo-green text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                          <span>Dipakai</span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-500 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Name & Description */}
-                <div className="text-center mb-4">
-                  <h4 className="font-black text-sm sm:text-base text-slate-800 mb-1 leading-snug line-clamp-1">
-                    {item.name}
-                  </h4>
-                  <p className="text-xs font-semibold text-slate-500 leading-relaxed px-1 line-clamp-2 min-h-[2.25rem]">
-                    {item.description}
-                  </p>
+                {/* Right: Chunky Action Button */}
+                <div className="w-full sm:w-auto sm:shrink-0">
+                  <button
+                    onClick={() => handleAction(item)}
+                    disabled={!isUnlocked && !canAfford}
+                    className={`
+                      w-full sm:w-40 py-2.5 sm:py-3 px-4 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition active:translate-y-0.5 flex items-center justify-center gap-2
+                      ${
+                        isEquipped
+                          ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-default shadow-none'
+                          : isUnlocked
+                          ? 'bg-duo-green hover:bg-duo-greenDark text-white shadow-duo-green'
+                          : canAfford
+                          ? 'bg-duo-blue hover:bg-duo-blueDark text-white shadow-duo-blue'
+                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      }
+                    `}
+                  >
+                    {isEquipped ? (
+                      <>
+                        <Check className="w-4 h-4 stroke-[3]" />
+                        <span>Dipakai</span>
+                      </>
+                    ) : isUnlocked ? (
+                      <span>Pakai</span>
+                    ) : (
+                      <>
+                        <Gem className="w-4 h-4 fill-white" />
+                        <span>{item.price} Beli</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-
-                {/* Action Button: Full-width Chunky 3D Button */}
-                <button
-                  onClick={() => handleAction(item)}
-                  disabled={!isUnlocked && !canAfford}
-                  className={`
-                    w-full py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition active:translate-y-0.5 flex items-center justify-center gap-2
-                    ${
-                      isEquipped
-                        ? 'bg-slate-200 text-slate-600 border border-slate-300 cursor-default'
-                        : isUnlocked
-                        ? 'bg-duo-green hover:bg-duo-greenDark text-white shadow-duo-green'
-                        : canAfford
-                        ? 'bg-duo-blue hover:bg-duo-blueDark text-white shadow-duo-blue'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }
-                  `}
-                >
-                  {isEquipped ? (
-                    <>
-                      <Check className="w-4 h-4 stroke-[3]" />
-                      <span>Dipakai</span>
-                    </>
-                  ) : isUnlocked ? (
-                    <span>Pakai</span>
-                  ) : (
-                    <>
-                      <Gem className="w-4 h-4 fill-white" />
-                      <span>{item.price} Beli</span>
-                    </>
-                  )}
-                </button>
               </motion.div>
             );
           })}

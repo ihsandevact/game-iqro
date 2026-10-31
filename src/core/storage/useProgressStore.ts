@@ -27,6 +27,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   equippedGlasses: 'glasses-none',
   equippedCape: 'cape-none',
   unlockedItems: ['hat-default', 'glasses-none', 'cape-none'],
+  unlockedAllLevels: false,
 };
 
 export function useProgressStore() {
@@ -118,9 +119,32 @@ export function useProgressStore() {
     }));
   };
 
+  const isBookUnlocked = (bookLevel: IqroLevelId): boolean => {
+    if (progress.unlockedAllLevels) return true;
+    if (bookLevel === 1) return true;
+    if (bookLevel === 2) {
+      // Iqro 2 unlocks when the final graduation stage of Iqro 1 is completed
+      return !!progress.completedStages['iqro1-u7-s4'];
+    }
+    if (bookLevel === 3) {
+      return !!progress.completedStages['iqro2-u7-s4'];
+    }
+    return false;
+  };
+
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
-    if (defaultUnlocked) return true;
+    if (progress.unlockedAllLevels) return true;
     if (progress.completedStages[stageId]) return true;
+
+    // Gating: check if stage belongs to a locked book
+    if (stageId.startsWith('iqro2-') && !isBookUnlocked(2)) {
+      return false;
+    }
+    if (stageId.startsWith('iqro3-') && !isBookUnlocked(3)) {
+      return false;
+    }
+
+    if (defaultUnlocked) return true;
     if (BOOK_FIRST_STAGES.has(stageId)) return true;
 
     // Check linear sequential progression across units and books
@@ -131,6 +155,14 @@ export function useProgressStore() {
     }
 
     return false;
+  };
+
+  const toggleUnlockAllLevels = (enabled?: boolean) => {
+    soundManager.playPop();
+    setProgress(prev => ({
+      ...prev,
+      unlockedAllLevels: enabled !== undefined ? enabled : !prev.unlockedAllLevels,
+    }));
   };
 
   const resetCurrentLevel = (levelId: IqroLevelId) => {
@@ -177,6 +209,8 @@ export function useProgressStore() {
     buyCostume,
     equipCostume,
     isStageUnlocked,
+    isBookUnlocked,
+    toggleUnlockAllLevels,
     resetCurrentLevel,
     resetAllProgress,
   };

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Flame, Gem, ChevronDown, BookOpen, Settings } from 'lucide-react';
+import { Flame, Gem, ChevronDown, BookOpen, Settings, Lock } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 
 interface NavbarProps {
   currentLevel: IqroLevelId;
   onSelectLevel: (lvl: IqroLevelId) => void;
+  isBookUnlocked?: (lvl: IqroLevelId) => boolean;
   gems: number;
   streak: number;
   onOpenSettings: () => void;
@@ -14,6 +15,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   currentLevel,
   onSelectLevel,
+  isBookUnlocked,
   gems,
   streak,
   onOpenSettings,
@@ -52,28 +54,54 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Level Dropdown Menu */}
           {levelDropdownOpen && (
-            <div className="absolute top-12 left-0 w-64 bg-white border-2 border-slate-200 rounded-3xl shadow-2xl py-2 z-50">
+            <div className="absolute top-12 left-0 w-64 bg-white border-2 border-slate-200 rounded-3xl shadow-2xl py-2 z-50 overflow-hidden">
               <div className="px-3.5 py-1.5 text-xs font-black text-slate-400 uppercase tracking-wider">
                 Pilih Tingkat Iqro
               </div>
-              {levelOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => {
-                    soundManager.playPop();
-                    onSelectLevel(opt.id);
-                    setLevelDropdownOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left hover:bg-slate-50 transition ${
-                    currentLevel === opt.id ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-lg ${opt.color} text-white flex items-center justify-center text-xs font-black`}>
-                    {opt.id}
-                  </div>
-                  <span className="text-xs font-bold">{opt.label}</span>
-                </button>
-              ))}
+              {levelOptions.map((opt) => {
+                const isUnlocked = isBookUnlocked ? isBookUnlocked(opt.id) : true;
+                const isCurrent = currentLevel === opt.id;
+
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => {
+                      if (!isUnlocked) {
+                        soundManager.playGentleWrong();
+                        return;
+                      }
+                      soundManager.playPop();
+                      onSelectLevel(opt.id);
+                      setLevelDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left transition ${
+                      isCurrent
+                        ? 'bg-emerald-50 text-emerald-800 font-bold'
+                        : isUnlocked
+                        ? 'text-slate-700 hover:bg-slate-50'
+                        : 'text-slate-400 bg-slate-50/60 cursor-not-allowed opacity-75'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-6 h-6 rounded-lg ${
+                          isUnlocked ? opt.color : 'bg-slate-300'
+                        } text-white flex items-center justify-center text-xs font-black shadow-xs`}
+                      >
+                        {opt.id}
+                      </div>
+                      <span className="text-xs font-bold">{opt.label}</span>
+                    </div>
+
+                    {!isUnlocked && (
+                      <div className="flex items-center gap-1 text-[10px] font-black text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+                        <Lock className="w-3 h-3" />
+                        <span>Kunci</span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

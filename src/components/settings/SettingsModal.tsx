@@ -16,6 +16,8 @@ import {
   Smartphone,
   Download,
   User,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
@@ -41,6 +43,8 @@ interface SettingsModalProps {
   equippedHat?: string;
   equippedGlasses?: string;
   equippedCape?: string;
+  unlockedAllLevels?: boolean;
+  onToggleUnlockAllLevels?: (enabled?: boolean) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -61,9 +65,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   equippedHat = 'hat-default',
   equippedGlasses = 'glasses-none',
   equippedCape = 'cape-none',
+  unlockedAllLevels = false,
+  onToggleUnlockAllLevels,
 }) => {
   const isMobile = useIsMobile(768);
-  const [resetTarget, setResetTarget] = useState<'level' | 'all' | null>(null);
+  const [resetTarget, setResetTarget] = useState<'level' | 'all' | 'unlock_all' | null>(null);
   const [parentalMath, setParentalMath] = useState<{ num1: number; num2: number; answer: number } | null>(null);
   const [mathAnswerInput, setMathAnswerInput] = useState('');
   const [mathError, setMathError] = useState(false);
@@ -83,7 +89,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => setIsNameSaved(false), 2500);
   };
 
-  const triggerResetGate = (target: 'level' | 'all') => {
+  const triggerResetGate = (target: 'level' | 'all' | 'unlock_all') => {
     soundManager.playPop();
     const num1 = Math.floor(Math.random() * 5) + 3; // 3 to 7
     const num2 = Math.floor(Math.random() * 5) + 2; // 2 to 6
@@ -97,22 +103,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (!parentalMath || !resetTarget) return;
 
     if (parseInt(mathAnswerInput, 10) === parentalMath.answer) {
-      if (resetTarget === 'level') {
+      if (resetTarget === 'unlock_all') {
+        const nextState = !unlockedAllLevels;
+        onToggleUnlockAllLevels?.(nextState);
+        setResetSuccessMsg(
+          nextState
+            ? 'Mode Santri Lanjutan aktif! Seluruh tingkat Iqro kini terbuka bebas.'
+            : 'Mode Standar aktif! Tingkat Iqro kembali mengikuti urutan kurikulum.'
+        );
+        soundManager.playCorrect();
+      } else if (resetTarget === 'level') {
         onResetLevel(currentLevel);
         setResetSuccessMsg(`Progres Iqro ${currentLevel} berhasil diulang dari awal!`);
+        soundManager.playCorrect();
+        ttsNarrator.speak('Progres berhasil direset!');
       } else {
         onResetAll();
         setResetSuccessMsg('Seluruh petualangan berhasil direset ke kondisi awal!');
+        soundManager.playCorrect();
+        ttsNarrator.speak('Progres berhasil direset!');
       }
 
-      soundManager.playCorrect();
-      ttsNarrator.speak('Progres berhasil direset!');
       setParentalMath(null);
       setResetTarget(null);
 
       setTimeout(() => {
         setResetSuccessMsg(null);
-        onClose();
+        if (resetTarget !== 'unlock_all') {
+          onClose();
+        }
       }, 1600);
     } else {
       soundManager.playGentleWrong();
@@ -384,6 +403,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           ) : (
             /* Normal Reset Action Buttons */
             <div className="space-y-2.5">
+              {/* Parental Bypass: Buka Semua Tingkat Iqro */}
+              <button
+                onClick={() => triggerResetGate('unlock_all')}
+                className={`w-full flex items-center justify-between p-3.5 border-2 rounded-2xl text-left transition group active:scale-[0.99] shadow-sm ${
+                  unlockedAllLevels
+                    ? 'bg-emerald-50/80 border-emerald-300 hover:bg-emerald-100/60'
+                    : 'bg-white hover:bg-purple-50 border-purple-200'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      unlockedAllLevels
+                        ? 'bg-emerald-200 text-emerald-800'
+                        : 'bg-purple-100 text-duo-purple'
+                    }`}
+                  >
+                    {unlockedAllLevels ? (
+                      <Unlock className="w-5 h-5" />
+                    ) : (
+                      <Lock className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
+                      <span>Buka Semua Tingkat Iqro</span>
+                      {unlockedAllLevels ? (
+                        <span className="text-[10px] font-black bg-duo-green text-white px-2 py-0.5 rounded-full">
+                          Aktif
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+                          Standar
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] font-semibold text-slate-400">
+                      {unlockedAllLevels
+                        ? 'Semua buku & stage terbuka bebas tanpa harus wisuda bertahap'
+                        : 'Buka Iqro 2, 3, dst tanpa perlu menyelesaikan Iqro 1 dahulu'}
+                    </div>
+                  </div>
+                </div>
+              </button>
+
               <button
                 onClick={() => triggerResetGate('level')}
                 className="w-full flex items-center justify-between p-3.5 bg-white hover:bg-orange-50 border-2 border-orange-200 rounded-2xl text-left transition group active:scale-[0.99] shadow-sm"
