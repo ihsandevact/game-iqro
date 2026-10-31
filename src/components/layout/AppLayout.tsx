@@ -46,21 +46,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       {/* 3-Column Responsive Container */}
       <div className="flex-1 max-w-7xl w-full mx-auto flex flex-row justify-center relative">
         {/* Left Sidebar (Desktop Only >= 1024px) */}
-        <aside className="hidden lg:flex flex-col justify-between w-64 p-6 border-r-2 border-slate-200 sticky top-14 h-[calc(100dvh-3.5rem)] shrink-0">
-          <div className="space-y-3">
+        <aside className="hidden lg:flex flex-col justify-between w-64 p-4 lg:p-5 border-r-2 border-slate-200 sticky top-14 h-[calc(100dvh-3.5rem)] shrink-0">
+          <div className="space-y-2.5">
             <button
               onClick={() => {
                 soundManager.playPop();
                 setActiveTab('journey');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap transition active:scale-[0.98] ${
                 activeTab === 'journey'
-                  ? 'bg-duo-green/15 text-duo-greenDark border-2 border-duo-green'
-                  : 'text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+                  ? 'bg-duo-green/15 text-duo-greenDark border-2 border-duo-green shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 border-2 border-transparent'
               }`}
             >
-              <Compass className="w-5 h-5" />
-              <span>Petualangan</span>
+              <Compass className={`w-5 h-5 shrink-0 ${activeTab === 'journey' ? 'text-duo-green' : 'text-slate-400'}`} />
+              <span className="truncate">Petualangan</span>
             </button>
 
             <button
@@ -68,14 +68,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 soundManager.playPop();
                 setActiveTab('wardrobe');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap transition active:scale-[0.98] ${
                 activeTab === 'wardrobe'
-                  ? 'bg-duo-purple/15 text-duo-purpleDark border-2 border-duo-purple'
-                  : 'text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+                  ? 'bg-duo-purple/15 text-duo-purpleDark border-2 border-duo-purple shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 border-2 border-transparent'
               }`}
             >
-              <ShoppingBag className="w-5 h-5 text-duo-purple" />
-              <span>Toko Kostum</span>
+              <ShoppingBag className={`w-5 h-5 shrink-0 ${activeTab === 'wardrobe' ? 'text-duo-purple' : 'text-slate-400'}`} />
+              <span className="truncate">Toko Kostum</span>
             </button>
 
             <button
@@ -83,14 +83,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 soundManager.playPop();
                 setActiveTab('dictionary');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap transition active:scale-[0.98] ${
                 activeTab === 'dictionary'
-                  ? 'bg-duo-blue/15 text-duo-blueDark border-2 border-duo-blue'
-                  : 'text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+                  ? 'bg-duo-blue/15 text-duo-blueDark border-2 border-duo-blue shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 border-2 border-transparent'
               }`}
             >
-              <BookOpen className="w-5 h-5" />
-              <span>Kamus Hijaiyah</span>
+              <BookOpen className={`w-5 h-5 shrink-0 ${activeTab === 'dictionary' ? 'text-duo-blue' : 'text-slate-400'}`} />
+              <span className="truncate">Kamus Hijaiyah</span>
             </button>
 
             <button
@@ -98,14 +98,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 soundManager.playPop();
                 setActiveTab('rewards');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition ${
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap transition active:scale-[0.98] ${
                 activeTab === 'rewards'
-                  ? 'bg-amber-100 text-amber-700 border-2 border-amber-400'
-                  : 'text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+                  ? 'bg-amber-100 text-amber-700 border-2 border-amber-400 shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 border-2 border-transparent'
               }`}
             >
-              <Award className="w-5 h-5" />
-              <span>Piala & Prestasi</span>
+              <Award className={`w-5 h-5 shrink-0 ${activeTab === 'rewards' ? 'text-amber-500' : 'text-slate-400'}`} />
+              <span className="truncate">Piala Prestasi</span>
             </button>
           </div>
 
