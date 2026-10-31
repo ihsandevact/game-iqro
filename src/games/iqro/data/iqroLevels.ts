@@ -246,6 +246,94 @@ export const IQRO_BOOKS: IqroBook[] = [
                   { letter: 'دَ', name: 'Da', isCorrect: true },
                   { letter: 'ذَ', name: 'Dza', isCorrect: false }
                 ]
+              },
+              {
+                id: 'q13',
+                type: 'listen-tap',
+                promptText: 'Cari huruf DZA!',
+                targetLetter: 'ذَ',
+                targetName: 'Dza',
+                options: [
+                  { letter: 'ذَ', name: 'Dza', isCorrect: true },
+                  { letter: 'دَ', name: 'Da', isCorrect: false }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'iqro1-u3-s2',
+            title: 'Perosotan Meluncur: Ro & Za',
+            subtitle: 'Lidah bergetar dan desis lampu di atas',
+            type: 'listen-tap',
+            unitNumber: 3,
+            stageNumber: 2,
+            lettersCovered: ['رَ', 'زَ'],
+            questions: [
+              {
+                id: 'q14',
+                type: 'listen-tap',
+                promptText: 'Ayo cari huruf RO!',
+                targetLetter: 'رَ',
+                targetName: 'Ro',
+                options: [
+                  { letter: 'رَ', name: 'Ro', isCorrect: true },
+                  { letter: 'زَ', name: 'Za', isCorrect: false }
+                ]
+              },
+              {
+                id: 'q15',
+                type: 'listen-tap',
+                promptText: 'Yang mana huruf ZA?',
+                targetLetter: 'زَ',
+                targetName: 'Za',
+                options: [
+                  { letter: 'زَ', name: 'Za', isCorrect: true },
+                  { letter: 'رَ', name: 'Ro', isCorrect: false }
+                ]
+              },
+              {
+                id: 'q16',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf RO!',
+                targetLetter: 'رَ',
+                targetName: 'Ro',
+                options: []
+              }
+            ]
+          },
+          {
+            id: 'iqro1-u3-s3',
+            title: 'Pesta Balon Meluncur',
+            subtitle: 'Letuskan balon Da, Dza, Ro, dan Za!',
+            type: 'bubble-pop',
+            unitNumber: 3,
+            stageNumber: 3,
+            lettersCovered: ['دَ', 'ذَ', 'رَ', 'زَ'],
+            questions: [
+              {
+                id: 'q17',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf DA!',
+                targetLetter: 'دَ',
+                targetName: 'Da',
+                options: [
+                  { letter: 'دَ', name: 'Da', isCorrect: true },
+                  { letter: 'ذَ', name: 'Dza', isCorrect: false },
+                  { letter: 'رَ', name: 'Ro', isCorrect: false },
+                  { letter: 'زَ', name: 'Za', isCorrect: false }
+                ]
+              },
+              {
+                id: 'q18',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf ZA!',
+                targetLetter: 'زَ',
+                targetName: 'Za',
+                options: [
+                  { letter: 'زَ', name: 'Za', isCorrect: true },
+                  { letter: 'رَ', name: 'Ro', isCorrect: false },
+                  { letter: 'دَ', name: 'Da', isCorrect: false }
+                ]
               }
             ]
           }

@@ -30,8 +30,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-6 py-2.5 transition-all select-none">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 py-2.5 transition-all select-none">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
         {/* Left: Level Switcher */}
         <div className="relative flex items-center gap-2 shrink-0">
           <button

@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { IqroLevelId, UserProgress, CostumeItem, CostumeCategory } from '../types/gameTypes';
 import { soundManager } from '../audio/soundManager';
+import { IQRO_BOOKS } from '../../games/iqro/data/iqroLevels';
+
+// Flatten all stages across books and units for dynamic sequential progression
+const ALL_STAGES_SEQUENCE: string[] = IQRO_BOOKS.flatMap((book) =>
+  book.units.flatMap((unit) => unit.stages.map((stage) => stage.id))
+);
+
+const BOOK_FIRST_STAGES = new Set(
+  IQRO_BOOKS.map((book) => book.units[0]?.stages[0]?.id).filter(Boolean)
+);
 
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
 
@@ -111,14 +121,14 @@ export function useProgressStore() {
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
     if (defaultUnlocked) return true;
     if (progress.completedStages[stageId]) return true;
+    if (BOOK_FIRST_STAGES.has(stageId)) return true;
 
-    if (stageId === 'iqro1-u1-s1') return true;
-    if (stageId === 'iqro1-u1-s2') return !!progress.completedStages['iqro1-u1-s1'];
-    if (stageId === 'iqro1-u1-s3') return !!progress.completedStages['iqro1-u1-s2'];
-    if (stageId === 'iqro1-u1-s4') return !!progress.completedStages['iqro1-u1-s3'];
-
-    if (stageId === 'iqro1-u2-s1') return !!progress.completedStages['iqro1-u1-s4'];
-    if (stageId === 'iqro1-u2-s2') return !!progress.completedStages['iqro1-u2-s1'];
+    // Check linear sequential progression across units and books
+    const stageIndex = ALL_STAGES_SEQUENCE.indexOf(stageId);
+    if (stageIndex > 0) {
+      const prevStageId = ALL_STAGES_SEQUENCE[stageIndex - 1];
+      return !!progress.completedStages[prevStageId];
+    }
 
     return false;
   };
