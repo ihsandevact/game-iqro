@@ -2,6 +2,7 @@
 
 class TTSNarrator {
   private voice: SpeechSynthesisVoice | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -39,16 +40,24 @@ class TTSNarrator {
       utterance.rate = 0.95;  // slightly slower for toddler clarity
       utterance.pitch = 1.15; // slightly higher pitch for cheerful, friendly persona
 
-      utterance.onend = () => {
-        onEnd?.();
+      // Retain utterance reference to prevent GC drops in Chromium
+      this.currentUtterance = utterance;
+
+      let called = false;
+      const finish = () => {
+        if (!called) {
+          called = true;
+          this.currentUtterance = null;
+          onEnd?.();
+        }
       };
 
-      utterance.onerror = () => {
-        onEnd?.();
-      };
+      utterance.onend = finish;
+      utterance.onerror = finish;
 
       window.speechSynthesis.speak(utterance);
     } catch {
+      this.currentUtterance = null;
       onEnd?.();
     }
   }
@@ -95,7 +104,12 @@ class TTSNarrator {
     this.speak(`Halo ${name}! Ayo semangat belajar mengaji bersamaku!`, onEnd);
   }
 
+  public isSpeaking(): boolean {
+    return !!this.currentUtterance;
+  }
+
   public stop() {
+    this.currentUtterance = null;
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }

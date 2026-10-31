@@ -244,12 +244,23 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     setIsDrawing(false);
     lastPosRef.current = null;
     soundManager.playCorrect();
-    ttsNarrator.speakPraise(childName);
 
-    // Responsive smooth advance after visual sparkle celebration
-    setTimeout(() => {
-      onCorrect();
-    }, 850);
+    let hasAdvanced = false;
+    const advance = () => {
+      if (!hasAdvanced) {
+        hasAdvanced = true;
+        onCorrect();
+      }
+    };
+
+    // Fallback timer: advances in 2.5s if device sound is muted or TTS stalls
+    const fallbackTimer = setTimeout(advance, 2500);
+
+    // Wait until narrator finishes speaking praise fully before advancing
+    ttsNarrator.speakPraise(childName, () => {
+      clearTimeout(fallbackTimer);
+      advance();
+    });
   };
 
   const clearCanvas = () => {
