@@ -337,8 +337,10 @@ class TTSNarrator {
               onEnd?.();
               return;
             }
-            // Small natural 120ms rhythm gap between intro and letter audio
-            setTimeout(playNext, 120);
+            // Snappy transition: 25ms after question prompt, or 80ms between joined syllables
+            const isPrompt = src.includes('/prompts/');
+            const gap = isPrompt ? 25 : 80;
+            setTimeout(playNext, gap);
           }
         };
 
