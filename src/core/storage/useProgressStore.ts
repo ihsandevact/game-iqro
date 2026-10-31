@@ -28,6 +28,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   equippedCape: 'cape-none',
   unlockedItems: ['hat-default', 'glasses-none', 'cape-none'],
   unlockedAllLevels: false,
+  hasCompletedOnboarding: false,
 };
 
 export function useProgressStore() {
@@ -35,7 +36,17 @@ export function useProgressStore() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...DEFAULT_PROGRESS, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        // Existing users who have already completed stages should be marked as onboarded
+        const hasCompletedOnboarding =
+          parsed.hasCompletedOnboarding ??
+          (parsed.completedStages && Object.keys(parsed.completedStages).length > 0);
+
+        return {
+          ...DEFAULT_PROGRESS,
+          ...parsed,
+          hasCompletedOnboarding: !!hasCompletedOnboarding,
+        };
       }
     } catch {
       // fallback
@@ -194,6 +205,16 @@ export function useProgressStore() {
     setProgress(prev => ({ ...prev, childName: trimmed }));
   };
 
+  const completeOnboarding = (name: string) => {
+    const trimmed = name.trim() || 'Faqih';
+    soundManager.playCorrect();
+    setProgress(prev => ({
+      ...prev,
+      childName: trimmed,
+      hasCompletedOnboarding: true,
+    }));
+  };
+
   const resetAllProgress = () => {
     soundManager.playPop();
     localStorage.removeItem(STORAGE_KEY);
@@ -203,6 +224,7 @@ export function useProgressStore() {
   return {
     progress,
     setChildName,
+    completeOnboarding,
     setIqroLevel,
     completeStage,
     toggleSound,

@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { JourneyMap } from './games/iqro/components/JourneyMap';
 import { StageModal } from './games/iqro/components/StageModal';
 import { SplashScreen } from './components/splash/SplashScreen';
+import { WelcomeModal } from './components/onboarding/WelcomeModal';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { IosInstallModal } from './components/pwa/IosInstallModal';
 import { usePwaInstall } from './components/pwa/usePwaInstall';
@@ -16,6 +17,7 @@ export function App() {
   const {
     progress,
     setChildName,
+    completeOnboarding,
     setIqroLevel,
     completeStage,
     toggleSound,
@@ -63,6 +65,16 @@ export function App() {
           />
         )}
       </AnimatePresence>
+
+      {/* First-time Onboarding Welcome Modal */}
+      {!isAppLoading && !progress.hasCompletedOnboarding && (
+        <WelcomeModal
+          onComplete={completeOnboarding}
+          equippedHat={progress.equippedHat}
+          equippedGlasses={progress.equippedGlasses}
+          equippedCape={progress.equippedCape}
+        />
+      )}
 
       {/* Top Navigation Bar */}
       <Navbar

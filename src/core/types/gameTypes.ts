@@ -73,4 +73,5 @@ export interface UserProgress {
   equippedCape: string;
   unlockedItems: string[];
   unlockedAllLevels?: boolean;
+  hasCompletedOnboarding?: boolean;
 }
