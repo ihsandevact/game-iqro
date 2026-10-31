@@ -140,6 +140,10 @@ export function useProgressStore() {
     if (bookLevel === 3) {
       return !!progress.completedStages['iqro2-u7-s4'];
     }
+    if (bookLevel === 4) {
+      // Iqro 4 unlocks when the final graduation exam of Iqro 3 is completed
+      return !!progress.completedStages['iqro3-u7-s4'];
+    }
     return false;
   };
 
@@ -152,6 +156,9 @@ export function useProgressStore() {
       return false;
     }
     if (stageId.startsWith('iqro3-') && !isBookUnlocked(3)) {
+      return false;
+    }
+    if (stageId.startsWith('iqro4-') && !isBookUnlocked(4)) {
       return false;
     }
 

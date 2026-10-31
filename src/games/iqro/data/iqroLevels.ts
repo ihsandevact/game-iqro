@@ -2148,18 +2148,2267 @@ export const IQRO_BOOKS: IqroBook[] = [
   {
     level: 3,
     title: 'Iqro 3',
-    subtitle: 'Harakat Kasrah (i) & Dhammah (u)',
+    subtitle: 'Harakat Kasrah (-i), Dhammah (-u) & Mad Asli',
     color: '#FF9600',
-    totalStages: 16,
+    totalStages: 28,
     units: [
       {
         id: 'iqro3-u1',
         unitNumber: 1,
-        title: 'Unit 1: Bunyi A, I, U yang Ceria',
-        description: 'Mengenal perosotan kasrah dan kepala dhammah',
+        title: 'Unit 1: Mengenal Kasrah (-i)',
+        description: 'Mengenal garis miring bawah berbunyi I yang ceria',
         themeColor: '#FF9600',
-        stages: []
-      }
+        stages: [
+          {
+            id: 'iqro3-u1-s1',
+            title: 'Kenalan Kasrah Garis Bawah',
+            subtitle: 'Dengar dan ketuk kartu suara kasrah',
+            type: 'listen-tap',
+            unitNumber: 1,
+            stageNumber: 1,
+            lettersCovered: ['إِ', 'بِ', 'تِ', 'ثِ'],
+            questions: [
+              {
+                id: 'iqro3-u1-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Ayo cari huruf BI!',
+                targetLetter: 'بِ',
+                targetName: 'Bi',
+                options: [
+                  {
+                    letter: 'بِ',
+                    name: 'Bi',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بَ',
+                    name: 'Ba',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Kasrah adalah garis miring di bawah huruf, dibaca I!',
+              },
+              {
+                id: 'iqro3-u1-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana huruf I?',
+                targetLetter: 'إِ',
+                targetName: 'I',
+                options: [
+                  {
+                    letter: 'إِ',
+                    name: 'I',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'اَ',
+                    name: 'A',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Alif dengan garis di bawah berbunyi I!',
+              },
+              {
+                id: 'iqro3-u1-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Ayo cari huruf TI!',
+                targetLetter: 'تِ',
+                targetName: 'Ti',
+                options: [
+                  {
+                    letter: 'تِ',
+                    name: 'Ti',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بِ',
+                    name: 'Bi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تَ',
+                    name: 'Ta',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Dua titik di atas dengan harakat kasrah di bawah!',
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u1-s2',
+            title: 'Letuskan Balon Suara I',
+            subtitle: 'Pecahkan balon dengan bunyi kasrah yang benar',
+            type: 'bubble-pop',
+            unitNumber: 1,
+            stageNumber: 2,
+            lettersCovered: ['جِ', 'حِ', 'خِ', 'دِ'],
+            questions: [
+              {
+                id: 'iqro3-u1-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf JI!',
+                targetLetter: 'جِ',
+                targetName: 'Ji',
+                options: [
+                  {
+                    letter: 'جِ',
+                    name: 'Ji',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'جَ',
+                    name: 'Ja',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حِ',
+                    name: 'Hi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بِ',
+                    name: 'Bi',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u1-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf HI!',
+                targetLetter: 'حِ',
+                targetName: 'Hi',
+                options: [
+                  {
+                    letter: 'حِ',
+                    name: 'Hi',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'خِ',
+                    name: 'Khi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حَ',
+                    name: 'Ha',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'جِ',
+                    name: 'Ji',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u1-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf DI!',
+                targetLetter: 'دِ',
+                targetName: 'Di',
+                options: [
+                  {
+                    letter: 'دِ',
+                    name: 'Di',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دَ',
+                    name: 'Da',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذِ',
+                    name: 'Dzi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تِ',
+                    name: 'Ti',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u1-s3',
+            title: 'Menulis Garis Kasrah',
+            subtitle: 'Tulis huruf berharakat kasrah dengan rapi',
+            type: 'tracing',
+            unitNumber: 1,
+            stageNumber: 3,
+            lettersCovered: ['رِ', 'زِ', 'سِ'],
+            questions: [
+              {
+                id: 'iqro3-u1-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: RI!',
+                targetLetter: 'رِ',
+                targetName: 'Ri',
+                options: [],
+              },
+              {
+                id: 'iqro3-u1-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: ZI!',
+                targetLetter: 'زِ',
+                targetName: 'Zi',
+                options: [],
+              },
+              {
+                id: 'iqro3-u1-s3-q3',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: SI!',
+                targetLetter: 'سِ',
+                targetName: 'Si',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u1-s4',
+            title: 'Tantangan Mahkota Kasrah',
+            subtitle: 'Uji kemahiran membaca harakat kasrah',
+            type: 'boss-challenge',
+            unitNumber: 1,
+            stageNumber: 4,
+            lettersCovered: ['صِ', 'طِ', 'عِ', 'فِ', 'قِ'],
+            questions: [
+              {
+                id: 'iqro3-u1-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf SHI!',
+                targetLetter: 'صِ',
+                targetName: 'Shi',
+                options: [
+                  {
+                    letter: 'صِ',
+                    name: 'Shi',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سِ',
+                    name: 'Si',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'صَ',
+                    name: 'Sho',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u1-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf THI!',
+                targetLetter: 'طِ',
+                targetName: 'Thi',
+                options: [
+                  {
+                    letter: 'طِ',
+                    name: 'Thi',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تِ',
+                    name: 'Ti',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'طَ',
+                    name: 'Tho',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u1-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf \'I!',
+                targetLetter: 'عِ',
+                targetName: '\'I',
+                options: [
+                  {
+                    letter: 'عِ',
+                    name: '\'I',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'إِ',
+                    name: 'I',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'غِ',
+                    name: 'Ghi',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u1-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: FI - QI!',
+                targetLetter: 'فِقِ',
+                targetName: 'Fi-Qi',
+                options: [
+                  {
+                    letter: 'فِقِ',
+                    name: 'Fi-Qi',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'فَقَ',
+                    name: 'Fa-Qo',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'قِفِ',
+                    name: 'Qi-Fi',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u2',
+        unitNumber: 2,
+        title: 'Unit 2: Mengenal Dhammah (-u)',
+        description: 'Mengenal mahkota melengkung berbunyi U yang lucu',
+        themeColor: '#FF4B4B',
+        stages: [
+          {
+            id: 'iqro3-u2-s1',
+            title: 'Mahkota Melengkung Dhammah',
+            subtitle: 'Dengar dan ketuk kartu suara dhammah',
+            type: 'listen-tap',
+            unitNumber: 2,
+            stageNumber: 1,
+            lettersCovered: ['أُ', 'بُ', 'تُ', 'ثُ'],
+            questions: [
+              {
+                id: 'iqro3-u2-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Ayo cari huruf BU!',
+                targetLetter: 'بُ',
+                targetName: 'Bu',
+                options: [
+                  {
+                    letter: 'بُ',
+                    name: 'Bu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بِ',
+                    name: 'Bi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بَ',
+                    name: 'Ba',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Dhammah berbentuk seperti angka sembilan kecil di atas huruf berbunyi U!',
+              },
+              {
+                id: 'iqro3-u2-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana huruf U?',
+                targetLetter: 'أُ',
+                targetName: 'U',
+                options: [
+                  {
+                    letter: 'أُ',
+                    name: 'U',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'إِ',
+                    name: 'I',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'اَ',
+                    name: 'A',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Ayo cari huruf TU!',
+                targetLetter: 'تُ',
+                targetName: 'Tu',
+                options: [
+                  {
+                    letter: 'تُ',
+                    name: 'Tu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تِ',
+                    name: 'Ti',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُ',
+                    name: 'Bu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u2-s2',
+            title: 'Balon Meluncur Bunyi U',
+            subtitle: 'Pecahkan balon berbunyi dhammah',
+            type: 'bubble-pop',
+            unitNumber: 2,
+            stageNumber: 2,
+            lettersCovered: ['جُ', 'حُ', 'خُ', 'دُ'],
+            questions: [
+              {
+                id: 'iqro3-u2-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf JU!',
+                targetLetter: 'جُ',
+                targetName: 'Ju',
+                options: [
+                  {
+                    letter: 'جُ',
+                    name: 'Ju',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'جِ',
+                    name: 'Ji',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حُ',
+                    name: 'Hu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُ',
+                    name: 'Bu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf KHU!',
+                targetLetter: 'خُ',
+                targetName: 'Khu',
+                options: [
+                  {
+                    letter: 'خُ',
+                    name: 'Khu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'حُ',
+                    name: 'Hu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'خِ',
+                    name: 'Khi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'جُ',
+                    name: 'Ju',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon huruf DU!',
+                targetLetter: 'دُ',
+                targetName: 'Du',
+                options: [
+                  {
+                    letter: 'دُ',
+                    name: 'Du',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِ',
+                    name: 'Di',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دَ',
+                    name: 'Da',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذُ',
+                    name: 'Dzu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u2-s3',
+            title: 'Menulis Lengkung Dhammah',
+            subtitle: 'Tulis huruf berharakat dhammah dengan mahkota kecil',
+            type: 'tracing',
+            unitNumber: 2,
+            stageNumber: 3,
+            lettersCovered: ['رُ', 'زُ', 'سُ'],
+            questions: [
+              {
+                id: 'iqro3-u2-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: RU!',
+                targetLetter: 'رُ',
+                targetName: 'Ru',
+                options: [],
+              },
+              {
+                id: 'iqro3-u2-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: ZU!',
+                targetLetter: 'زُ',
+                targetName: 'Zu',
+                options: [],
+              },
+              {
+                id: 'iqro3-u2-s3-q3',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis huruf: SU!',
+                targetLetter: 'سُ',
+                targetName: 'Su',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u2-s4',
+            title: 'Tantangan Mahkota Dhammah',
+            subtitle: 'Kuasai huruf dan kata berharakat dhammah',
+            type: 'boss-challenge',
+            unitNumber: 2,
+            stageNumber: 4,
+            lettersCovered: ['صُ', 'طُ', 'عُ', 'كُ', 'لُ'],
+            questions: [
+              {
+                id: 'iqro3-u2-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf SHU!',
+                targetLetter: 'صُ',
+                targetName: 'Shu',
+                options: [
+                  {
+                    letter: 'صُ',
+                    name: 'Shu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سُ',
+                    name: 'Su',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'صِ',
+                    name: 'Shi',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf \'U!',
+                targetLetter: 'عُ',
+                targetName: '\'U',
+                options: [
+                  {
+                    letter: 'عُ',
+                    name: '\'U',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'أُ',
+                    name: 'U',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'غُ',
+                    name: 'Ghu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf KU!',
+                targetLetter: 'كُ',
+                targetName: 'Ku',
+                options: [
+                  {
+                    letter: 'كُ',
+                    name: 'Ku',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'قُ',
+                    name: 'Qu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'كِ',
+                    name: 'Ki',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u2-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: KU - LU!',
+                targetLetter: 'كُلُ',
+                targetName: 'Ku-Lu',
+                options: [
+                  {
+                    letter: 'كُلُ',
+                    name: 'Ku-Lu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'كِلِ',
+                    name: 'Ki-Li',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'كَلَ',
+                    name: 'Ka-La',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u3',
+        unitNumber: 3,
+        title: 'Unit 3: Harmoni Tiga Bunyi (A - I - U)',
+        description: 'Menggabungkan tiga vokal fathah, kasrah, dan dhammah dalam satu kata',
+        themeColor: '#2B70C9',
+        stages: [
+          {
+            id: 'iqro3-u3-s1',
+            title: 'Senandung Trio A - I - U',
+            subtitle: 'Dengar perubahan vokal A, I, dan U',
+            type: 'listen-tap',
+            unitNumber: 3,
+            stageNumber: 1,
+            lettersCovered: ['بَ', 'بِ', 'بُ', 'تَ', 'تِ', 'تُ'],
+            questions: [
+              {
+                id: 'iqro3-u3-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana urutan: BA - BI - BU?',
+                targetLetter: 'بَبِبُ',
+                targetName: 'Ba-Bi-Bu',
+                options: [
+                  {
+                    letter: 'بَبِبُ',
+                    name: 'Ba-Bi-Bu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بُبِبَ',
+                    name: 'Bu-Bi-Ba',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بِبَبُ',
+                    name: 'Bi-Ba-Bu',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Perhatikan urutan: Fathah (A), Kasrah (I), Dhammah (U)!',
+              },
+              {
+                id: 'iqro3-u3-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana urutan: TA - TI - TU?',
+                targetLetter: 'تَتِتُ',
+                targetName: 'Ta-Ti-Tu',
+                options: [
+                  {
+                    letter: 'تَتِتُ',
+                    name: 'Ta-Ti-Tu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تُتِتَ',
+                    name: 'Tu-Ti-Ta',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تِتَتُ',
+                    name: 'Ti-Ta-Tu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u3-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana urutan: TSA - TSI - TSU?',
+                targetLetter: 'ثَثِثُ',
+                targetName: 'Tsa-Tsi-Tsu',
+                options: [
+                  {
+                    letter: 'ثَثِثُ',
+                    name: 'Tsa-Tsi-Tsu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تَتِتُ',
+                    name: 'Ta-Ti-Tu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ثُثِثَ',
+                    name: 'Tsu-Tsi-Tsa',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u3-s2',
+            title: 'Balon Pelangi Trio Vokal',
+            subtitle: 'Pecahkan balon berisi tiga nada vokal',
+            type: 'bubble-pop',
+            unitNumber: 3,
+            stageNumber: 2,
+            lettersCovered: ['جَ', 'جِ', 'جُ', 'دَ', 'دِ', 'دُ'],
+            questions: [
+              {
+                id: 'iqro3-u3-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon rangkaian: JA - JI - JU!',
+                targetLetter: 'جَجِجُ',
+                targetName: 'Ja-Ji-Ju',
+                options: [
+                  {
+                    letter: 'جَجِجُ',
+                    name: 'Ja-Ji-Ju',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'جُجِجَ',
+                    name: 'Ju-Ji-Ja',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حَحِحُ',
+                    name: 'Ha-Hi-Hu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بَبِبُ',
+                    name: 'Ba-Bi-Bu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u3-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon rangkaian: DA - DI - DU!',
+                targetLetter: 'دَدِدُ',
+                targetName: 'Da-Di-Du',
+                options: [
+                  {
+                    letter: 'دَدِدُ',
+                    name: 'Da-Di-Du',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دُدِدَ',
+                    name: 'Du-Di-Da',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذَذِذُ',
+                    name: 'Dza-Dzi-Dzu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'رَرِرُ',
+                    name: 'Ro-Ri-Ru',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u3-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon rangkaian: RO - RI - RU!',
+                targetLetter: 'رَرِرُ',
+                targetName: 'Ro-Ri-Ru',
+                options: [
+                  {
+                    letter: 'رَرِرُ',
+                    name: 'Ro-Ri-Ru',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'زَزِزُ',
+                    name: 'Za-Zi-Zu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'رُرِرَ',
+                    name: 'Ru-Ri-Ro',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دَدِدُ',
+                    name: 'Da-Di-Du',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u3-s3',
+            title: 'Menulis Trio Suara Sambung',
+            subtitle: 'Tulis rangkaian tiga huruf dengan harakat berbeda',
+            type: 'tracing',
+            unitNumber: 3,
+            stageNumber: 3,
+            lettersCovered: ['سَ', 'سِ', 'سُ', 'قَ', 'قِ', 'قُ'],
+            questions: [
+              {
+                id: 'iqro3-u3-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis rangkaian: SA - SI - SU!',
+                targetLetter: 'سَسِسُ',
+                targetName: 'Sa-Si-Su',
+                options: [],
+              },
+              {
+                id: 'iqro3-u3-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis rangkaian: QO - QI - QU!',
+                targetLetter: 'قَقِقُ',
+                targetName: 'Qo-Qi-Qu',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u3-s4',
+            title: 'Petualangan Tiga Vokal Sambung',
+            subtitle: 'Membaca kata tiga huruf gabungan vokal A-I-U',
+            type: 'boss-challenge',
+            unitNumber: 3,
+            stageNumber: 4,
+            lettersCovered: ['كُتِبَ', 'رُسِلَ', 'عُلِمَ', 'حَسُنَ'],
+            questions: [
+              {
+                id: 'iqro3-u3-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: KU - TI - BA?',
+                targetLetter: 'كُتِبَ',
+                targetName: 'Ku-Ti-Ba',
+                options: [
+                  {
+                    letter: 'كُتِبَ',
+                    name: 'Ku-Ti-Ba',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'كَتَبَ',
+                    name: 'Ka-Ta-Ba',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'كُتُبُ',
+                    name: 'Ku-Tu-Bu',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Perhatikan vokal U - I - A: Kaf dhammah, Ta kasrah, Ba fathah!',
+              },
+              {
+                id: 'iqro3-u3-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: RU - SI - LA?',
+                targetLetter: 'رُسِلَ',
+                targetName: 'Ru-Si-La',
+                options: [
+                  {
+                    letter: 'رُسِلَ',
+                    name: 'Ru-Si-La',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'رَسَلَ',
+                    name: 'Ro-Sa-La',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'رُسُلُ',
+                    name: 'Ru-Su-Lu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u3-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: \'U - LI - MA?',
+                targetLetter: 'عُلِمَ',
+                targetName: '\'U-Li-Ma',
+                options: [
+                  {
+                    letter: 'عُلِمَ',
+                    name: '\'U-Li-Ma',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'عَلِمَ',
+                    name: '\'A-Li-Ma',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'عُلُمُ',
+                    name: '\'U-Lu-Mu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u3-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: HA - SU - NA?',
+                targetLetter: 'حَسُنَ',
+                targetName: 'Ha-Su-Na',
+                options: [
+                  {
+                    letter: 'حَسُنَ',
+                    name: 'Ha-Su-Na',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'حَسَنَ',
+                    name: 'Ha-Sa-Na',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حُسِنَ',
+                    name: 'Hu-Si-Na',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u4',
+        unitNumber: 4,
+        title: 'Unit 4: Mad Asli Kasrah (Panjang -ii)',
+        description: 'Mengenal kasrah bertemu Ya sukun dibaca panjang 2 harakat',
+        themeColor: '#1CB0F6',
+        stages: [
+          {
+            id: 'iqro3-u4-s1',
+            title: 'Kereta Panjang Ya Sukun',
+            subtitle: 'Dengar dan bedakan bunyi pendek dan panjang -ii',
+            type: 'listen-tap',
+            unitNumber: 4,
+            stageNumber: 1,
+            lettersCovered: ['بِيْ', 'تِيْ', 'ثِيْ'],
+            questions: [
+              {
+                id: 'iqro3-u4-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: BII?',
+                targetLetter: 'بِيْ',
+                targetName: 'Bii',
+                options: [
+                  {
+                    letter: 'بِيْ',
+                    name: 'Bii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بِ',
+                    name: 'Bi',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Kasrah bertemu Ya sukun dibaca panjang 2 harakat: Bii!',
+              },
+              {
+                id: 'iqro3-u4-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: TII?',
+                targetLetter: 'تِيْ',
+                targetName: 'Tii',
+                options: [
+                  {
+                    letter: 'تِيْ',
+                    name: 'Tii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تِ',
+                    name: 'Ti',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بِيْ',
+                    name: 'Bii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u4-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: TSII?',
+                targetLetter: 'ثِيْ',
+                targetName: 'Tsii',
+                options: [
+                  {
+                    letter: 'ثِيْ',
+                    name: 'Tsii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'ثِ',
+                    name: 'Tsi',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تِيْ',
+                    name: 'Tii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u4-s2',
+            title: 'Balon Mengapung Panjang',
+            subtitle: 'Pecahkan balon bacaan panjang -ii',
+            type: 'bubble-pop',
+            unitNumber: 4,
+            stageNumber: 2,
+            lettersCovered: ['جِيْ', 'دِيْ', 'رِيْ', 'سِيْ'],
+            questions: [
+              {
+                id: 'iqro3-u4-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: JII!',
+                targetLetter: 'جِيْ',
+                targetName: 'Jii',
+                options: [
+                  {
+                    letter: 'جِيْ',
+                    name: 'Jii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'جِ',
+                    name: 'Ji',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حِيْ',
+                    name: 'Hii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بِيْ',
+                    name: 'Bii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u4-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: DII!',
+                targetLetter: 'دِيْ',
+                targetName: 'Dii',
+                options: [
+                  {
+                    letter: 'دِيْ',
+                    name: 'Dii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِ',
+                    name: 'Di',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذِيْ',
+                    name: 'Dzii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تِيْ',
+                    name: 'Tii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u4-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: RII!',
+                targetLetter: 'رِيْ',
+                targetName: 'Rii',
+                options: [
+                  {
+                    letter: 'رِيْ',
+                    name: 'Rii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'رِ',
+                    name: 'Ri',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'زِيْ',
+                    name: 'Zii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دِيْ',
+                    name: 'Dii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u4-s3',
+            title: 'Menulis Mad Asli Kasrah',
+            subtitle: 'Tulis huruf kasrah yang bersambung dengan Ya sukun',
+            type: 'tracing',
+            unitNumber: 4,
+            stageNumber: 3,
+            lettersCovered: ['فِيْ', 'قِيْ'],
+            questions: [
+              {
+                id: 'iqro3-u4-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis bacaan panjang: FII!',
+                targetLetter: 'فِيْ',
+                targetName: 'Fii',
+                options: [],
+              },
+              {
+                id: 'iqro3-u4-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis bacaan panjang: QII!',
+                targetLetter: 'قِيْ',
+                targetName: 'Qii',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u4-s4',
+            title: 'Tantangan Pendek vs Panjang -ii',
+            subtitle: 'Latih ketajaman telinga membedakan ketukan mad',
+            type: 'boss-challenge',
+            unitNumber: 4,
+            stageNumber: 4,
+            lettersCovered: ['دِ', 'دِيْ', 'دِيْنِيْ', 'فِيْهِ'],
+            questions: [
+              {
+                id: 'iqro3-u4-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Pilih bacaan pendek: DI!',
+                targetLetter: 'دِ',
+                targetName: 'Di',
+                options: [
+                  {
+                    letter: 'دِ',
+                    name: 'Di',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِيْ',
+                    name: 'Dii',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Hati-hati! Tanpa ya mati dibaca pendek 1 ketukan: Di!',
+              },
+              {
+                id: 'iqro3-u4-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Pilih bacaan panjang: DII!',
+                targetLetter: 'دِيْ',
+                targetName: 'Dii',
+                options: [
+                  {
+                    letter: 'دِيْ',
+                    name: 'Dii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِ',
+                    name: 'Di',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u4-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Pilih kata dua panjang: DII - NII!',
+                targetLetter: 'دِيْنِيْ',
+                targetName: 'Dii-Nii',
+                options: [
+                  {
+                    letter: 'دِيْنِيْ',
+                    name: 'Dii-Nii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِنِ',
+                    name: 'Di-Ni',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دِيْنِ',
+                    name: 'Dii-Ni',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u4-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Pilih kata panjang-pendek: FII - HI!',
+                targetLetter: 'فِيْهِ',
+                targetName: 'Fii-Hii',
+                options: [
+                  {
+                    letter: 'فِيْهِ',
+                    name: 'Fii-Hii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'فِهِ',
+                    name: 'Fi-Hii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'فِيْهِيْ',
+                    name: 'Fii-Hii',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u5',
+        unitNumber: 5,
+        title: 'Unit 5: Mad Asli Dhammah (Panjang -uu)',
+        description: 'Mengenal dhammah bertemu Wawu sukun dibaca panjang 2 harakat',
+        themeColor: '#CE82FF',
+        stages: [
+          {
+            id: 'iqro3-u5-s1',
+            title: 'Kereta Panjang Wawu Sukun',
+            subtitle: 'Dengar dan kenali alun nada panjang -uu',
+            type: 'listen-tap',
+            unitNumber: 5,
+            stageNumber: 1,
+            lettersCovered: ['بُوْ', 'تُوْ', 'ثُوْ'],
+            questions: [
+              {
+                id: 'iqro3-u5-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: BUU?',
+                targetLetter: 'بُوْ',
+                targetName: 'Buu',
+                options: [
+                  {
+                    letter: 'بُوْ',
+                    name: 'Buu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بُ',
+                    name: 'Bu',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Dhammah bertemu Wawu sukun dibaca panjang 2 harakat: Buu!',
+              },
+              {
+                id: 'iqro3-u5-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: TUU?',
+                targetLetter: 'تُوْ',
+                targetName: 'Tuu',
+                options: [
+                  {
+                    letter: 'تُوْ',
+                    name: 'Tuu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تُ',
+                    name: 'Tu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُوْ',
+                    name: 'Buu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u5-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana bacaan panjang: TSUU?',
+                targetLetter: 'ثُوْ',
+                targetName: 'Tsuu',
+                options: [
+                  {
+                    letter: 'ثُوْ',
+                    name: 'Tsuu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'ثُ',
+                    name: 'Tsu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'تُوْ',
+                    name: 'Tuu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u5-s2',
+            title: 'Balon Mengapung Panjang U-U',
+            subtitle: 'Pecahkan balon bacaan panjang -uu',
+            type: 'bubble-pop',
+            unitNumber: 5,
+            stageNumber: 2,
+            lettersCovered: ['دُوْ', 'رُوْ', 'سُوْ', 'فُوْ'],
+            questions: [
+              {
+                id: 'iqro3-u5-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: DUU!',
+                targetLetter: 'دُوْ',
+                targetName: 'Duu',
+                options: [
+                  {
+                    letter: 'دُوْ',
+                    name: 'Duu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دُ',
+                    name: 'Du',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذُوْ',
+                    name: 'Dzuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُوْ',
+                    name: 'Buu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u5-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: RUU!',
+                targetLetter: 'رُوْ',
+                targetName: 'Ruu',
+                options: [
+                  {
+                    letter: 'رُوْ',
+                    name: 'Ruu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'رُ',
+                    name: 'Ru',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'زُوْ',
+                    name: 'Zuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دُوْ',
+                    name: 'Duu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u5-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon bacaan panjang: SUU!',
+                targetLetter: 'سُوْ',
+                targetName: 'Suu',
+                options: [
+                  {
+                    letter: 'سُوْ',
+                    name: 'Suu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سُ',
+                    name: 'Su',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'صُوْ',
+                    name: 'Shuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'رُوْ',
+                    name: 'Ruu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u5-s3',
+            title: 'Menulis Mad Asli Dhammah',
+            subtitle: 'Tulis huruf dhammah bersambung Wawu sukun',
+            type: 'tracing',
+            unitNumber: 5,
+            stageNumber: 3,
+            lettersCovered: ['قُوْ', 'كُوْ'],
+            questions: [
+              {
+                id: 'iqro3-u5-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis bacaan panjang: QUU!',
+                targetLetter: 'قُوْ',
+                targetName: 'Quu',
+                options: [],
+              },
+              {
+                id: 'iqro3-u5-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis bacaan panjang: KUU!',
+                targetLetter: 'كُوْ',
+                targetName: 'Kuu',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u5-s4',
+            title: 'Tantangan Pendek vs Panjang -uu',
+            subtitle: 'Uji ketepatan membedakan panjang pendek dalam kata',
+            type: 'boss-challenge',
+            unitNumber: 5,
+            stageNumber: 4,
+            lettersCovered: ['تُ', 'تُوْ', 'كُ', 'كُوْ', 'يَقُوْلُ'],
+            questions: [
+              {
+                id: 'iqro3-u5-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Pilih bacaan pendek: TU!',
+                targetLetter: 'تُ',
+                targetName: 'Tu',
+                options: [
+                  {
+                    letter: 'تُ',
+                    name: 'Tu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تُوْ',
+                    name: 'Tuu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u5-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Pilih bacaan panjang: TUU!',
+                targetLetter: 'تُوْ',
+                targetName: 'Tuu',
+                options: [
+                  {
+                    letter: 'تُوْ',
+                    name: 'Tuu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تُ',
+                    name: 'Tu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u5-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: YA - QUU - LU!',
+                targetLetter: 'يَقُوْلُ',
+                targetName: 'Ya-Quu-Lu',
+                options: [
+                  {
+                    letter: 'يَقُوْلُ',
+                    name: 'Ya-Quu-Lu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'يَقُلُ',
+                    name: 'Ya-Qu-Lu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'يَقُوْلُوْ',
+                    name: 'Ya-Quu-Luu',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Tengahnya panjang 2 harakat: Ya-Quu-Lu!',
+              },
+              {
+                id: 'iqro3-u5-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: YA - TSUU - BU!',
+                targetLetter: 'يَثُوْبُ',
+                targetName: 'Ya-Tsuu-Bu',
+                options: [
+                  {
+                    letter: 'يَثُوْبُ',
+                    name: 'Ya-Tsuu-Bu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'يَثُبُ',
+                    name: 'Ya-Tsu-Bu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'يَتُوْبُ',
+                    name: 'Ya-Tuu-Bu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u6',
+        unitNumber: 6,
+        title: 'Unit 6: Harmoni 3 Mad Asli & Ha Simpul',
+        description: 'Harmonisasi Mad Alif (-aa), Mad Ya (-ii), Mad Wawu (-uu), dan Ha bulat/simpul',
+        themeColor: '#00CD9C',
+        stages: [
+          {
+            id: 'iqro3-u6-s1',
+            title: 'Orkestra Tiga Mad Asli',
+            subtitle: 'Dengar harmoni bacaan panjang -aa, -ii, dan -uu',
+            type: 'listen-tap',
+            unitNumber: 6,
+            stageNumber: 1,
+            lettersCovered: ['بَا', 'بِيْ', 'بُوْ', 'تَا', 'تِيْ', 'تُوْ'],
+            questions: [
+              {
+                id: 'iqro3-u6-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana trio mad: BAA - BII - BUU?',
+                targetLetter: 'بَابِيْبُوْ',
+                targetName: 'Baa-Bii-Buu',
+                options: [
+                  {
+                    letter: 'بَابِيْبُوْ',
+                    name: 'Baa-Bii-Buu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بَبِبُ',
+                    name: 'Ba-Bi-Bu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُوْبِيْبَا',
+                    name: 'Buu-Bii-Baa',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Semuanya dibaca panjang 2 harakat: Baa - Bii - Buu!',
+              },
+              {
+                id: 'iqro3-u6-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana trio mad: TAA - TII - TUU?',
+                targetLetter: 'تَاتِيْتُوْ',
+                targetName: 'Taa-Tii-Tuu',
+                options: [
+                  {
+                    letter: 'تَاتِيْتُوْ',
+                    name: 'Taa-Tii-Tuu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'تَتِتُ',
+                    name: 'Ta-Ti-Tu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بَابِيْبُوْ',
+                    name: 'Baa-Bii-Buu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u6-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana trio mad: JAA - JII - JUU?',
+                targetLetter: 'جَاجِيْجُوْ',
+                targetName: 'Jaa-Jii-Juu',
+                options: [
+                  {
+                    letter: 'جَاجِيْجُوْ',
+                    name: 'Jaa-Jii-Juu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'جَجِجُ',
+                    name: 'Ja-Ji-Ju',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حَاحِيْحُوْ',
+                    name: 'Haa-Hii-Huu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u6-s2',
+            title: 'Balon Trio Mad Asli',
+            subtitle: 'Pecahkan balon harmoni panjang 2 harakat',
+            type: 'bubble-pop',
+            unitNumber: 6,
+            stageNumber: 2,
+            lettersCovered: ['دَا', 'دِيْ', 'دُوْ', 'قَا', 'قِيْ', 'قُوْ'],
+            questions: [
+              {
+                id: 'iqro3-u6-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon trio mad: DAA - DII - DUU!',
+                targetLetter: 'دَادِيْدُوْ',
+                targetName: 'Daa-Dii-Duu',
+                options: [
+                  {
+                    letter: 'دَادِيْدُوْ',
+                    name: 'Daa-Dii-Duu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دَدِدُ',
+                    name: 'Da-Di-Du',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'ذَاذِيْذُوْ',
+                    name: 'Dzaa-Dzii-Dzuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'رَارِيْرُوْ',
+                    name: 'Raa-Rii-Ruu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u6-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon trio mad: QOO - QII - QUU!',
+                targetLetter: 'قَاقِيْقُوْ',
+                targetName: 'Qoo-Qii-Quu',
+                options: [
+                  {
+                    letter: 'قَاقِيْقُوْ',
+                    name: 'Qoo-Qii-Quu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'قَقِقُ',
+                    name: 'Qo-Qi-Qu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'كَاكِيْكُوْ',
+                    name: 'Kaa-Kii-Kuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'فَافِيْفُوْ',
+                    name: 'Faa-Fii-Fuu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u6-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon trio mad: SAA - SII - SUU!',
+                targetLetter: 'سَاسِيْسُوْ',
+                targetName: 'Saa-Sii-Suu',
+                options: [
+                  {
+                    letter: 'سَاسِيْسُوْ',
+                    name: 'Saa-Sii-Suu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سَسِسُ',
+                    name: 'Sa-Si-Su',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'صَاصِيْصُوْ',
+                    name: 'Shoo-Shii-Shuu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دَادِيْدُوْ',
+                    name: 'Daa-Dii-Duu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u6-s3',
+            title: 'Menulis Trio Mad Asli',
+            subtitle: 'Tulis rangkaian huruf panjang dan kata mad',
+            type: 'tracing',
+            unitNumber: 6,
+            stageNumber: 3,
+            lettersCovered: ['نَا', 'نِيْ', 'نُوْ', 'كَانَ'],
+            questions: [
+              {
+                id: 'iqro3-u6-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis rangkaian mad: NAA - NII - NUU!',
+                targetLetter: 'نَانِيْنُوْ',
+                targetName: 'Naa-Nii-Nuu',
+                options: [],
+              },
+              {
+                id: 'iqro3-u6-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis kata mad: KAA - NA!',
+                targetLetter: 'كَانَ',
+                targetName: 'Kaa-Na',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u6-s4',
+            title: 'Mengenal Ha Simpul & Kata Sambung',
+            subtitle: 'Mengenal bentuk Ha bulat dan Ha simpul di akhir kata',
+            type: 'boss-challenge',
+            unitNumber: 6,
+            stageNumber: 4,
+            lettersCovered: ['هِ', 'هُ', 'بِهِ', 'لَهُ'],
+            questions: [
+              {
+                id: 'iqro3-u6-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf Ha simpul kasrah: HI!',
+                targetLetter: 'هِ',
+                targetName: 'Hii',
+                options: [
+                  {
+                    letter: 'هِ',
+                    name: 'Hii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'هُ',
+                    name: 'Huu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حِ',
+                    name: 'Hi',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Ha bulat atau simpul dengan garis di bawah dibaca Hi!',
+              },
+              {
+                id: 'iqro3-u6-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Pilih huruf Ha simpul dhammah: HU!',
+                targetLetter: 'هُ',
+                targetName: 'Huu',
+                options: [
+                  {
+                    letter: 'هُ',
+                    name: 'Huu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'هِ',
+                    name: 'Hii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حُ',
+                    name: 'Hu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u6-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: BI - HI!',
+                targetLetter: 'بِهِ',
+                targetName: 'Bi-Hii',
+                options: [
+                  {
+                    letter: 'بِهِ',
+                    name: 'Bi-Hii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'بِهَ',
+                    name: 'Bi-Haa',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'بُهُ',
+                    name: 'Bu-Huu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u6-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Pilih kata: LA - HU!',
+                targetLetter: 'لَهُ',
+                targetName: 'La-Huu',
+                options: [
+                  {
+                    letter: 'لَهُ',
+                    name: 'La-Huu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'لَهِ',
+                    name: 'La-Hii',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'لَهَا',
+                    name: 'La-Haa',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'iqro3-u7',
+        unitNumber: 7,
+        title: 'Unit 7: Tantangan Kata & Ujian Kelulusan Iqro 3',
+        description: 'Evaluasi membaca kata 3 huruf berharakat lengkap dan ujian kelulusan',
+        themeColor: '#FFD700',
+        stages: [
+          {
+            id: 'iqro3-u7-s1',
+            title: 'Membaca Rangkaian 3 Harakat',
+            subtitle: 'Uji kelancaran membaca kata 3 huruf berharakat beda',
+            type: 'listen-tap',
+            unitNumber: 7,
+            stageNumber: 1,
+            lettersCovered: ['حَسُنَ', 'عَظُمَ', 'صَلُحَ'],
+            questions: [
+              {
+                id: 'iqro3-u7-s1-q1',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: HA - SU - NA?',
+                targetLetter: 'حَسُنَ',
+                targetName: 'Ha-Su-Na',
+                options: [
+                  {
+                    letter: 'حَسُنَ',
+                    name: 'Ha-Su-Na',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'حَسَنَ',
+                    name: 'Ha-Sa-Na',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'حُسِنَ',
+                    name: 'Hu-Si-Na',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s1-q2',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: \'A - ZHU - MA?',
+                targetLetter: 'عَظُمَ',
+                targetName: '\'A-Zhu-Ma',
+                options: [
+                  {
+                    letter: 'عَظُمَ',
+                    name: '\'A-Zhu-Ma',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'عَظَمَ',
+                    name: '\'A-Zha-Ma',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'عُظِمَ',
+                    name: '\'U-Zhi-Ma',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s1-q3',
+                type: 'listen-tap',
+                promptText: 'Yang mana kata: SHO - LU - HA?',
+                targetLetter: 'صَلُحَ',
+                targetName: 'Sho-Lu-Ha',
+                options: [
+                  {
+                    letter: 'صَلُحَ',
+                    name: 'Sho-Lu-Ha',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'صَلَحَ',
+                    name: 'Sho-La-Ha',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'صُلِحَ',
+                    name: 'Sho-Lu-Hi',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u7-s2',
+            title: 'Balon Kata Cepat Iqro 3',
+            subtitle: 'Pecahkan balon kata dengan sigap dan tepat',
+            type: 'bubble-pop',
+            unitNumber: 7,
+            stageNumber: 2,
+            lettersCovered: ['سَمِعَ', 'عَلِمَ', 'شَهِدَ'],
+            questions: [
+              {
+                id: 'iqro3-u7-s2-q1',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon kata: SA - MI - \'A!',
+                targetLetter: 'سَمِعَ',
+                targetName: 'Sa-Mi-\'A',
+                options: [
+                  {
+                    letter: 'سَمِعَ',
+                    name: 'Sa-Mi-\'A',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سَمَعَ',
+                    name: 'Sa-Ma-\'A',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'عَلِمَ',
+                    name: '\'A-Li-Ma',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'شَهِدَ',
+                    name: 'Syi-Hi-Da',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s2-q2',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon kata: \'A - LI - MA!',
+                targetLetter: 'عَلِمَ',
+                targetName: '\'A-Li-Ma',
+                options: [
+                  {
+                    letter: 'عَلِمَ',
+                    name: '\'A-Li-Ma',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'عَلَمَ',
+                    name: '\'A-La-Ma',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'سَمِعَ',
+                    name: 'Sa-Mi-\'A',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'عُلِمَ',
+                    name: '\'U-Li-Ma',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s2-q3',
+                type: 'bubble-pop',
+                promptText: 'Letuskan balon kata: SYA - HI - DA!',
+                targetLetter: 'شَهِدَ',
+                targetName: 'Sya-Hi-Da',
+                options: [
+                  {
+                    letter: 'شَهِدَ',
+                    name: 'Sya-Hi-Da',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'شَهَدَ',
+                    name: 'Sya-Ha-Da',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'سَمِعَ',
+                    name: 'Sa-Mi-\'A',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'عَلِمَ',
+                    name: '\'A-Li-Ma',
+                    isCorrect: false,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u7-s3',
+            title: 'Menulis Kata Indah Iqro 3',
+            subtitle: 'Tulis kata tiga huruf berharakat lengkap',
+            type: 'tracing',
+            unitNumber: 7,
+            stageNumber: 3,
+            lettersCovered: ['كُتِبَ', 'رُسِلَ'],
+            questions: [
+              {
+                id: 'iqro3-u7-s3-q1',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis kata: KU - TI - BA!',
+                targetLetter: 'كُتِبَ',
+                targetName: 'Ku-Ti-Ba',
+                options: [],
+              },
+              {
+                id: 'iqro3-u7-s3-q2',
+                type: 'tracing',
+                promptText: 'Ayo coba tulis kata: RU - SI - LA!',
+                targetLetter: 'رُسِلَ',
+                targetName: 'Ru-Si-La',
+                options: [],
+              },
+            ],
+          },
+          {
+            id: 'iqro3-u7-s4',
+            title: 'Ujian Kelulusan Iqro 3 (Ebta)',
+            subtitle: 'Selesaikan ujian pamungkas untuk lulus dan membuka Buku Iqro 4!',
+            type: 'boss-challenge',
+            unitNumber: 7,
+            stageNumber: 4,
+            lettersCovered: ['كُتِبَ', 'دِيْنِيْ', 'يَقُوْلُ', 'سَمِعَ'],
+            questions: [
+              {
+                id: 'iqro3-u7-s4-q1',
+                type: 'listen-tap',
+                promptText: 'Ujian 1: Yang mana kata gabungan vokal: KU - TI - BA?',
+                targetLetter: 'كُتِبَ',
+                targetName: 'Ku-Ti-Ba',
+                options: [
+                  {
+                    letter: 'كُتِبَ',
+                    name: 'Ku-Ti-Ba',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'كَتَبَ',
+                    name: 'Ka-Ta-Ba',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'كُتُبُ',
+                    name: 'Ku-Tu-Bu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s4-q2',
+                type: 'listen-tap',
+                promptText: 'Ujian 2: Yang mana kata mad kasrah: DII - NII?',
+                targetLetter: 'دِيْنِيْ',
+                targetName: 'Dii-Nii',
+                options: [
+                  {
+                    letter: 'دِيْنِيْ',
+                    name: 'Dii-Nii',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'دِنِ',
+                    name: 'Di-Ni',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'دِيْنِ',
+                    name: 'Dii-Ni',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s4-q3',
+                type: 'listen-tap',
+                promptText: 'Ujian 3: Yang mana kata mad dhammah: YA - QUU - LU?',
+                targetLetter: 'يَقُوْلُ',
+                targetName: 'Ya-Quu-Lu',
+                options: [
+                  {
+                    letter: 'يَقُوْلُ',
+                    name: 'Ya-Quu-Lu',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'يَقُلُ',
+                    name: 'Ya-Qu-Lu',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'يَقُوْلُوْ',
+                    name: 'Ya-Quu-Luu',
+                    isCorrect: false,
+                  },
+                ],
+              },
+              {
+                id: 'iqro3-u7-s4-q4',
+                type: 'listen-tap',
+                promptText: 'Ujian 4: Yang mana kata: SA - MI - \'A?',
+                targetLetter: 'سَمِعَ',
+                targetName: 'Sa-Mi-\'A',
+                options: [
+                  {
+                    letter: 'سَمِعَ',
+                    name: 'Sa-Mi-\'A',
+                    isCorrect: true,
+                  },
+                  {
+                    letter: 'سَمَعَ',
+                    name: 'Sa-Ma-\'A',
+                    isCorrect: false,
+                  },
+                  {
+                    letter: 'سُمِعَ',
+                    name: 'Su-Mi-\'A',
+                    isCorrect: false,
+                  },
+                ],
+                hint: 'Selamat! Selesaikan pertanyaan ini untuk lulus Iqro 3 dan membuka Iqro 4!',
+              },
+            ],
+          },
+        ],
+      },
     ]
   },
   {

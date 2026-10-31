@@ -183,6 +183,208 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'ya': '/audio/letters/ya.mp3',
   'ي': '/audio/letters/ya.mp3',
   'يَ': '/audio/letters/ya.mp3',
+
+  // --- IQRO 3: KASRAH (-i) ---
+  'i': '/audio/letters/i.mp3',
+  'إِ': '/audio/letters/i.mp3',
+  'إ': '/audio/letters/i.mp3',
+  'اِ': '/audio/letters/i.mp3',
+  'bi': '/audio/letters/bi.mp3',
+  'بِ': '/audio/letters/bi.mp3',
+  'ti': '/audio/letters/ti.mp3',
+  'تِ': '/audio/letters/ti.mp3',
+  'tsi': '/audio/letters/tsi.mp3',
+  'ثِ': '/audio/letters/tsi.mp3',
+  'ji': '/audio/letters/ji.mp3',
+  'جِ': '/audio/letters/ji.mp3',
+  'hi': '/audio/letters/hi.mp3',
+  'حِ': '/audio/letters/hi.mp3',
+  'khi': '/audio/letters/khi.mp3',
+  'خِ': '/audio/letters/khi.mp3',
+  'di': '/audio/letters/di.mp3',
+  'دِ': '/audio/letters/di.mp3',
+  'dzi': '/audio/letters/dzi.mp3',
+  'ذِ': '/audio/letters/dzi.mp3',
+  'ri': '/audio/letters/ri.mp3',
+  'رِ': '/audio/letters/ri.mp3',
+  'zi': '/audio/letters/zi.mp3',
+  'زِ': '/audio/letters/zi.mp3',
+  'si': '/audio/letters/si.mp3',
+  'سِ': '/audio/letters/si.mp3',
+  'syi': '/audio/letters/syi.mp3',
+  'شِ': '/audio/letters/syi.mp3',
+  'shi': '/audio/letters/shi.mp3',
+  'صِ': '/audio/letters/shi.mp3',
+  'dhi': '/audio/letters/dhi.mp3',
+  'ضِ': '/audio/letters/dhi.mp3',
+  'thi': '/audio/letters/thi.mp3',
+  'طِ': '/audio/letters/thi.mp3',
+  'zhi': '/audio/letters/zhi.mp3',
+  'ظِ': '/audio/letters/zhi.mp3',
+  "'i": '/audio/letters/ain_i.mp3',
+  'ain_i': '/audio/letters/ain_i.mp3',
+  'عِ': '/audio/letters/ain_i.mp3',
+  'ghi': '/audio/letters/ghi.mp3',
+  'غِ': '/audio/letters/ghi.mp3',
+  'fi': '/audio/letters/fi.mp3',
+  'فِ': '/audio/letters/fi.mp3',
+  'qi': '/audio/letters/qi.mp3',
+  'قِ': '/audio/letters/qi.mp3',
+  'ki': '/audio/letters/ki.mp3',
+  'كِ': '/audio/letters/ki.mp3',
+  'li': '/audio/letters/li.mp3',
+  'لِ': '/audio/letters/li.mp3',
+  'mi': '/audio/letters/mi.mp3',
+  'مِ': '/audio/letters/mi.mp3',
+  'ni': '/audio/letters/ni.mp3',
+  'نِ': '/audio/letters/ni.mp3',
+  'wi': '/audio/letters/wi.mp3',
+  'وِ': '/audio/letters/wi.mp3',
+  'hii': '/audio/letters/hii.mp3',
+  'هِ': '/audio/letters/hii.mp3',
+  'yi': '/audio/letters/yi.mp3',
+  'يِ': '/audio/letters/yi.mp3',
+
+  // --- IQRO 3: DHAMMAH (-u) ---
+  'u': '/audio/letters/u.mp3',
+  'أُ': '/audio/letters/u.mp3',
+  'اُ': '/audio/letters/u.mp3',
+  'bu': '/audio/letters/bu.mp3',
+  'بُ': '/audio/letters/bu.mp3',
+  'tu': '/audio/letters/tu.mp3',
+  'تُ': '/audio/letters/tu.mp3',
+  'tsu': '/audio/letters/tsu.mp3',
+  'ثُ': '/audio/letters/tsu.mp3',
+  'ju': '/audio/letters/ju.mp3',
+  'جُ': '/audio/letters/ju.mp3',
+  'hu': '/audio/letters/hu.mp3',
+  'حُ': '/audio/letters/hu.mp3',
+  'khu': '/audio/letters/khu.mp3',
+  'خُ': '/audio/letters/khu.mp3',
+  'du': '/audio/letters/du.mp3',
+  'دُ': '/audio/letters/du.mp3',
+  'dzu': '/audio/letters/dzu.mp3',
+  'ذُ': '/audio/letters/dzu.mp3',
+  'ru': '/audio/letters/ru.mp3',
+  'رُ': '/audio/letters/ru.mp3',
+  'zu': '/audio/letters/zu.mp3',
+  'زُ': '/audio/letters/zu.mp3',
+  'su': '/audio/letters/su.mp3',
+  'سُ': '/audio/letters/su.mp3',
+  'syu': '/audio/letters/syu.mp3',
+  'شُ': '/audio/letters/syu.mp3',
+  'shu': '/audio/letters/shu.mp3',
+  'صُ': '/audio/letters/shu.mp3',
+  'dhu': '/audio/letters/dhu.mp3',
+  'ضُ': '/audio/letters/dhu.mp3',
+  'thu': '/audio/letters/thu.mp3',
+  'طُ': '/audio/letters/thu.mp3',
+  'zhu': '/audio/letters/zhu.mp3',
+  'ظُ': '/audio/letters/zhu.mp3',
+  "'u": '/audio/letters/ain_u.mp3',
+  'ain_u': '/audio/letters/ain_u.mp3',
+  'عُ': '/audio/letters/ain_u.mp3',
+  'ghu': '/audio/letters/ghu.mp3',
+  'غُ': '/audio/letters/ghu.mp3',
+  'fu': '/audio/letters/fu.mp3',
+  'فُ': '/audio/letters/fu.mp3',
+  'qu': '/audio/letters/qu.mp3',
+  'قُ': '/audio/letters/qu.mp3',
+  'ku': '/audio/letters/ku.mp3',
+  'كُ': '/audio/letters/ku.mp3',
+  'lu': '/audio/letters/lu.mp3',
+  'لُ': '/audio/letters/lu.mp3',
+  'mu': '/audio/letters/mu.mp3',
+  'مُ': '/audio/letters/mu.mp3',
+  'nu': '/audio/letters/nu.mp3',
+  'نُ': '/audio/letters/nu.mp3',
+  'wu': '/audio/letters/wu.mp3',
+  'وُ': '/audio/letters/wu.mp3',
+  'huu': '/audio/letters/huu.mp3',
+  'هُ': '/audio/letters/huu.mp3',
+  'yu': '/audio/letters/yu.mp3',
+  'يُ': '/audio/letters/yu.mp3',
+
+  // --- IQRO 3: MAD ASLI (KASRAH + YA & DHAMMAH + WAWU) ---
+  'bii': '/audio/letters/bii.mp3',
+  'بِيْ': '/audio/letters/bii.mp3',
+  'بِي': '/audio/letters/bii.mp3',
+  'tii': '/audio/letters/tii.mp3',
+  'تِيْ': '/audio/letters/tii.mp3',
+  'تِي': '/audio/letters/tii.mp3',
+  'tsii': '/audio/letters/tsii.mp3',
+  'ثِيْ': '/audio/letters/tsii.mp3',
+  'ثِي': '/audio/letters/tsii.mp3',
+  'jii': '/audio/letters/jii.mp3',
+  'جِيْ': '/audio/letters/jii.mp3',
+  'جِي': '/audio/letters/jii.mp3',
+  'dii': '/audio/letters/dii.mp3',
+  'دِيْ': '/audio/letters/dii.mp3',
+  'دِي': '/audio/letters/dii.mp3',
+  'rii': '/audio/letters/rii.mp3',
+  'رِيْ': '/audio/letters/rii.mp3',
+  'رِي': '/audio/letters/rii.mp3',
+  'sii': '/audio/letters/sii.mp3',
+  'سِيْ': '/audio/letters/sii.mp3',
+  'سِي': '/audio/letters/sii.mp3',
+  'fii': '/audio/letters/fii.mp3',
+  'فِيْ': '/audio/letters/fii.mp3',
+  'فِي': '/audio/letters/fii.mp3',
+  'qii': '/audio/letters/qii.mp3',
+  'قِيْ': '/audio/letters/qii.mp3',
+  'قِي': '/audio/letters/qii.mp3',
+  'kii': '/audio/letters/kii.mp3',
+  'كِيْ': '/audio/letters/kii.mp3',
+  'كِي': '/audio/letters/kii.mp3',
+  'lii': '/audio/letters/lii.mp3',
+  'لِيْ': '/audio/letters/lii.mp3',
+  'لِي': '/audio/letters/lii.mp3',
+  'mii': '/audio/letters/mii.mp3',
+  'مِيْ': '/audio/letters/mii.mp3',
+  'مِي': '/audio/letters/mii.mp3',
+  'nii': '/audio/letters/nii.mp3',
+  'نِيْ': '/audio/letters/nii.mp3',
+  'نِي': '/audio/letters/nii.mp3',
+
+  'buu': '/audio/letters/buu.mp3',
+  'بُوْ': '/audio/letters/buu.mp3',
+  'بُو': '/audio/letters/buu.mp3',
+  'tuu': '/audio/letters/tuu.mp3',
+  'تُوْ': '/audio/letters/tuu.mp3',
+  'تُو': '/audio/letters/tuu.mp3',
+  'tsuu': '/audio/letters/tsuu.mp3',
+  'ثُوْ': '/audio/letters/tsuu.mp3',
+  'ثُو': '/audio/letters/tsuu.mp3',
+  'duu': '/audio/letters/duu.mp3',
+  'دُوْ': '/audio/letters/duu.mp3',
+  'دُو': '/audio/letters/duu.mp3',
+  'ruu': '/audio/letters/ruu.mp3',
+  'رُوْ': '/audio/letters/ruu.mp3',
+  'رُو': '/audio/letters/ruu.mp3',
+  'suu': '/audio/letters/suu.mp3',
+  'سُوْ': '/audio/letters/suu.mp3',
+  'سُو': '/audio/letters/suu.mp3',
+  'fuu': '/audio/letters/fuu.mp3',
+  'فُوْ': '/audio/letters/fuu.mp3',
+  'فُو': '/audio/letters/fuu.mp3',
+  'quu': '/audio/letters/quu.mp3',
+  'قُوْ': '/audio/letters/quu.mp3',
+  'قُو': '/audio/letters/quu.mp3',
+  'kuu': '/audio/letters/kuu.mp3',
+  'كُوْ': '/audio/letters/kuu.mp3',
+  'كُو': '/audio/letters/kuu.mp3',
+  'luu': '/audio/letters/luu.mp3',
+  'لُوْ': '/audio/letters/luu.mp3',
+  'لُو': '/audio/letters/luu.mp3',
+  'muu': '/audio/letters/muu.mp3',
+  'مُوْ': '/audio/letters/muu.mp3',
+  'مُو': '/audio/letters/muu.mp3',
+  'nuu': '/audio/letters/nuu.mp3',
+  'نُوْ': '/audio/letters/nuu.mp3',
+  'نُو': '/audio/letters/nuu.mp3',
+  'yuu': '/audio/letters/yuu.mp3',
+  'يُوْ': '/audio/letters/yuu.mp3',
+  'يُو': '/audio/letters/yuu.mp3',
 };
 
 const PRAISE_AUDIO_LIST = [
@@ -313,16 +515,64 @@ class TTSNarrator {
       }
     }
 
-    // 3. Arabic word character-by-character analysis (Iqro 2 joined letters ONLY)
+    // 3. Arabic word character/syllable analysis (Iqro 2 & Iqro 3 joined letters)
     // Strictly requires Arabic characters in the string!
     if (/[\u0600-\u06FF]/.test(trimmed)) {
+      // 3a. Check if trimmed has spaces/hyphens between Arabic letters/syllables (e.g. "بَ - بِ - بُ")
+      if (trimmed.includes(' ') || trimmed.includes('-')) {
+        const arParts = trimmed.split(/[- ]+/).filter(Boolean);
+        const paths: string[] = [];
+        let allMatched = true;
+        for (const p of arParts) {
+          const path = this.getLetterAudioPath(p);
+          if (path) {
+            paths.push(path);
+          } else {
+            allMatched = false;
+            break;
+          }
+        }
+        if (allMatched && paths.length === arParts.length) {
+          return paths;
+        }
+      }
+
+      // 3b. Syllable segmentation for connected Arabic words (e.g. "كُتِبَ", "حَسُنَ", "بِيْدِيْ")
+      // Syllable = Consonant + optional harakat + optional mad letter (Alif, Ya, Waw with optional sukun)
+      const syllableRegex = /([\u0621-\u064A][\u064B-\u0652]?(?:[اى]|[يو][\u0652]?|[\u0670])?)/g;
+      const syllables = trimmed.match(syllableRegex);
+      if (syllables && syllables.length > 0) {
+        const paths: string[] = [];
+        let allMatched = true;
+        for (const syl of syllables) {
+          let p = this.getLetterAudioPath(syl);
+          if (!p) {
+            const noSukun = syl.replace(/\u0652/g, '');
+            p = this.getLetterAudioPath(noSukun);
+          }
+          if (!p) {
+            // Strip harakat and mad alif if base fathah fallback
+            const base = syl.replace(/[\u064B-\u065F\u0670]/g, '').replace(/[اى]/g, '');
+            p = this.getLetterAudioPath(base);
+          }
+          if (p) {
+            paths.push(p);
+          } else {
+            allMatched = false;
+            break;
+          }
+        }
+        if (allMatched && paths.length === syllables.length) {
+          return paths;
+        }
+      }
+
+      // 3c. Fallback char-by-char for simple fathah joined words
       const paths: string[] = [];
       const chars = trimmed.split('');
       for (let i = 0; i < chars.length; i++) {
         const c = chars[i];
-        // Skip harakat marks (fathah, kasrah, dammah, sukun, etc.)
         if (/[\u064B-\u065F\u0670]/.test(c)) continue;
-        // Skip trailing/connecting Alif in Mad Asli (e.g. in "بَا")
         if (c === 'ا' && paths.length > 0) continue;
 
         const path = this.getLetterAudioPath(c);
