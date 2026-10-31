@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flame, Gem, Star, Volume2, VolumeX, Maximize2, Minimize2, ChevronDown, BookOpen } from 'lucide-react';
+import { Flame, Gem, Star, Volume2, VolumeX, Maximize2, Minimize2, ChevronDown, BookOpen, Settings } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 
@@ -11,6 +11,7 @@ interface NavbarProps {
   streak: number;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  onOpenSettings: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   streak,
   soundEnabled,
   onToggleSound,
+  onOpenSettings,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
@@ -128,6 +130,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 border border-slate-300 text-slate-600 transition"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-red-500" />}
+          </button>
+
+          {/* Settings & Reset Button */}
+          <button
+            onClick={() => {
+              soundManager.playPop();
+              onOpenSettings();
+            }}
+            title="Pengaturan & Reset"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 border border-slate-300 text-slate-600 transition"
+          >
+            <Settings className="w-4 h-4" />
           </button>
 
           {/* Fullscreen Button (Poki Style) */}

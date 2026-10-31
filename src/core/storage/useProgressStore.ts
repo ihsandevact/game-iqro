@@ -122,6 +122,36 @@ export function useProgressStore() {
     return false;
   };
 
+  const resetCurrentLevel = (levelId: IqroLevelId) => {
+    soundManager.playPop();
+    setProgress(prev => {
+      // Filter out stages belonging to this level e.g. "iqro1-"
+      const prefix = `iqro${levelId}-`;
+      const filteredStages: Record<string, { stars: number; highscore: number }> = {};
+      let removedStars = 0;
+
+      Object.entries(prev.completedStages).forEach(([key, val]) => {
+        if (!key.startsWith(prefix)) {
+          filteredStages[key] = val;
+        } else {
+          removedStars += val.stars;
+        }
+      });
+
+      return {
+        ...prev,
+        completedStages: filteredStages,
+        starsTotal: Math.max(0, prev.starsTotal - removedStars),
+      };
+    });
+  };
+
+  const resetAllProgress = () => {
+    soundManager.playPop();
+    localStorage.removeItem(STORAGE_KEY);
+    setProgress(DEFAULT_PROGRESS);
+  };
+
   return {
     progress,
     setIqroLevel,
@@ -130,5 +160,7 @@ export function useProgressStore() {
     buyCostume,
     equipCostume,
     isStageUnlocked,
+    resetCurrentLevel,
+    resetAllProgress,
   };
 }

@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { JourneyMap } from './games/iqro/components/JourneyMap';
 import { StageModal } from './games/iqro/components/StageModal';
 import { SplashScreen } from './components/splash/SplashScreen';
+import { SettingsModal } from './components/settings/SettingsModal';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
 import { useProgressStore } from './core/storage/useProgressStore';
@@ -18,9 +19,12 @@ export function App() {
     buyCostume,
     equipCostume,
     isStageUnlocked,
+    resetCurrentLevel,
+    resetAllProgress,
   } = useProgressStore();
 
   const [isAppLoading, setIsAppLoading] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
 
   // Get currently selected Iqro book (defaults to level 1)
@@ -62,6 +66,7 @@ export function App() {
         streak={progress.streakDays}
         soundEnabled={progress.soundEnabled}
         onToggleSound={toggleSound}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Responsive Game Layout */}
@@ -90,6 +95,20 @@ export function App() {
           onComplete={handleCompleteStage}
         />
       )}
+
+      {/* Settings & Reset Progress Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        currentLevel={progress.currentIqroLevel}
+        starsTotal={progress.starsTotal}
+        gemsTotal={progress.gemsTotal}
+        streakDays={progress.streakDays}
+        soundEnabled={progress.soundEnabled}
+        onToggleSound={toggleSound}
+        onResetLevel={resetCurrentLevel}
+        onResetAll={resetAllProgress}
+      />
     </div>
   );
 }
