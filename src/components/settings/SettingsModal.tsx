@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Volume2, VolumeX, RotateCcw, AlertTriangle, ShieldCheck, Star, Gem, Flame, Check } from 'lucide-react';
+import { X, Settings, Volume2, VolumeX, RotateCcw, AlertTriangle, ShieldCheck, Star, Gem, Flame, Check, Smartphone, Download } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
@@ -16,6 +16,8 @@ interface SettingsModalProps {
   onToggleSound: () => void;
   onResetLevel: (levelId: IqroLevelId) => void;
   onResetAll: () => void;
+  isInstallable?: boolean;
+  onInstallPwa?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -29,6 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onToggleSound,
   onResetLevel,
   onResetAll,
+  isInstallable,
+  onInstallPwa,
 }) => {
   const [resetTarget, setResetTarget] = useState<'level' | 'all' | null>(null);
   const [parentalMath, setParentalMath] = useState<{ num1: number; num2: number; answer: number } | null>(null);
@@ -170,6 +174,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 {soundEnabled ? 'AKTIF' : 'MATI'}
               </button>
+            </div>
+          </div>
+
+          {/* Instalasi Aplikasi PWA */}
+          <div>
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2.5">
+              Aplikasi Layar HP (PWA)
+            </h3>
+            <div className="flex items-center justify-between p-3.5 bg-emerald-50/70 border-2 border-emerald-200 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-duo-green text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-black text-slate-800">
+                    Pasang ke Layar Utama
+                  </div>
+                  <div className="text-[11px] font-semibold text-slate-500">
+                    Mainkan langsung tanpa browser & siap offline
+                  </div>
+                </div>
+              </div>
+
+              {isInstallable && onInstallPwa ? (
+                <button
+                  onClick={() => {
+                    soundManager.playPop();
+                    onInstallPwa();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-duo-green hover:bg-duo-greenDark text-white font-black text-xs shadow-duo-green flex items-center gap-1.5 shrink-0 active:translate-y-0.5 transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Pasang</span>
+                </button>
+              ) : (
+                <span className="text-[11px] font-bold text-emerald-700 bg-white/70 px-2.5 py-1 rounded-lg">
+                  ✓ Siap PWA
+                </span>
+              )}
             </div>
           </div>
 

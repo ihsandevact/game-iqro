@@ -6,6 +6,8 @@ import { JourneyMap } from './games/iqro/components/JourneyMap';
 import { StageModal } from './games/iqro/components/StageModal';
 import { SplashScreen } from './components/splash/SplashScreen';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { IosInstallModal } from './components/pwa/IosInstallModal';
+import { usePwaInstall } from './components/pwa/usePwaInstall';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
 import { useProgressStore } from './core/storage/useProgressStore';
@@ -23,6 +25,7 @@ export function App() {
     resetAllProgress,
   } = useProgressStore();
 
+  const { isInstallable, showIosGuide, setShowIosGuide, installApp } = usePwaInstall();
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
@@ -67,6 +70,8 @@ export function App() {
         soundEnabled={progress.soundEnabled}
         onToggleSound={toggleSound}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        isInstallable={isInstallable}
+        onInstallPwa={installApp}
       />
 
       {/* Main Responsive Game Layout */}
@@ -108,6 +113,14 @@ export function App() {
         onToggleSound={toggleSound}
         onResetLevel={resetCurrentLevel}
         onResetAll={resetAllProgress}
+        isInstallable={isInstallable}
+        onInstallPwa={installApp}
+      />
+
+      {/* iOS Safari Guide Modal */}
+      <IosInstallModal
+        isOpen={showIosGuide}
+        onClose={() => setShowIosGuide(false)}
       />
     </div>
   );

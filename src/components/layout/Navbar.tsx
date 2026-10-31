@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flame, Gem, Star, Volume2, VolumeX, Maximize2, Minimize2, ChevronDown, BookOpen, Settings } from 'lucide-react';
+import { Flame, Gem, Star, Volume2, VolumeX, Maximize2, Minimize2, ChevronDown, BookOpen, Settings, Download } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 
@@ -12,6 +12,8 @@ interface NavbarProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenSettings: () => void;
+  isInstallable?: boolean;
+  onInstallPwa?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   soundEnabled,
   onToggleSound,
   onOpenSettings,
+  isInstallable = false,
+  onInstallPwa,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
@@ -143,6 +147,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Settings className="w-4 h-4" />
           </button>
+
+          {/* PWA Install Button (If device supports install) */}
+          {isInstallable && onInstallPwa && (
+            <button
+              onClick={onInstallPwa}
+              title="Pasang Aplikasi ke Layar HP"
+              className="flex items-center gap-1.5 bg-duo-green hover:bg-duo-greenDark text-white px-2.5 py-1.5 rounded-xl font-black text-xs shadow-duo-green active:translate-y-0.5 transition"
+            >
+              <Download className="w-3.5 h-3.5 animate-bounce" />
+              <span className="hidden sm:inline">Pasang App</span>
+            </button>
+          )}
 
           {/* Fullscreen Button (Poki Style) */}
           <button
