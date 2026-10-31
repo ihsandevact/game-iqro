@@ -20,6 +20,38 @@ export interface IqroWardrobeProps {
 
 export type BoniWardrobeProps = IqroWardrobeProps;
 
+interface CategoryTab {
+  id: CostumeCategory;
+  label: string;
+  shortLabel: string;
+  icon: string;
+  activeClass: string;
+}
+
+const CATEGORIES: CategoryTab[] = [
+  {
+    id: 'hat',
+    label: 'Peci & Topi',
+    shortLabel: 'Peci',
+    icon: '🎩',
+    activeClass: 'bg-duo-green text-white shadow-duo-green',
+  },
+  {
+    id: 'glasses',
+    label: 'Kacamata',
+    shortLabel: 'Kacamata',
+    icon: '👓',
+    activeClass: 'bg-duo-blue text-white shadow-duo-blue',
+  },
+  {
+    id: 'cape',
+    label: 'Jubah',
+    shortLabel: 'Jubah',
+    icon: '🦸',
+    activeClass: 'bg-duo-purple text-white shadow-duo-purple',
+  },
+];
+
 export const IqroWardrobe: React.FC<IqroWardrobeProps> = ({
   gemsTotal,
   unlockedItems,
@@ -85,10 +117,10 @@ export const IqroWardrobe: React.FC<IqroWardrobeProps> = ({
             <span>Koleksi & Lemari Pakaian</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-            Koleksi Kostum {childName}
+            Koleksi Kostum Iqro
           </h3>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-1 max-w-lg leading-relaxed">
-            Kumpulkan permata dari belajar Iqro dan dandani {childName} dengan peci, kacamata, dan jubah santri terfavorit!
+            Kumpulkan permata dari belajar Iqro dan dandani Iqro dengan peci, kacamata, dan jubah santri terfavorit!
           </p>
         </div>
 
@@ -118,47 +150,40 @@ export const IqroWardrobe: React.FC<IqroWardrobeProps> = ({
           </div>
         </div>
 
-        {/* Category Tabs: Grid 3 Kolom Responsif */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 w-full max-w-md sm:max-w-lg">
-          <button
-            onClick={() => {
-              soundManager.playPop();
-              setSelectedCategory('hat');
-            }}
-            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
-              selectedCategory === 'hat'
-                ? 'bg-duo-green text-white shadow-duo-green'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            🎩 Peci & Topi
-          </button>
-          <button
-            onClick={() => {
-              soundManager.playPop();
-              setSelectedCategory('glasses');
-            }}
-            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
-              selectedCategory === 'glasses'
-                ? 'bg-duo-blue text-white shadow-duo-blue'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            👓 Kacamata
-          </button>
-          <button
-            onClick={() => {
-              soundManager.playPop();
-              setSelectedCategory('cape');
-            }}
-            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
-              selectedCategory === 'cape'
-                ? 'bg-duo-purple text-white shadow-duo-purple'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            🦸 Jubah
-          </button>
+        {/* Category Tabs: Grid 3 Kolom Responsif & Bebas Overflow */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-6 w-full max-w-md sm:max-w-lg">
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  soundManager.playPop();
+                  setSelectedCategory(cat.id);
+                }}
+                className={`
+                  py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm
+                  transition text-center active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5
+                  min-w-0 overflow-hidden select-none
+                  ${
+                    isSelected
+                      ? cat.activeClass
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }
+                `}
+              >
+                <span className="text-sm sm:text-base shrink-0 leading-none">{cat.icon}</span>
+                <span className="truncate">
+                  <span>{cat.shortLabel}</span>
+                  {cat.label !== cat.shortLabel && (
+                    <span className="hidden min-[480px]:inline">
+                      {cat.label.slice(cat.shortLabel.length)}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Items List: Susunan Vertikal Kebawah (Satu Per Satu, Rapi & Elegan, Bebas Grid Gantung) */}
