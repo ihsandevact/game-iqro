@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, RotateCcw, Sparkles } from 'lucide-react';
+import { Volume2, RotateCcw, Sparkles, Check } from 'lucide-react';
 import { Question } from '../../../../core/types/gameTypes';
 import { soundManager } from '../../../../core/audio/soundManager';
 import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
@@ -19,19 +19,63 @@ interface Particle {
   alpha: number;
 }
 
+interface TargetZone {
+  x: number;
+  y: number;
+  covered: boolean;
+}
+
 export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, onCorrect, childName = 'Faqih' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [tracedPointsCount, setTracedPointsCount] = useState(0);
+  const [traceProgress, setTraceProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const particlesRef = useRef<Particle[]>([]);
+  const targetZonesRef = useRef<TargetZone[]>([]);
+  const fallbackPointsRef = useRef(0);
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const SPARKLE_COLORS = ['#FFC800', '#58CC02', '#1CB0F6', '#FF9600', '#CE82FF', '#FFFFFF'];
 
+  // Extract letter silhouette target zones whenever targetLetter changes
   useEffect(() => {
     setIsCompleted(false);
-    setTracedPointsCount(0);
+    setTraceProgress(0);
+    fallbackPointsRef.current = 0;
+    lastPosRef.current = null;
     clearCanvas();
+
+    // Generate accurate target points from the actual Arabic letter glyph
+    try {
+      const sampleCanvas = document.createElement('canvas');
+      sampleCanvas.width = 320;
+      sampleCanvas.height = 320;
+      const sCtx = sampleCanvas.getContext('2d');
+      if (sCtx) {
+        sCtx.fillStyle = '#000000';
+        sCtx.font = 'bold 165px Amiri, "Traditional Arabic", serif';
+        sCtx.textAlign = 'center';
+        sCtx.textBaseline = 'middle';
+        sCtx.fillText(question.targetLetter, 160, 160);
+
+        const imgData = sCtx.getImageData(0, 0, 320, 320).data;
+        const zones: TargetZone[] = [];
+        const STEP = 12; // Grid sample step
+
+        for (let y = 20; y < 300; y += STEP) {
+          for (let x = 20; x < 300; x += STEP) {
+            const idx = (y * 320 + x) * 4;
+            const alpha = imgData[idx + 3];
+            if (alpha > 50) {
+              zones.push({ x, y, covered: false });
+            }
+          }
+        }
+        targetZonesRef.current = zones;
+      }
+    } catch {
+      targetZonesRef.current = [];
+    }
 
     const timer = setTimeout(() => {
       soundManager.playPop();
@@ -39,7 +83,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [question.id, childName]);
+  }, [question.id, question.targetLetter, childName]);
 
   // Canvas drawing loop for magical sparkling particles
   useEffect(() => {
@@ -78,10 +122,10 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
   const addSparkle = (x: number, y: number) => {
     const color = SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)];
     particlesRef.current.push({
-      x: x + (Math.random() - 0.5) * 16,
-      y: y + (Math.random() - 0.5) * 16,
+      x: x + (Math.random() - 0.5) * 14,
+      y: y + (Math.random() - 0.5) * 14,
       color,
-      size: 4 + Math.random() * 5,
+      size: 3.5 + Math.random() * 4,
       alpha: 1,
     });
   };
@@ -105,10 +149,52 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     }
   };
 
+  const checkZoneCoverage = (x: number, y: number) => {
+    const zones = targetZonesRef.current;
+
+    // Fallback if zones couldn't be extracted
+    if (zones.length === 0) {
+      fallbackPointsRef.current += 1;
+      const fallbackRatio = Math.min(1, fallbackPointsRef.current / 40);
+      setTraceProgress(Math.round(fallbackRatio * 100));
+      if (fallbackRatio >= 0.70 && !isCompleted) {
+        handleSuccess();
+      }
+      return;
+    }
+
+    let newlyCovered = false;
+    const TOLERANCE_RADIUS = 22; // 22px detection radius for child's finger around letter points
+
+    for (let i = 0; i < zones.length; i++) {
+      if (!zones[i].covered) {
+        const dx = zones[i].x - x;
+        const dy = zones[i].y - y;
+        if (dx * dx + dy * dy <= TOLERANCE_RADIUS * TOLERANCE_RADIUS) {
+          zones[i].covered = true;
+          newlyCovered = true;
+        }
+      }
+    }
+
+    if (newlyCovered) {
+      const coveredCount = zones.filter((z) => z.covered).length;
+      const ratio = coveredCount / zones.length;
+      const percent = Math.min(100, Math.round(ratio * 100));
+      setTraceProgress(percent);
+
+      // Successfully completed: child has written >= 70% of the entire letter!
+      if (ratio >= 0.70 && !isCompleted) {
+        handleSuccess();
+      }
+    }
+  };
+
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (isCompleted) return;
     setIsDrawing(true);
     const { x, y } = getCoordinates(e);
+    lastPosRef.current = { x, y };
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -118,6 +204,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     ctx.beginPath();
     ctx.moveTo(x, y);
     addSparkle(x, y);
+    checkZoneCoverage(x, y);
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
@@ -129,48 +216,57 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Golden sparkling brush
-    ctx.lineWidth = 22;
+    // Pencil stroke width: 14px (proportional to letter body)
+    ctx.lineWidth = 14;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#58CC02';
-    ctx.lineTo(x, y);
-    ctx.stroke();
+    ctx.strokeStyle = '#10B981';
+
+    if (lastPosRef.current) {
+      ctx.beginPath();
+      ctx.moveTo(lastPosRef.current.x, lastPosRef.current.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+    lastPosRef.current = { x, y };
 
     addSparkle(x, y);
-
-    setTracedPointsCount((prev) => {
-      const next = prev + 1;
-      // When child traces enough points (~30 points)
-      if (next >= 35 && !isCompleted) {
-        handleSuccess();
-      }
-      return next;
-    });
+    checkZoneCoverage(x, y);
   };
 
   const stopDrawing = () => {
     setIsDrawing(false);
+    lastPosRef.current = null;
   };
 
   const handleSuccess = () => {
     setIsCompleted(true);
     setIsDrawing(false);
+    lastPosRef.current = null;
     soundManager.playCorrect();
+    ttsNarrator.speakPraise(childName);
 
-    ttsNarrator.speakPraise(childName, () => {
+    // Responsive smooth advance after visual sparkle celebration
+    setTimeout(() => {
       onCorrect();
-    });
+    }, 850);
   };
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
     particlesRef.current = [];
-    setTracedPointsCount(0);
+    targetZonesRef.current.forEach((z) => {
+      z.covered = false;
+    });
+    setTraceProgress(0);
+    fallbackPointsRef.current = 0;
+    lastPosRef.current = null;
     setIsCompleted(false);
   };
 
@@ -184,17 +280,41 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
           soundManager.playPop();
           ttsNarrator.speak(`Ayo tulis huruf ${question.targetName}! Telusuri garisnya!`);
         }}
-        className="flex items-center gap-3 bg-duo-green hover:bg-duo-greenDark text-white px-5 py-3 rounded-2xl shadow-duo-green active:translate-y-1 mb-4 transition"
+        className="flex items-center gap-3 bg-duo-green hover:bg-duo-greenDark text-white px-5 py-2.5 rounded-2xl shadow-duo-green active:translate-y-1 mb-3 transition"
       >
-        <Volume2 className="w-7 h-7 animate-pulse" />
-        <span className="font-extrabold text-base sm:text-lg">
+        <Volume2 className="w-6 h-6 animate-pulse" />
+        <span className="font-extrabold text-sm sm:text-base">
           Dengarkan Suara
         </span>
       </motion.button>
 
-      <h2 className="text-xl sm:text-2xl font-black text-slate-800 text-center mb-4">
+      <h2 className="text-lg sm:text-xl font-black text-slate-800 text-center mb-3">
         {question.promptText}
       </h2>
+
+      {/* Tracing Progress Bar */}
+      <div className="w-full max-w-[320px] mb-2 flex items-center gap-2 px-1">
+        <span className="text-xs font-black text-slate-600 flex items-center gap-1 shrink-0">
+          <span>✏️</span>
+          <span>{traceProgress}%</span>
+        </span>
+        <div className="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+          <motion.div
+            className="h-full bg-gradient-to-r from-emerald-400 to-duo-green rounded-full transition-all duration-150"
+            style={{ width: `${traceProgress}%` }}
+          />
+        </div>
+        {traceProgress >= 70 ? (
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5 shrink-0 animate-pulse">
+            <Check className="w-3 h-3 stroke-[3]" />
+            <span>Utuh!</span>
+          </span>
+        ) : (
+          <span className="text-[10px] font-bold text-slate-400 shrink-0">
+            Tulis utuh
+          </span>
+        )}
+      </div>
 
       {/* Tracing Canvas Area */}
       <div className="relative w-full aspect-square max-w-[320px] bg-white rounded-3xl border-4 border-emerald-200 shadow-xl overflow-hidden flex items-center justify-center select-none touch-none">
@@ -206,9 +326,9 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
         </div>
 
         {/* Start Point Guide Hint */}
-        {!isCompleted && tracedPointsCount === 0 && (
+        {!isCompleted && traceProgress === 0 && (
           <div className="absolute top-3 text-center pointer-events-none animate-bounce z-10 bg-amber-100 border border-amber-300 text-amber-800 text-[11px] font-black px-3 py-1 rounded-full shadow-sm">
-            👇 Usap jarimu di kanvas ini!
+            👇 Usap jarimu mengikuti bentuk huruf!
           </div>
         )}
 
@@ -235,7 +355,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
             className="absolute inset-0 bg-emerald-500/20 backdrop-blur-[2px] flex flex-col items-center justify-center z-20 pointer-events-none"
           >
             <Sparkles className="w-20 h-20 text-duo-yellow animate-spin" />
-            <span className="text-xl font-black text-emerald-800 bg-white/90 px-4 py-1.5 rounded-full shadow-md mt-2">
+            <span className="text-xl font-black text-emerald-800 bg-white/95 px-5 py-2 rounded-2xl shadow-lg mt-2 border-2 border-emerald-300">
               Bagus Sekali!
             </span>
           </motion.div>
@@ -243,7 +363,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
       </div>
 
       {/* Action Bar (Hapus & Ulangi) */}
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex items-center gap-3 mt-3">
         <button
           onClick={() => {
             soundManager.playPop();

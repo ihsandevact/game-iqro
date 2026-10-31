@@ -44,9 +44,12 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
     if (isCorrect) {
       setIsDone(true);
       soundManager.playCorrect();
-      ttsNarrator.speakPraise(childName, () => {
+      ttsNarrator.speakPraise(childName);
+
+      // Fast, responsive auto-advance without waiting for TTS speech completion
+      setTimeout(() => {
         onCorrect();
-      });
+      }, 600);
     } else {
       soundManager.playGentleWrong();
       ttsNarrator.speakEncourage(childName);

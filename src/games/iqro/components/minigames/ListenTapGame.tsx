@@ -41,9 +41,12 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
     if (isCorrect) {
       setSelectedCorrect(letter);
       soundManager.playCorrect();
-      ttsNarrator.speakPraise(childName, () => {
+      ttsNarrator.speakPraise(childName);
+
+      // Fast, responsive auto-advance without waiting for TTS speech completion
+      setTimeout(() => {
         onCorrect();
-      });
+      }, 600);
     } else {
       // Frustration-free error handling: gentle wobble, soften card, supportive audio
       soundManager.playGentleWrong();
