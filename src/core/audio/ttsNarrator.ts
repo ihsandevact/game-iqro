@@ -227,6 +227,45 @@ class TTSNarrator {
     return null;
   }
 
+  // Extract chained audio paths for multi-syllable Arabic words or Latin combos (e.g. "بَتَ", "Ba-Ta")
+  public getWordAudioPaths(word: string): string[] {
+    if (!word) return [];
+    const trimmed = word.trim();
+
+    // 1. Single letter direct match
+    const single = this.getLetterAudioPath(trimmed);
+    if (single) return [single];
+
+    // 2. Hyphenated / space-separated Latin (e.g. "Ba-Ta", "Ka-Ta-Ba")
+    if (trimmed.includes('-') || trimmed.includes(' ')) {
+      const parts = trimmed.split(/[- ]+/).filter(Boolean);
+      const paths: string[] = [];
+      for (const p of parts) {
+        const path = this.getLetterAudioPath(p);
+        if (path) paths.push(path);
+      }
+      if (paths.length > 0) return paths;
+    }
+
+    // 3. Arabic word character-by-character analysis (Iqro 2 joined letters)
+    const paths: string[] = [];
+    const chars = trimmed.split('');
+    for (let i = 0; i < chars.length; i++) {
+      const c = chars[i];
+      // Skip harakat marks (fathah, kasrah, dammah, sukun, etc.)
+      if (/[\u064B-\u065F\u0670]/.test(c)) continue;
+      // Skip trailing/connecting Alif in Mad Asli (e.g. in "بَا")
+      if (c === 'ا' && paths.length > 0) continue;
+
+      const path = this.getLetterAudioPath(c);
+      if (path) {
+        paths.push(path);
+      }
+    }
+
+    return paths;
+  }
+
   public playAudio(src: string, onEnd?: () => void): boolean {
     if (typeof window === 'undefined') {
       onEnd?.();
@@ -318,51 +357,56 @@ class TTSNarrator {
     playNext();
   }
 
-  // Play authentic human studio letter audio directly
+  // Play authentic human studio letter or joined-word audio directly
   public playLetter(letterKey: string, onEnd?: () => void): boolean {
     const audioPath = this.getLetterAudioPath(letterKey);
     if (audioPath) {
       return this.playAudio(audioPath, onEnd);
     }
+    const wordPaths = this.getWordAudioPaths(letterKey);
+    if (wordPaths.length > 0) {
+      this.playAudioChain(wordPaths, onEnd);
+      return true;
+    }
     onEnd?.();
     return false;
   }
 
-  // Chained Audio: "Ayo cari huruf..." + [Authentic Letter Audio]
+  // Chained Audio: "Ayo cari..." + [Authentic Letter / Word Audio Chain]
   public askFindLetter(letterKey: string, onEnd?: () => void) {
-    const audioPath = this.getLetterAudioPath(letterKey);
-    if (audioPath) {
-      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', audioPath], onEnd);
+    const wordPaths = this.getWordAudioPaths(letterKey);
+    if (wordPaths.length > 0) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', ...wordPaths], onEnd);
     } else {
       this.speakLetter(letterKey, onEnd);
     }
   }
 
-  // Chained Audio: "Yang mana huruf..." + [Authentic Letter Audio]
+  // Chained Audio: "Yang mana..." + [Authentic Letter / Word Audio Chain]
   public askWhichLetter(letterKey: string, onEnd?: () => void) {
-    const audioPath = this.getLetterAudioPath(letterKey);
-    if (audioPath) {
-      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', audioPath], onEnd);
+    const wordPaths = this.getWordAudioPaths(letterKey);
+    if (wordPaths.length > 0) {
+      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', ...wordPaths], onEnd);
     } else {
       this.speakLetter(letterKey, onEnd);
     }
   }
 
-  // Chained Audio: "Ayo coba tulis huruf..." + [Authentic Letter Audio]
+  // Chained Audio: "Ayo coba tulis..." + [Authentic Letter / Word Audio Chain]
   public askTraceLetter(letterKey: string, onEnd?: () => void) {
-    const audioPath = this.getLetterAudioPath(letterKey);
-    if (audioPath) {
-      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', audioPath], onEnd);
+    const wordPaths = this.getWordAudioPaths(letterKey);
+    if (wordPaths.length > 0) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', ...wordPaths], onEnd);
     } else {
       this.speakLetter(letterKey, onEnd);
     }
   }
 
-  // Chained Audio: "Letuskan balon huruf..." + [Authentic Letter Audio]
+  // Chained Audio: "Letuskan balon..." + [Authentic Letter / Word Audio Chain]
   public askPopLetter(letterKey: string, onEnd?: () => void) {
-    const audioPath = this.getLetterAudioPath(letterKey);
-    if (audioPath) {
-      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', audioPath], onEnd);
+    const wordPaths = this.getWordAudioPaths(letterKey);
+    if (wordPaths.length > 0) {
+      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', ...wordPaths], onEnd);
     } else {
       this.speakLetter(letterKey, onEnd);
     }
@@ -380,48 +424,48 @@ class TTSNarrator {
       return this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
     }
 
-    // Extract target letter from text (strips parentheses e.g. "(Dua titik di atas)")
+    // Extract target letter or word combo from text (strips parentheses e.g. "(Dua titik di atas)")
     const cleanText = text.replace(/\([^)]*\)/g, '').trim();
 
     // 1. Balloon game prompt
-    if (lower.includes('balon')) {
-      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
-      const letter = match ? match[1] : '';
-      if (letter && this.getLetterAudioPath(letter)) {
+    if (lower.includes('balon') || lower.includes('letuskan') || lower.includes('pecahkan')) {
+      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
+      const letter = match ? match[1].trim() : '';
+      if (letter && this.getWordAudioPaths(letter).length > 0) {
         return this.askPopLetter(letter, onEnd);
       }
     }
 
     // 2. Tracing game prompt
     if (lower.includes('tulis')) {
-      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
-      const letter = match ? match[1] : '';
-      if (letter && this.getLetterAudioPath(letter)) {
+      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
+      const letter = match ? match[1].trim() : '';
+      if (letter && this.getWordAudioPaths(letter).length > 0) {
         return this.askTraceLetter(letter, onEnd);
       }
     }
 
     // 3. Which one ("Yang mana") prompt
     if (lower.includes('mana')) {
-      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i) || cleanText.match(/([A-Za-z'ء-ي]+)\s*\?/i);
-      const letter = match ? match[1] : '';
-      if (letter && this.getLetterAudioPath(letter)) {
+      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i) || cleanText.match(/([A-Za-z'ء-ي\- ]+)\s*\?/i);
+      const letter = match ? match[1].trim() : '';
+      if (letter && this.getWordAudioPaths(letter).length > 0) {
         return this.askWhichLetter(letter, onEnd);
       }
     }
 
-    // 4. Find letter ("Cari huruf" / "Pilih huruf") prompt
+    // 4. Find letter ("Cari" / "Pilih") prompt
     if (lower.includes('cari') || lower.includes('pilih')) {
-      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
-      const letter = match ? match[1] : '';
-      if (letter && this.getLetterAudioPath(letter)) {
+      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
+      const letter = match ? match[1].trim() : '';
+      if (letter && this.getWordAudioPaths(letter).length > 0) {
         return this.askFindLetter(letter, onEnd);
       }
     }
 
-    // 5. Letter name standalone
-    const cleanLetter = lower.replace(/^(huruf|suara)\s+/i, '').replace(/[^a-z'ء-ي]/g, '');
-    if (cleanLetter && this.getLetterAudioPath(cleanLetter)) {
+    // 5. Letter / word name standalone
+    const cleanLetter = lower.replace(/^(huruf|suara|bacaan|kata)\s+/i, '').replace(/[^a-z'ء-ي\- ]/g, '').trim();
+    if (cleanLetter && this.getWordAudioPaths(cleanLetter).length > 0) {
       return this.playLetter(cleanLetter, onEnd);
     }
 

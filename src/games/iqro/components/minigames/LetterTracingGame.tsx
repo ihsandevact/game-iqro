@@ -53,7 +53,9 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
       const sCtx = sampleCanvas.getContext('2d');
       if (sCtx) {
         sCtx.fillStyle = '#000000';
-        sCtx.font = 'bold 165px Amiri, "Traditional Arabic", serif';
+        const rawLength = (question.targetLetter || '').replace(/[\u064B-\u065F]/g, '').length;
+        const fontSize = rawLength > 2 ? 95 : rawLength > 1 ? 125 : 155;
+        sCtx.font = `bold ${fontSize}px Amiri, "Traditional Arabic", serif`;
         sCtx.textAlign = 'center';
         sCtx.textBaseline = 'middle';
         sCtx.fillText(question.targetLetter, 160, 160);
@@ -331,7 +333,17 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
       <div className="relative w-full aspect-square max-w-[320px] bg-white rounded-3xl border-4 border-emerald-200 shadow-xl overflow-hidden flex items-center justify-center select-none touch-none">
         {/* Ghost Arabic Letter (Guide outline behind canvas) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span className="font-arabic text-[180px] font-bold text-slate-200/90 leading-none select-none">
+          <span
+            className="font-arabic font-bold text-slate-200/90 leading-none select-none"
+            style={{
+              fontSize:
+                (question.targetLetter || '').replace(/[\u064B-\u065F]/g, '').length > 2
+                  ? '95px'
+                  : (question.targetLetter || '').replace(/[\u064B-\u065F]/g, '').length > 1
+                  ? '125px'
+                  : '165px',
+            }}
+          >
             {question.targetLetter}
           </span>
         </div>
