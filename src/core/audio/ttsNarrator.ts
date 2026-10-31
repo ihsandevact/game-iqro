@@ -420,7 +420,13 @@ class TTSNarrator {
     if (lower.includes('pelajaran selesai') || lower.includes('luar biasa')) {
       return this.playAudio('/audio/prompts/prompt_selesai.mp3', onEnd);
     }
-    if (lower.includes('semangat belajar mengaji')) {
+    if (lower.includes('kenalan') || lower.includes('siapa nama') || lower.includes('namaku boni')) {
+      return this.playAudio('/audio/prompts/prompt_kenalan.mp3', onEnd);
+    }
+    if (lower.includes('senang berkenalan') || lower.includes('petualangan belajar iqro')) {
+      return this.playAudio('/audio/prompts/prompt_kenalan_sukses.mp3', onEnd);
+    }
+    if (lower.includes('semangat belajar mengaji') || lower.includes('halo')) {
       return this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
     }
 
@@ -529,8 +535,16 @@ class TTSNarrator {
     this.playAudio(chosen, onEnd);
   }
 
-  public speakGreeting(_childName: string, onEnd?: () => void) {
+  public speakGreeting(_childName?: string, onEnd?: () => void) {
     this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
+  }
+
+  public speakIntroduction(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_kenalan.mp3', onEnd);
+  }
+
+  public speakIntroductionSuccess(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_kenalan_sukses.mp3', onEnd);
   }
 
   public isSpeaking(): boolean {

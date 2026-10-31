@@ -25,11 +25,11 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Play natural greeting audio on initial mount
+  // Play natural authentic greeting audio on initial mount
   useEffect(() => {
     const timer = setTimeout(() => {
-      ttsNarrator.speak("Assalamu'alaikum sahabat cilik! Kenalan yuk, namaku Boni! Siapa nama kamu?");
-    }, 500);
+      ttsNarrator.speakIntroduction();
+    }, 450);
 
     return () => clearTimeout(timer);
   }, []);
@@ -41,7 +41,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   const handleReplayGreeting = () => {
     soundManager.playPop();
-    ttsNarrator.speak("Assalamu'alaikum sahabat cilik! Kenalan yuk, namaku Boni! Siapa nama kamu?");
+    ttsNarrator.speakIntroduction();
   };
 
   const handleSelectPreset = (presetName: string) => {
@@ -78,12 +78,12 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
     }
 
     soundManager.playCorrect();
-    ttsNarrator.speak(`Wah hebat! Senang berkenalan denganmu, ${cleanName}! Bismillah, ayo kita mulai petualangan belajar Iqro!`);
+    ttsNarrator.speakIntroductionSuccess();
 
     // Give a brief moment for celebration animation before proceeding
     setTimeout(() => {
       onComplete(cleanName);
-    }, 700);
+    }, 900);
   };
 
   return (
@@ -120,6 +120,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
               equippedCape={equippedCape}
               showSpeechBubble={true}
               speechText="Namaku Boni! Siapa namamu?"
+              onClick={handleReplayGreeting}
             />
 
             {/* Replay voice audio pill */}

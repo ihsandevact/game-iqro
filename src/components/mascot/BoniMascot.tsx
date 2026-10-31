@@ -36,8 +36,11 @@ export const BoniMascot: React.FC<BoniMascotProps> = ({
 
   const handleTap = () => {
     soundManager.playPop();
-    ttsNarrator.speak(`Halo! ${characterName} siap menemanimu!`);
-    onClick?.();
+    if (onClick) {
+      onClick();
+    } else {
+      ttsNarrator.speakGreeting();
+    }
   };
 
   return (
