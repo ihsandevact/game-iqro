@@ -1,51 +1,176 @@
-// Natural Neural Audio & Indonesian Child-Friendly Narrator Engine
+// Authentic Studio Makhraj Audio & Indonesian Child-Friendly Narrator Engine
 
-const LETTER_AUDIO_MAP: Record<string, string> = {
+export const LETTER_AUDIO_MAP: Record<string, string> = {
+  // Alif / A
   'alif': '/audio/letters/alif.mp3',
   'a': '/audio/letters/alif.mp3',
+  'ا': '/audio/letters/alif.mp3',
+  'اَ': '/audio/letters/alif.mp3',
+  'أ': '/audio/letters/alif.mp3',
+  'أَ': '/audio/letters/alif.mp3',
+
+  // Ba
   'ba': '/audio/letters/ba.mp3',
+  'ب': '/audio/letters/ba.mp3',
+  'بَ': '/audio/letters/ba.mp3',
+
+  // Ta
   'ta': '/audio/letters/ta.mp3',
+  'ت': '/audio/letters/ta.mp3',
+  'تَ': '/audio/letters/ta.mp3',
+
+  // Tsa / Tha
   'tsa': '/audio/letters/tsa.mp3',
+  'tha': '/audio/letters/tsa.mp3',
+  'ث': '/audio/letters/tsa.mp3',
+  'ثَ': '/audio/letters/tsa.mp3',
+
+  // Jim / Ja
   'jim': '/audio/letters/jim.mp3',
   'ja': '/audio/letters/jim.mp3',
+  'ج': '/audio/letters/jim.mp3',
+  'جَ': '/audio/letters/jim.mp3',
+
+  // Ha (halus/pedas)
   'ha': '/audio/letters/ha.mp3',
+  'ح': '/audio/letters/ha.mp3',
+  'حَ': '/audio/letters/ha.mp3',
+
+  // Kho / Kha
   'kho': '/audio/letters/kho.mp3',
+  'kha': '/audio/letters/kho.mp3',
+  'خ': '/audio/letters/kho.mp3',
+  'خَ': '/audio/letters/kho.mp3',
+
+  // Dal / Da
   'dal': '/audio/letters/dal.mp3',
   'da': '/audio/letters/dal.mp3',
+  'د': '/audio/letters/dal.mp3',
+  'دَ': '/audio/letters/dal.mp3',
+
+  // Dzal / Dza
   'dzal': '/audio/letters/dzal.mp3',
   'dza': '/audio/letters/dzal.mp3',
+  'ذ': '/audio/letters/dzal.mp3',
+  'ذَ': '/audio/letters/dzal.mp3',
+
+  // Ro / Ra
   'ro': '/audio/letters/ro.mp3',
+  'ra': '/audio/letters/ro.mp3',
+  'ر': '/audio/letters/ro.mp3',
+  'رَ': '/audio/letters/ro.mp3',
+
+  // Zai / Za
   'zai': '/audio/letters/zai.mp3',
+  'zay': '/audio/letters/zai.mp3',
   'za': '/audio/letters/zai.mp3',
+  'ز': '/audio/letters/zai.mp3',
+  'زَ': '/audio/letters/zai.mp3',
+
+  // Sin / Sa
   'sin': '/audio/letters/sin.mp3',
   'sa': '/audio/letters/sin.mp3',
+  'س': '/audio/letters/sin.mp3',
+  'سَ': '/audio/letters/sin.mp3',
+
+  // Syin / Sya
   'syin': '/audio/letters/syin.mp3',
   'sya': '/audio/letters/syin.mp3',
+  'ش': '/audio/letters/syin.mp3',
+  'شَ': '/audio/letters/syin.mp3',
+
+  // Shod / Sho
   'shod': '/audio/letters/shod.mp3',
   'sho': '/audio/letters/shod.mp3',
+  'ص': '/audio/letters/shod.mp3',
+  'صَ': '/audio/letters/shod.mp3',
+
+  // Dhod / Dho
   'dhod': '/audio/letters/dhod.mp3',
   'dho': '/audio/letters/dhod.mp3',
+  'ض': '/audio/letters/dhod.mp3',
+  'ضَ': '/audio/letters/dhod.mp3',
+
+  // Tho / Tha (tebal)
   'tho': '/audio/letters/tho.mp3',
+  'thod': '/audio/letters/tho.mp3',
+  'ط': '/audio/letters/tho.mp3',
+  'طَ': '/audio/letters/tho.mp3',
+
+  // Zho / Dhzo
   'zho': '/audio/letters/zho.mp3',
+  'dhzo': '/audio/letters/zho.mp3',
+  'ظ': '/audio/letters/zho.mp3',
+  'ظَ': '/audio/letters/zho.mp3',
+
+  // 'Ain / 'A
   'ain': '/audio/letters/ain.mp3',
   "'ain": '/audio/letters/ain.mp3',
+  "'a": '/audio/letters/ain.mp3',
+  'ع': '/audio/letters/ain.mp3',
+  'عَ': '/audio/letters/ain.mp3',
+
+  // Ghoin / Gho
   'ghoin': '/audio/letters/ghoin.mp3',
   'gho': '/audio/letters/ghoin.mp3',
+  'غ': '/audio/letters/ghoin.mp3',
+  'غَ': '/audio/letters/ghoin.mp3',
+
+  // Fa
   'fa': '/audio/letters/fa.mp3',
+  'ف': '/audio/letters/fa.mp3',
+  'فَ': '/audio/letters/fa.mp3',
+
+  // Qof / Qo
   'qof': '/audio/letters/qof.mp3',
   'qo': '/audio/letters/qof.mp3',
+  'ق': '/audio/letters/qof.mp3',
+  'قَ': '/audio/letters/qof.mp3',
+
+  // Kaf / Ka
   'kaf': '/audio/letters/kaf.mp3',
   'ka': '/audio/letters/kaf.mp3',
+  'ك': '/audio/letters/kaf.mp3',
+  'كَ': '/audio/letters/kaf.mp3',
+
+  // Lam / La
   'lam': '/audio/letters/lam.mp3',
   'la': '/audio/letters/lam.mp3',
+  'ل': '/audio/letters/lam.mp3',
+  'لَ': '/audio/letters/lam.mp3',
+
+  // Mim / Ma
   'mim': '/audio/letters/mim.mp3',
   'ma': '/audio/letters/mim.mp3',
+  'م': '/audio/letters/mim.mp3',
+  'مَ': '/audio/letters/mim.mp3',
+
+  // Nun / Na
   'nun': '/audio/letters/nun.mp3',
   'na': '/audio/letters/nun.mp3',
+  'ن': '/audio/letters/nun.mp3',
+  'نَ': '/audio/letters/nun.mp3',
+
+  // Waw / Wa
   'waw': '/audio/letters/waw.mp3',
   'wa': '/audio/letters/waw.mp3',
+  'و': '/audio/letters/waw.mp3',
+  'وَ': '/audio/letters/waw.mp3',
+
+  // Ha (besar/pangkal)
   'haa': '/audio/letters/haa.mp3',
+  'ha_besar': '/audio/letters/haa.mp3',
+  'ه': '/audio/letters/haa.mp3',
+  'هَ': '/audio/letters/haa.mp3',
+
+  // Hamzah
+  'hamzah': '/audio/letters/hamzah.mp3',
+  'ء': '/audio/letters/hamzah.mp3',
+
+  // Ya
   'ya': '/audio/letters/ya.mp3',
+  'ي': '/audio/letters/ya.mp3',
+  'يَ': '/audio/letters/ya.mp3',
 };
 
 const PRAISE_AUDIO_LIST = [
@@ -66,6 +191,7 @@ class TTSNarrator {
   private voice: SpeechSynthesisVoice | null = null;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private currentAudio: HTMLAudioElement | null = null;
+  private isChainCancelled = false;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -79,7 +205,6 @@ class TTSNarrator {
   private initVoices() {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const voices = window.speechSynthesis.getVoices();
-    // Prioritize natural Indonesian neural voices if available
     const idVoice = voices.find(
       (v) => (v.lang.startsWith('id') || v.lang.includes('ID')) && (v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online'))
     ) || voices.find((v) => v.lang.startsWith('id') || v.lang.includes('ID'));
@@ -89,7 +214,20 @@ class TTSNarrator {
     }
   }
 
-  private playAudio(src: string, onEnd?: () => void): boolean {
+  public getLetterAudioPath(letter: string): string | null {
+    if (!letter) return null;
+    const normalized = letter.trim().toLowerCase();
+    if (LETTER_AUDIO_MAP[normalized]) {
+      return LETTER_AUDIO_MAP[normalized];
+    }
+    const cleanLatin = normalized.replace(/[^a-z']/g, '');
+    if (LETTER_AUDIO_MAP[cleanLatin]) {
+      return LETTER_AUDIO_MAP[cleanLatin];
+    }
+    return null;
+  }
+
+  public playAudio(src: string, onEnd?: () => void): boolean {
     if (typeof window === 'undefined') {
       onEnd?.();
       return true;
@@ -129,36 +267,165 @@ class TTSNarrator {
     }
   }
 
+  public playAudioChain(srcs: string[], onEnd?: () => void) {
+    if (typeof window === 'undefined' || srcs.length === 0) {
+      onEnd?.();
+      return;
+    }
+
+    this.stop();
+    this.isChainCancelled = false;
+
+    let idx = 0;
+    const playNext = () => {
+      if (this.isChainCancelled || idx >= srcs.length) {
+        this.currentAudio = null;
+        onEnd?.();
+        return;
+      }
+
+      const src = srcs[idx++];
+      try {
+        const audio = new Audio(src);
+        this.currentAudio = audio;
+
+        let called = false;
+        const advance = () => {
+          if (!called) {
+            called = true;
+            if (this.isChainCancelled) {
+              this.currentAudio = null;
+              onEnd?.();
+              return;
+            }
+            // Small natural 120ms rhythm gap between intro and letter audio
+            setTimeout(playNext, 120);
+          }
+        };
+
+        audio.onended = advance;
+        audio.onerror = advance;
+
+        const promise = audio.play();
+        if (promise !== undefined) {
+          promise.catch(advance);
+        }
+      } catch {
+        playNext();
+      }
+    };
+
+    playNext();
+  }
+
+  // Play authentic human studio letter audio directly
+  public playLetter(letterKey: string, onEnd?: () => void): boolean {
+    const audioPath = this.getLetterAudioPath(letterKey);
+    if (audioPath) {
+      return this.playAudio(audioPath, onEnd);
+    }
+    onEnd?.();
+    return false;
+  }
+
+  // Chained Audio: "Ayo cari huruf..." + [Authentic Letter Audio]
+  public askFindLetter(letterKey: string, onEnd?: () => void) {
+    const audioPath = this.getLetterAudioPath(letterKey);
+    if (audioPath) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', audioPath], onEnd);
+    } else {
+      this.speakLetter(letterKey, onEnd);
+    }
+  }
+
+  // Chained Audio: "Yang mana huruf..." + [Authentic Letter Audio]
+  public askWhichLetter(letterKey: string, onEnd?: () => void) {
+    const audioPath = this.getLetterAudioPath(letterKey);
+    if (audioPath) {
+      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', audioPath], onEnd);
+    } else {
+      this.speakLetter(letterKey, onEnd);
+    }
+  }
+
+  // Chained Audio: "Ayo coba tulis huruf..." + [Authentic Letter Audio]
+  public askTraceLetter(letterKey: string, onEnd?: () => void) {
+    const audioPath = this.getLetterAudioPath(letterKey);
+    if (audioPath) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', audioPath], onEnd);
+    } else {
+      this.speakLetter(letterKey, onEnd);
+    }
+  }
+
+  // Chained Audio: "Letuskan balon huruf..." + [Authentic Letter Audio]
+  public askPopLetter(letterKey: string, onEnd?: () => void) {
+    const audioPath = this.getLetterAudioPath(letterKey);
+    if (audioPath) {
+      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', audioPath], onEnd);
+    } else {
+      this.speakLetter(letterKey, onEnd);
+    }
+  }
+
+  // Smart Speech Dispatcher: parses prompt and chains natural audio
   public speak(text: string, onEnd?: () => void) {
     const lower = text.toLowerCase().trim();
 
-    // Check if matching neural prompt audio exists
-    if (lower.includes('cari huruf ba')) {
-      return this.playAudio('/audio/prompts/prompt_cari_ba.mp3', onEnd);
-    }
-    if (lower.includes('mana huruf a')) {
-      return this.playAudio('/audio/prompts/prompt_mana_a.mp3', onEnd);
-    }
-    if (lower.includes('tulis huruf ba')) {
-      return this.playAudio('/audio/prompts/prompt_tulis_ba.mp3', onEnd);
-    }
-    if (lower.includes('dengarkan suara')) {
-      return this.playAudio('/audio/prompts/prompt_dengarkan.mp3', onEnd);
-    }
-    if (lower.includes('pelajaran selesai')) {
+    // General app voice prompts
+    if (lower.includes('pelajaran selesai') || lower.includes('luar biasa')) {
       return this.playAudio('/audio/prompts/prompt_selesai.mp3', onEnd);
     }
     if (lower.includes('semangat belajar mengaji')) {
       return this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
     }
 
-    // Check if it's a letter name
-    const cleanLetter = lower.replace(/^(huruf|suara)\s+/i, '').replace(/[^a-z']/g, '');
-    if (LETTER_AUDIO_MAP[cleanLetter]) {
-      return this.playAudio(LETTER_AUDIO_MAP[cleanLetter], onEnd);
+    // Extract target letter from text (strips parentheses e.g. "(Dua titik di atas)")
+    const cleanText = text.replace(/\([^)]*\)/g, '').trim();
+
+    // 1. Balloon game prompt
+    if (lower.includes('balon')) {
+      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
+      const letter = match ? match[1] : '';
+      if (letter && this.getLetterAudioPath(letter)) {
+        return this.askPopLetter(letter, onEnd);
+      }
     }
 
-    // Fallback to browser SpeechSynthesis
+    // 2. Tracing game prompt
+    if (lower.includes('tulis')) {
+      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
+      const letter = match ? match[1] : '';
+      if (letter && this.getLetterAudioPath(letter)) {
+        return this.askTraceLetter(letter, onEnd);
+      }
+    }
+
+    // 3. Which one ("Yang mana") prompt
+    if (lower.includes('mana')) {
+      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i) || cleanText.match(/([A-Za-z'ء-ي]+)\s*\?/i);
+      const letter = match ? match[1] : '';
+      if (letter && this.getLetterAudioPath(letter)) {
+        return this.askWhichLetter(letter, onEnd);
+      }
+    }
+
+    // 4. Find letter ("Cari huruf" / "Pilih huruf") prompt
+    if (lower.includes('cari') || lower.includes('pilih')) {
+      const match = cleanText.match(/huruf\s+([A-Za-z'ء-ي]+)/i);
+      const letter = match ? match[1] : '';
+      if (letter && this.getLetterAudioPath(letter)) {
+        return this.askFindLetter(letter, onEnd);
+      }
+    }
+
+    // 5. Letter name standalone
+    const cleanLetter = lower.replace(/^(huruf|suara)\s+/i, '').replace(/[^a-z'ء-ي]/g, '');
+    if (cleanLetter && this.getLetterAudioPath(cleanLetter)) {
+      return this.playLetter(cleanLetter, onEnd);
+    }
+
+    // Fallback: browser SpeechSynthesis with parentheses removed
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       onEnd?.();
       return;
@@ -166,8 +433,8 @@ class TTSNarrator {
 
     try {
       this.stop();
-
-      const utterance = new SpeechSynthesisUtterance(text);
+      const spokenText = cleanText.replace(/!+/g, '.');
+      const utterance = new SpeechSynthesisUtterance(spokenText);
       if (this.voice) {
         utterance.voice = this.voice;
       }
@@ -197,12 +464,10 @@ class TTSNarrator {
   }
 
   public speakLetter(letterName: string, onEnd?: () => void) {
-    const key = letterName.toLowerCase().replace(/[^a-z']/g, '');
-    if (LETTER_AUDIO_MAP[key]) {
-      this.playAudio(LETTER_AUDIO_MAP[key], onEnd);
-    } else {
-      this.speak(letterName, onEnd);
+    if (this.playLetter(letterName, onEnd)) {
+      return;
     }
+    this.speak(letterName, onEnd);
   }
 
   public speakPraise(_childNameOrOnEnd?: string | (() => void), onEnd?: () => void) {
@@ -211,13 +476,11 @@ class TTSNarrator {
       callback = _childNameOrOnEnd;
     }
 
-    // Play high-fidelity neural Indonesian praise audio
     const chosen = PRAISE_AUDIO_LIST[Math.floor(Math.random() * PRAISE_AUDIO_LIST.length)];
     this.playAudio(chosen, callback);
   }
 
   public speakEncourage(_childName?: string, onEnd?: () => void) {
-    // Play high-fidelity neural Indonesian encourage audio
     const chosen = ENCOURAGE_AUDIO_LIST[Math.floor(Math.random() * ENCOURAGE_AUDIO_LIST.length)];
     this.playAudio(chosen, onEnd);
   }
@@ -231,6 +494,7 @@ class TTSNarrator {
   }
 
   public stop() {
+    this.isChainCancelled = true;
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();

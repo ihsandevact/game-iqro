@@ -29,7 +29,11 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
 
     const timer = setTimeout(() => {
       soundManager.playPop();
-      ttsNarrator.speak(question.promptText);
+      if (question.targetName || question.targetLetter) {
+        ttsNarrator.askPopLetter(question.targetName || question.targetLetter);
+      } else {
+        ttsNarrator.speak(question.promptText);
+      }
     }, 300);
 
     return () => clearTimeout(timer);
@@ -75,7 +79,11 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
         whileTap={{ scale: 0.95 }}
         onClick={() => {
           soundManager.playPop();
-          ttsNarrator.speak(question.promptText);
+          if (question.targetName || question.targetLetter) {
+            ttsNarrator.askPopLetter(question.targetName || question.targetLetter);
+          } else {
+            ttsNarrator.speak(question.promptText);
+          }
         }}
         className="flex items-center gap-3 bg-duo-purple hover:bg-duo-purpleDark text-white px-5 py-3 rounded-2xl shadow-duo-purple active:translate-y-1 mb-4 transition"
       >

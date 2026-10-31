@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles } from 'lucide-react';
 import { Stage } from '../../../core/types/gameTypes';
 import { soundManager } from '../../../core/audio/soundManager';
+import { ttsNarrator } from '../../../core/audio/ttsNarrator';
 import { BoniMascot } from '../../../components/mascot/BoniMascot';
 import { ListenTapGame } from './minigames/ListenTapGame';
 import { BubblePopGame } from './minigames/BubblePopGame';
@@ -48,6 +49,7 @@ export const StageModal: React.FC<StageModalProps> = ({
 
   const handleExit = () => {
     soundManager.playPop();
+    ttsNarrator.stop();
     onClose();
   };
 

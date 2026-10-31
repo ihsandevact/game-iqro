@@ -36,9 +36,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const handlePlayLetter = (latin: string, letter: string) => {
     soundManager.playPop();
     setSelectedLetter(letter);
-    ttsNarrator.speak(`Huruf ${latin}!`, () => {
-      setSelectedLetter(null);
-    });
+    const played = ttsNarrator.playLetter(letter, () => setSelectedLetter(null));
+    if (!played) {
+      ttsNarrator.playLetter(latin, () => setSelectedLetter(null));
+    }
   };
 
   return (

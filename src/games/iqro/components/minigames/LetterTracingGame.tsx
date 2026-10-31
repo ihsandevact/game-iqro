@@ -79,7 +79,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
 
     const timer = setTimeout(() => {
       soundManager.playPop();
-      ttsNarrator.speak(`Ayo tulis huruf ${question.targetName}! Telusuri garisnya dengan jarimu ${childName}!`);
+      ttsNarrator.askTraceLetter(question.targetName || question.targetLetter);
     }, 300);
 
     return () => clearTimeout(timer);
@@ -289,7 +289,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
         whileTap={{ scale: 0.95 }}
         onClick={() => {
           soundManager.playPop();
-          ttsNarrator.speak(`Ayo tulis huruf ${question.targetName}! Telusuri garisnya!`);
+          ttsNarrator.askTraceLetter(question.targetName || question.targetLetter);
         }}
         className="flex items-center gap-3 bg-duo-green hover:bg-duo-greenDark text-white px-5 py-2.5 rounded-2xl shadow-duo-green active:translate-y-1 mb-3 transition"
       >
