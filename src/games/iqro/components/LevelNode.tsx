@@ -90,11 +90,11 @@ export const LevelNode: React.FC<LevelNodeProps> = ({
           ) : isCompleted ? (
             <Check className="w-9 h-9 text-amber-800 stroke-[3]" />
           ) : (
-            <div className="flex flex-col items-center">
-              <span className="font-arabic text-3xl font-bold leading-none mb-0.5">
+            <div className="flex flex-col items-center justify-center w-full h-full py-1">
+              <span className="font-arabic text-3xl font-bold leading-normal select-none">
                 {stage.lettersCovered[0] || 'أ'}
               </span>
-              <span className="text-[11px] font-black uppercase tracking-wider opacity-90">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-black/20 px-1.5 py-0.2 rounded-full leading-tight opacity-90">
                 Lvl {stage.stageNumber}
               </span>
             </div>

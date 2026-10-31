@@ -108,19 +108,23 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
                       }}
                       onClick={() => handlePop(opt.letter, opt.isCorrect)}
                       className={`
-                        w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br ${colorClass}
-                        border-4 shadow-lg text-white flex flex-col items-center justify-center relative
+                        w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br ${colorClass}
+                        border-4 shadow-lg text-white flex flex-col items-center justify-between py-2 px-1 relative
                         active:scale-95 transition-transform cursor-pointer select-none
                       `}
                     >
                       {/* Bubble Gloss Highlight */}
-                      <div className="absolute top-2 left-3 w-5 h-2.5 bg-white/60 rounded-full rotate-[-30deg]" />
+                      <div className="absolute top-2 left-3 w-6 h-3 bg-white/60 rounded-full rotate-[-30deg] pointer-events-none" />
 
-                      {/* Arabic Letter */}
-                      <span className="font-arabic text-4xl sm:text-5xl font-bold leading-none drop-shadow-md">
-                        {opt.letter}
-                      </span>
-                      <span className="text-xs font-black tracking-wider uppercase opacity-95">
+                      {/* Arabic Letter Centered */}
+                      <div className="flex-1 w-full flex items-center justify-center pt-1">
+                        <span className="font-arabic text-4xl sm:text-5xl font-bold leading-normal drop-shadow-md select-none">
+                          {opt.letter}
+                        </span>
+                      </div>
+
+                      {/* Latin Transliteration in separated pill */}
+                      <span className="text-[10px] sm:text-xs font-black tracking-wider uppercase bg-black/20 px-2 py-0.5 rounded-full shadow-inner mb-0.5">
                         {opt.name}
                       </span>
                     </motion.button>

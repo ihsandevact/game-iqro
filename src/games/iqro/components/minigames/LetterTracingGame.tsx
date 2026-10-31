@@ -206,8 +206,8 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
 
         {/* Start Point Guide Hint */}
         {!isCompleted && tracedPointsCount === 0 && (
-          <div className="absolute top-12 text-center pointer-events-none animate-bounce z-10 bg-amber-100 border border-amber-300 text-amber-800 text-[11px] font-black px-3 py-1 rounded-full shadow-sm">
-            👇 Usap jarimu di sini!
+          <div className="absolute top-3 text-center pointer-events-none animate-bounce z-10 bg-amber-100 border border-amber-300 text-amber-800 text-[11px] font-black px-3 py-1 rounded-full shadow-sm">
+            👇 Usap jarimu di kanvas ini!
           </div>
         )}
 

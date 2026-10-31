@@ -96,7 +96,7 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
               }
               transition={{ duration: 0.4 }}
               className={`
-                h-36 sm:h-44 rounded-3xl flex flex-col items-center justify-center p-4 relative select-none
+                min-h-[175px] sm:min-h-[210px] rounded-3xl flex flex-col items-center justify-between p-4 relative select-none
                 border-4 transition-all duration-150 outline-none
                 ${
                   isSelected
@@ -114,15 +114,25 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
                 </div>
               )}
 
-              {/* Big Arabic Letter */}
-              <span className="font-arabic text-6xl sm:text-7xl font-bold leading-none mb-1">
-                {opt.letter}
-              </span>
+              {/* Big Arabic Letter with safe vertical breathing room */}
+              <div className="flex-1 w-full flex items-center justify-center pt-2 pb-1 overflow-visible">
+                <span className="font-arabic text-6xl sm:text-7xl font-bold leading-normal select-none">
+                  {opt.letter}
+                </span>
+              </div>
 
-              {/* Latin Transliteration for Parents */}
-              <span className={`text-sm sm:text-base font-extrabold tracking-wider ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+              {/* Latin Transliteration in a dedicated pill at the bottom - NO OVERLAP */}
+              <div
+                className={`mt-auto px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wider uppercase transition ${
+                  isSelected
+                    ? 'bg-white/20 text-white'
+                    : isDisabled
+                    ? 'bg-transparent text-slate-300'
+                    : 'bg-slate-100 text-slate-500'
+                }`}
+              >
                 {opt.name}
-              </span>
+              </div>
             </motion.button>
           );
         })}

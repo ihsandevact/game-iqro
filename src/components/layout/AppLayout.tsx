@@ -157,7 +157,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     key={item.latin}
                     onClick={() => handlePlayLetter(item.latin, item.letter)}
                     className={`
-                      aspect-square rounded-2xl p-2 flex flex-col items-center justify-center border-2
+                      aspect-square rounded-2xl p-1.5 flex flex-col items-center justify-between border-2
                       transition-all active:translate-y-1 relative select-none
                       ${
                         selectedLetter === item.letter
@@ -166,10 +166,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                       }
                     `}
                   >
-                    <span className="font-arabic text-2xl sm:text-3xl font-bold leading-none">
-                      {item.letter}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-wider mt-1 opacity-70">
+                    <div className="flex-1 w-full flex items-center justify-center pt-1">
+                      <span className="font-arabic text-2xl sm:text-3xl font-bold leading-normal select-none">
+                        {item.letter}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider opacity-80 pb-0.5">
                       {item.latin}
                     </span>
                   </button>
