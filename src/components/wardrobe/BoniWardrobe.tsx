@@ -52,15 +52,15 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center md:items-start">
+    <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-6 lg:p-7 shadow-sm flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start">
       {/* Left: Mascot Wardrobe Preview Stage */}
-      <div className="w-full md:w-64 flex flex-col items-center bg-gradient-to-b from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-3xl p-4 sm:p-6 shrink-0 relative overflow-hidden">
+      <div className="w-full lg:w-72 flex flex-col items-center bg-gradient-to-b from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-3xl p-5 sm:p-6 shrink-0 relative overflow-hidden shadow-sm">
         {/* Decorative sparkles */}
         <div className="absolute top-3 left-3 text-emerald-400">
           <Sparkles className="w-5 h-5 animate-pulse" />
         </div>
 
-        <div className="mb-2">
+        <div className="my-2">
           <BoniMascot
             mood="happy"
             size="lg"
@@ -74,7 +74,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
         </div>
 
         <h3 className="text-base font-black text-slate-800 mt-2">Koleksi {childName}</h3>
-        <p className="text-xs font-semibold text-slate-500 text-center">
+        <p className="text-xs font-semibold text-slate-500 text-center mt-0.5">
           Dandani {childName} dengan pakaian favoritmu!
         </p>
 
@@ -89,7 +89,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
       </div>
 
       {/* Right: Category Tabs & Item Grid */}
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full min-w-0">
         <div className="flex items-center justify-between gap-2 mb-4 border-b-2 border-slate-100 pb-3">
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-6 h-6 text-duo-green" />
@@ -99,51 +99,51 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
           </div>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+        {/* Category Tabs: Grid 3 Kolom Responsif (Bebas Scrollbar) */}
+        <div className="grid grid-cols-3 gap-2 mb-5 w-full">
           <button
             onClick={() => {
               soundManager.playPop();
               setSelectedCategory('hat');
             }}
-            className={`px-4 py-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition shrink-0 ${
+            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'hat'
                 ? 'bg-duo-green text-white shadow-duo-green'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            🎩 Peci & Mahkota
+            🎩 Peci & Topi
           </button>
           <button
             onClick={() => {
               soundManager.playPop();
               setSelectedCategory('glasses');
             }}
-            className={`px-4 py-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition shrink-0 ${
+            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'glasses'
                 ? 'bg-duo-blue text-white shadow-duo-blue'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            👓 Kacamata Gaul
+            👓 Kacamata
           </button>
           <button
             onClick={() => {
               soundManager.playPop();
               setSelectedCategory('cape');
             }}
-            className={`px-4 py-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition shrink-0 ${
+            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'cape'
                 ? 'bg-duo-purple text-white shadow-duo-purple'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            🦸 Jubah Terbang
+            🦸 Jubah
           </button>
         </div>
 
-        {/* Items Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* Items Grid: Card Vertikal 3D Rapih */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredItems.map((item) => {
             const isUnlocked = unlockedItems.includes(item.id);
             const isEquipped =
@@ -157,67 +157,70 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
                 key={item.id}
                 whileHover={{ scale: 1.02 }}
                 className={`
-                  p-3.5 rounded-2xl border-2 flex flex-col justify-between transition relative
+                  p-4 rounded-3xl border-2 flex flex-col justify-between transition relative
                   ${
                     isEquipped
-                      ? 'bg-emerald-50/70 border-duo-green shadow-sm'
+                      ? 'bg-emerald-50/70 border-duo-green shadow-sm ring-2 ring-duo-green/20'
                       : isUnlocked
-                      ? 'bg-white border-slate-200 hover:border-slate-300'
-                      : 'bg-slate-50 border-slate-200'
+                      ? 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
+                      : 'bg-slate-50/80 border-slate-200 shadow-sm'
                   }
                 `}
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-2xl shadow-sm shrink-0">
-                    {item.icon}
+                {/* Equipped Badge */}
+                {isEquipped && (
+                  <div className="absolute top-3 right-3 bg-duo-green text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                    <span>Aktif</span>
                   </div>
-                  <div>
-                    <h4 className="font-black text-sm text-slate-800">{item.name}</h4>
-                    <p className="text-[11px] font-semibold text-slate-500 leading-tight">
-                      {item.description}
-                    </p>
-                  </div>
+                )}
+
+                {/* Big Centered Icon Preview */}
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-3xl shadow-inner mt-1 mb-3">
+                  {item.icon}
                 </div>
 
-                <div className="flex items-center justify-between gap-2 mt-auto pt-2 border-t border-slate-100">
-                  {/* Price or Owned status */}
-                  {isUnlocked ? (
-                    <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
-                      <Check className="w-4 h-4" /> Dimiliki
-                    </span>
+                {/* Name & Description */}
+                <div className="text-center mb-4">
+                  <h4 className="font-black text-sm sm:text-base text-slate-800 mb-1 leading-snug">
+                    {item.name}
+                  </h4>
+                  <p className="text-xs font-semibold text-slate-500 leading-relaxed px-1">
+                    {item.description}
+                  </p>
+                </div>
+
+                {/* Action Button: Full-width Chunky 3D Button */}
+                <button
+                  onClick={() => handleAction(item)}
+                  disabled={!isUnlocked && !canAfford}
+                  className={`
+                    w-full py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition active:translate-y-0.5 flex items-center justify-center gap-2
+                    ${
+                      isEquipped
+                        ? 'bg-slate-200 text-slate-600 border border-slate-300 cursor-default'
+                        : isUnlocked
+                        ? 'bg-duo-green hover:bg-duo-greenDark text-white shadow-duo-green'
+                        : canAfford
+                        ? 'bg-duo-blue hover:bg-duo-blueDark text-white shadow-duo-blue'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }
+                  `}
+                >
+                  {isEquipped ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Dipakai</span>
+                    </>
+                  ) : isUnlocked ? (
+                    <span>Pakai</span>
                   ) : (
-                    <div className="flex items-center gap-1 font-black text-sm text-duo-blue">
-                      <Gem className="w-4 h-4 fill-duo-blue" />
-                      <span>{item.price}</span>
-                    </div>
+                    <>
+                      <Gem className="w-4 h-4 fill-white" />
+                      <span>{item.price} Beli</span>
+                    </>
                   )}
-
-                  {/* Action Button */}
-                  <button
-                    onClick={() => handleAction(item)}
-                    disabled={!isUnlocked && !canAfford}
-                    className={`
-                      px-4 py-2 rounded-xl font-black text-xs transition active:translate-y-0.5
-                      ${
-                        isEquipped
-                          ? 'bg-slate-200 text-slate-600 cursor-default'
-                          : isUnlocked
-                          ? 'bg-duo-green hover:bg-duo-greenDark text-white shadow-duo-green'
-                          : canAfford
-                          ? 'bg-duo-blue hover:bg-duo-blueDark text-white shadow-duo-blue'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }
-                    `}
-                  >
-                    {isEquipped
-                      ? 'Dipakai'
-                      : isUnlocked
-                      ? 'Pakai'
-                      : canAfford
-                      ? 'Beli'
-                      : 'Permata Kurang'}
-                  </button>
-                </div>
+                </button>
               </motion.div>
             );
           })}
