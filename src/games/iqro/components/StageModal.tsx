@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles } from 'lucide-react';
 import { Stage } from '../../../core/types/gameTypes';
 import { soundManager } from '../../../core/audio/soundManager';
+import { BoniMascot } from '../../../components/mascot/BoniMascot';
 import { ListenTapGame } from './minigames/ListenTapGame';
 import { BubblePopGame } from './minigames/BubblePopGame';
 import { LetterTracingGame } from './minigames/LetterTracingGame';
@@ -12,9 +13,21 @@ interface StageModalProps {
   stage: Stage | null;
   onClose: () => void;
   onComplete: (stageId: string, stars: number) => void;
+  childName?: string;
+  equippedHat?: string;
+  equippedGlasses?: string;
+  equippedCape?: string;
 }
 
-export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComplete }) => {
+export const StageModal: React.FC<StageModalProps> = ({
+  stage,
+  onClose,
+  onComplete,
+  childName = 'Faqih',
+  equippedHat = 'hat-default',
+  equippedGlasses = 'glasses-none',
+  equippedCape = 'cape-none',
+}) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -47,10 +60,10 @@ export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComple
         className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border-4 border-slate-100 flex flex-col overflow-hidden max-h-[92dvh]"
       >
         {/* Stage Header with Duolingo Progress Bar */}
-        <div className="p-4 sm:p-5 flex items-center gap-3 border-b-2 border-slate-100">
+        <div className="p-3.5 sm:p-5 flex items-center gap-2.5 sm:gap-3 border-b-2 border-slate-100">
           <button
             onClick={handleExit}
-            className="p-2 rounded-2xl hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-600 transition"
+            className="p-1.5 rounded-2xl hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-600 transition"
           >
             <X className="w-6 h-6 stroke-[3]" />
           </button>
@@ -64,6 +77,20 @@ export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComple
               {/* Highlight bar reflection */}
               <div className="absolute top-0.5 left-2 right-2 h-1 bg-white/40 rounded-full" />
             </motion.div>
+          </div>
+
+          {/* Mini Mascot Companion wearing equipped shop items */}
+          <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+            <div className="scale-75 -mt-1">
+              <BoniMascot
+                mood="happy"
+                size="sm"
+                equippedHat={equippedHat}
+                equippedGlasses={equippedGlasses}
+                equippedCape={equippedCape}
+                characterName={childName}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-1 text-xs font-black text-amber-500 bg-amber-50 px-2 py-1 rounded-full">
@@ -88,16 +115,19 @@ export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComple
                   <BubblePopGame
                     question={currentQuestion}
                     onCorrect={handleQuestionCorrect}
+                    childName={childName}
                   />
                 ) : currentQuestion.type === 'tracing' ? (
                   <LetterTracingGame
                     question={currentQuestion}
                     onCorrect={handleQuestionCorrect}
+                    childName={childName}
                   />
                 ) : (
                   <ListenTapGame
                     question={currentQuestion}
                     onCorrect={handleQuestionCorrect}
+                    childName={childName}
                   />
                 )}
               </motion.div>
@@ -107,6 +137,10 @@ export const StageModal: React.FC<StageModalProps> = ({ stage, onClose, onComple
                 gemsEarned={30}
                 stageTitle={stage.title}
                 onContinue={onClose}
+                childName={childName}
+                equippedHat={equippedHat}
+                equippedGlasses={equippedGlasses}
+                equippedCape={equippedCape}
               />
             ) : null}
           </AnimatePresence>

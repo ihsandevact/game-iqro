@@ -16,6 +16,7 @@ interface AppLayoutProps {
   equippedCape: string;
   onBuyItem: (item: CostumeItem) => boolean;
   onEquipItem: (category: CostumeCategory, itemId: string) => void;
+  childName?: string;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
@@ -27,6 +28,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   equippedCape,
   onBuyItem,
   onEquipItem,
+  childName = 'Faqih',
 }) => {
   const [activeTab, setActiveTab] = useState<'journey' | 'wardrobe' | 'dictionary' | 'rewards'>('journey');
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
@@ -112,13 +114,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <BoniMascot
               mood="idle"
               size="sm"
+              characterName={childName}
               equippedHat={equippedHat}
               equippedGlasses={equippedGlasses}
               equippedCape={equippedCape}
               showSpeechBubble={true}
-              speechText="Boni siap menemanimu belajar Iqro!"
+              speechText={`Halo ${childName}! Ayo belajar Iqro!`}
             />
-            <span className="text-xs font-black text-slate-700 mt-1">Boni si Bulbul</span>
+            <span className="text-xs font-black text-slate-700 mt-1">{childName} Sahabat Cilik</span>
           </div>
         </aside>
 
@@ -126,7 +129,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <main className="flex-1 max-w-2xl w-full px-2 sm:px-4 py-4 flex flex-col items-center">
           {activeTab === 'journey' && children}
 
-          {/* Tab: Toko Kostum Boni */}
+          {/* Tab: Toko Kostum */}
           {activeTab === 'wardrobe' && (
             <BoniWardrobe
               gemsTotal={gemsTotal}
@@ -136,6 +139,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               equippedCape={equippedCape}
               onBuyItem={onBuyItem}
               onEquipItem={onEquipItem}
+              childName={childName}
             />
           )}
 

@@ -11,6 +11,10 @@ interface CelebrationModalProps {
   gemsEarned: number;
   stageTitle: string;
   onContinue: () => void;
+  childName?: string;
+  equippedHat?: string;
+  equippedGlasses?: string;
+  equippedCape?: string;
 }
 
 export const CelebrationModal: React.FC<CelebrationModalProps> = ({
@@ -18,11 +22,15 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
   gemsEarned,
   stageTitle,
   onContinue,
+  childName = 'Faqih',
+  equippedHat = 'hat-default',
+  equippedGlasses = 'glasses-none',
+  equippedCape = 'cape-none',
 }) => {
   useEffect(() => {
     // Play celebratory fanfare
     soundManager.playFanfare();
-    ttsNarrator.speak('Luar biasa! Pelajaran selesai, kamu hebat sekali!');
+    ttsNarrator.speak(`Luar biasa ${childName}! Pelajaran selesai, kamu hebat sekali!`);
 
     // Trigger colorful confetti explosion
     try {
@@ -35,7 +43,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
     } catch {
       // ignore
     }
-  }, []);
+  }, [childName]);
 
   return (
     <motion.div
@@ -43,16 +51,23 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center text-center p-4 max-w-sm mx-auto"
     >
-      {/* Animated Boni celebrating */}
+      {/* Animated Mascot celebrating in equipped costume */}
       <div className="mb-2">
-        <BoniMascot mood="cheering" size="lg" />
+        <BoniMascot
+          mood="cheering"
+          size="lg"
+          characterName={childName}
+          equippedHat={equippedHat}
+          equippedGlasses={equippedGlasses}
+          equippedCape={equippedCape}
+        />
       </div>
 
       <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-1">
-        Pelajaran Selesai!
+        Hebat, {childName}!
       </h2>
       <p className="text-xs sm:text-sm font-bold text-slate-400 mb-6">
-        {stageTitle}
+        Pelajaran Selesai • {stageTitle}
       </p>
 
       {/* Glowing Gold Stars Card */}

@@ -8,6 +8,7 @@ import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
 interface LetterTracingGameProps {
   question: Question;
   onCorrect: () => void;
+  childName?: string;
 }
 
 interface Particle {
@@ -18,7 +19,7 @@ interface Particle {
   alpha: number;
 }
 
-export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, onCorrect }) => {
+export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, onCorrect, childName = 'Faqih' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [tracedPointsCount, setTracedPointsCount] = useState(0);
@@ -34,11 +35,11 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
 
     const timer = setTimeout(() => {
       soundManager.playPop();
-      ttsNarrator.speak(`Ayo tulis huruf ${question.targetName}! Telusuri garisnya dengan jarimu!`);
+      ttsNarrator.speak(`Ayo tulis huruf ${question.targetName}! Telusuri garisnya dengan jarimu ${childName}!`);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [question.id]);
+  }, [question.id, childName]);
 
   // Canvas drawing loop for magical sparkling particles
   useEffect(() => {
@@ -157,7 +158,7 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     setIsDrawing(false);
     soundManager.playCorrect();
 
-    ttsNarrator.speakPraise(() => {
+    ttsNarrator.speakPraise(childName, () => {
       onCorrect();
     });
   };

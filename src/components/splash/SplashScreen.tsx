@@ -5,21 +5,15 @@ import { soundManager } from '../../core/audio/soundManager';
 
 interface SplashScreenProps {
   onComplete: () => void;
+  childName?: string;
   equippedHat?: string;
   equippedGlasses?: string;
   equippedCape?: string;
 }
 
-const FUN_TIPS = [
-  'Boni sedang merapikan peci...',
-  'Menyiapkan kartu huruf hijaiyah...',
-  'Tahukah kamu? Huruf BA punya mangkok dan 1 bakso di bawah!',
-  'Tahukah kamu? Huruf TA punya 2 mata tersenyum!',
-  'Bismillah, ayo siap bertualang!',
-];
-
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   onComplete,
+  childName = 'Faqih',
   equippedHat = 'hat-default',
   equippedGlasses = 'glasses-none',
   equippedCape = 'cape-none',
@@ -27,6 +21,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   const [progress, setProgress] = useState(0);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
+
+  const funTips = [
+    `${childName} sedang bersiap-siap...`,
+    'Menyiapkan kartu huruf hijaiyah...',
+    'Tahukah kamu? Huruf BA punya mangkok dan 1 bakso di bawah!',
+    'Tahukah kamu? Huruf TA punya 2 mata tersenyum!',
+    `Bismillah, ayo ${childName} kita bertualang!`,
+  ];
 
   // Smoothly increment progress bar to 100% over ~2 seconds
   useEffect(() => {
@@ -49,11 +51,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   // Rotate fun tips every 1.4 seconds
   useEffect(() => {
     const tipInterval = setInterval(() => {
-      setCurrentTipIndex((prev) => (prev + 1) % FUN_TIPS.length);
+      setCurrentTipIndex((prev) => (prev + 1) % funTips.length);
     }, 1400);
 
     return () => clearInterval(tipInterval);
-  }, []);
+  }, [funTips.length]);
 
   const handleFinish = () => {
     if (isFinishing) return;
@@ -323,7 +325,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               transition={{ duration: 0.3 }}
               className="text-xs sm:text-sm font-extrabold text-white/95 px-4 drop-shadow"
             >
-              {FUN_TIPS[currentTipIndex]}
+              {funTips[currentTipIndex]}
             </motion.p>
           </AnimatePresence>
         </div>

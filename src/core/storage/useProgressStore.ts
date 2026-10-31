@@ -5,6 +5,7 @@ import { soundManager } from '../audio/soundManager';
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
 
 const DEFAULT_PROGRESS: UserProgress = {
+  childName: 'Faqih',
   currentIqroLevel: 1,
   completedStages: {},
   starsTotal: 0,
@@ -146,6 +147,11 @@ export function useProgressStore() {
     });
   };
 
+  const setChildName = (name: string) => {
+    const trimmed = name.trim() || 'Faqih';
+    setProgress(prev => ({ ...prev, childName: trimmed }));
+  };
+
   const resetAllProgress = () => {
     soundManager.playPop();
     localStorage.removeItem(STORAGE_KEY);
@@ -154,6 +160,7 @@ export function useProgressStore() {
 
   return {
     progress,
+    setChildName,
     setIqroLevel,
     completeStage,
     toggleSound,

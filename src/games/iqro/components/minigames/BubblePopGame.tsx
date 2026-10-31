@@ -8,6 +8,7 @@ import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
 interface BubblePopGameProps {
   question: Question;
   onCorrect: () => void;
+  childName?: string;
 }
 
 const BUBBLE_COLORS = [
@@ -18,7 +19,7 @@ const BUBBLE_COLORS = [
   'from-purple-400 to-indigo-500 border-purple-300 shadow-purple-200',
 ];
 
-export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrect }) => {
+export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrect, childName = 'Faqih' }) => {
   const [poppedLetters, setPoppedLetters] = useState<Record<string, boolean>>({});
   const [isDone, setIsDone] = useState(false);
 
@@ -43,12 +44,12 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
     if (isCorrect) {
       setIsDone(true);
       soundManager.playCorrect();
-      ttsNarrator.speakPraise(() => {
+      ttsNarrator.speakPraise(childName, () => {
         onCorrect();
       });
     } else {
       soundManager.playGentleWrong();
-      ttsNarrator.speakEncourage();
+      ttsNarrator.speakEncourage(childName);
     }
   };
 

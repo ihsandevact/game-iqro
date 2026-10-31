@@ -8,7 +8,7 @@ export const COSTUME_ITEMS: CostumeItem[] = [
     category: 'hat',
     price: 0,
     icon: '🎩',
-    description: 'Peci klasik Boni yang anggun dan santun.'
+    description: 'Peci klasik santri yang anggun dan santun.'
   },
   {
     id: 'hat-red',
@@ -42,7 +42,7 @@ export const COSTUME_ITEMS: CostumeItem[] = [
     category: 'glasses',
     price: 0,
     icon: '👀',
-    description: 'Mata alami Boni yang jernih dan bulat.'
+    description: 'Mata alami yang jernih dan bulat ceria.'
   },
   {
     id: 'glasses-round',
@@ -50,7 +50,7 @@ export const COSTUME_ITEMS: CostumeItem[] = [
     category: 'glasses',
     price: 50,
     icon: '👓',
-    description: 'Membuat Boni tampak seperti profesor cilik!'
+    description: 'Tampak keren dan pintar seperti profesor cilik!'
   },
   {
     id: 'glasses-star',

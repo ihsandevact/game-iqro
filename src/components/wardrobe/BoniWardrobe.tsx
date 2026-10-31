@@ -15,6 +15,7 @@ interface BoniWardrobeProps {
   equippedCape: string;
   onBuyItem: (item: CostumeItem) => boolean;
   onEquipItem: (category: CostumeCategory, itemId: string) => void;
+  childName?: string;
 }
 
 export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
@@ -25,6 +26,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
   equippedCape,
   onBuyItem,
   onEquipItem,
+  childName = 'Faqih',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<CostumeCategory>('hat');
 
@@ -35,7 +37,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
 
     if (isUnlocked) {
       onEquipItem(item.category, item.id);
-      ttsNarrator.speak(`Boni memakai ${item.name}! Keren sekali!`);
+      ttsNarrator.speak(`${childName} memakai ${item.name}! Keren sekali!`);
     } else {
       if (gemsTotal >= item.price) {
         const success = onBuyItem(item);
@@ -62,17 +64,18 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
           <BoniMascot
             mood="happy"
             size="lg"
+            characterName={childName}
             equippedHat={equippedHat}
             equippedGlasses={equippedGlasses}
             equippedCape={equippedCape}
             showSpeechBubble={true}
-            speechText="Bagaimana penampilanku sekarang?"
+            speechText={`Bagaimana penampilanku sekarang, ${childName}?`}
           />
         </div>
 
-        <h3 className="text-base font-black text-slate-800 mt-2">Koleksi Boni</h3>
+        <h3 className="text-base font-black text-slate-800 mt-2">Koleksi {childName}</h3>
         <p className="text-xs font-semibold text-slate-500 text-center">
-          Dandani Boni dengan pakaian favoritmu!
+          Dandani {childName} dengan pakaian favoritmu!
         </p>
 
         {/* Gems Wallet Pill */}

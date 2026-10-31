@@ -8,9 +8,10 @@ import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
 interface ListenTapGameProps {
   question: Question;
   onCorrect: () => void;
+  childName?: string;
 }
 
-export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrect }) => {
+export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrect, childName = 'Faqih' }) => {
   const [disabledOptions, setDisabledOptions] = useState<Record<string, boolean>>({});
   const [wigglingOption, setWigglingOption] = useState<string | null>(null);
   const [selectedCorrect, setSelectedCorrect] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
     if (isCorrect) {
       setSelectedCorrect(letter);
       soundManager.playCorrect();
-      ttsNarrator.speakPraise(() => {
+      ttsNarrator.speakPraise(childName, () => {
         onCorrect();
       });
     } else {
@@ -51,7 +52,7 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
         setDisabledOptions((prev) => ({ ...prev, [letter]: true }));
         setWigglingOption(null);
       }, 500);
-      ttsNarrator.speakEncourage();
+      ttsNarrator.speakEncourage(childName);
     }
   };
 

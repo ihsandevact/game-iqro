@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Volume2, VolumeX, RotateCcw, AlertTriangle, ShieldCheck, Star, Gem, Flame, Check, Smartphone, Download } from 'lucide-react';
+import { X, Settings, Volume2, VolumeX, RotateCcw, AlertTriangle, ShieldCheck, Star, Gem, Flame, Check, Smartphone, Download, User } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
+import { BoniMascot } from '../mascot/BoniMascot';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  childName: string;
+  onUpdateChildName: (name: string) => void;
   currentLevel: IqroLevelId;
   starsTotal: number;
   gemsTotal: number;
@@ -18,11 +21,16 @@ interface SettingsModalProps {
   onResetAll: () => void;
   isInstallable?: boolean;
   onInstallPwa?: () => void;
+  equippedHat?: string;
+  equippedGlasses?: string;
+  equippedCape?: string;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
+  childName,
+  onUpdateChildName,
   currentLevel,
   starsTotal,
   gemsTotal,
@@ -33,14 +41,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onResetAll,
   isInstallable,
   onInstallPwa,
+  equippedHat = 'hat-default',
+  equippedGlasses = 'glasses-none',
+  equippedCape = 'cape-none',
 }) => {
   const [resetTarget, setResetTarget] = useState<'level' | 'all' | null>(null);
   const [parentalMath, setParentalMath] = useState<{ num1: number; num2: number; answer: number } | null>(null);
   const [mathAnswerInput, setMathAnswerInput] = useState('');
   const [mathError, setMathError] = useState(false);
   const [resetSuccessMsg, setResetSuccessMsg] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState(childName || 'Faqih');
+  const [isNameSaved, setIsNameSaved] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim() || 'Faqih';
+    setNameInput(trimmed);
+    onUpdateChildName(trimmed);
+    setIsNameSaved(true);
+    soundManager.playCorrect();
+    ttsNarrator.speakGreeting(trimmed);
+    setTimeout(() => setIsNameSaved(false), 2500);
+  };
 
   const triggerResetGate = (target: 'level' | 'all') => {
     soundManager.playPop();
@@ -118,6 +141,67 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <span>{resetSuccessMsg}</span>
             </motion.div>
           )}
+
+          {/* Profil Belajar Santri / Nama Karakter */}
+          <div>
+            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2.5 flex items-center gap-1.5">
+              <User className="w-4 h-4 text-duo-green" />
+              <span>Profil Santri Cilik</span>
+            </h3>
+            <div className="p-3.5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border-2 border-emerald-200 rounded-2xl flex items-center gap-3.5 shadow-sm">
+              {/* Mascot preview wearing equipped items */}
+              <div className="w-16 h-16 bg-white rounded-2xl border-2 border-emerald-300 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <BoniMascot
+                  mood="happy"
+                  size="sm"
+                  equippedHat={equippedHat}
+                  equippedGlasses={equippedGlasses}
+                  equippedCape={equippedCape}
+                  characterName={nameInput}
+                />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="childNameInput" className="text-xs font-black text-slate-800">
+                    Nama Panggilan Anak
+                  </label>
+                  {isNameSaved && (
+                    <span className="text-[10px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-full border border-emerald-300 shadow-sm animate-pulse">
+                      ✓ Tersimpan
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="childNameInput"
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => {
+                      setNameInput(e.target.value);
+                      setIsNameSaved(false);
+                    }}
+                    onBlur={handleSaveName}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveName();
+                    }}
+                    maxLength={15}
+                    placeholder="Contoh: Faqih"
+                    className="flex-1 px-3 py-1.5 text-xs sm:text-sm font-black text-slate-800 bg-white rounded-xl border-2 border-slate-300 focus:border-duo-green outline-none transition"
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    className="px-3 py-1.5 bg-duo-green hover:bg-duo-greenDark active:scale-95 text-white font-black text-xs rounded-xl shadow-duo-green transition shrink-0"
+                  >
+                    Simpan
+                  </button>
+                </div>
+                <div className="text-[10px] font-semibold text-slate-500 mt-1">
+                  Nama ini dipanggil Faqih saat memuji & menyemangati si kecil!
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Rapor Belajar Santri */}
           <div>

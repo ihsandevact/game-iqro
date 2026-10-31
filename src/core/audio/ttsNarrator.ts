@@ -58,26 +58,41 @@ class TTSNarrator {
     this.speak(letterName, onEnd);
   }
 
-  public speakPraise(onEnd?: () => void) {
+  public speakPraise(childNameOrOnEnd?: string | (() => void), onEnd?: () => void) {
+    let childName = 'Faqih';
+    let callback = onEnd;
+
+    if (typeof childNameOrOnEnd === 'function') {
+      callback = childNameOrOnEnd;
+    } else if (typeof childNameOrOnEnd === 'string' && childNameOrOnEnd.trim()) {
+      childName = childNameOrOnEnd.trim();
+    }
+
     const praises = [
-      'Hebat sekali!',
-      'Masya Allah, pintar!',
-      'Luar biasa, benar!',
-      'Wah, keren banget!',
-      'Bagus sekali!'
+      `Hebat sekali, ${childName}!`,
+      `Masya Allah, ${childName} pintar!`,
+      `Luar biasa, benar sekali!`,
+      `Wah, keren banget ${childName}!`,
+      `Bagus sekali, ${childName}!`
     ];
     const chosen = praises[Math.floor(Math.random() * praises.length)];
-    this.speak(chosen, onEnd);
+    this.speak(chosen, callback);
   }
 
-  public speakEncourage(onEnd?: () => void) {
+  public speakEncourage(childName?: string, onEnd?: () => void) {
+    const name = childName?.trim() || 'Faqih';
     const encourages = [
-      'Oops, ayo coba dengarkan lagi ya!',
-      'Hampir benar, yuk coba lagi!',
-      'Ayo semangat, kamu pasti bisa!'
+      `Oops, ayo coba dengarkan lagi ya ${name}!`,
+      `Hampir benar, yuk coba lagi ${name}!`,
+      `Ayo semangat ${name}, kamu pasti bisa!`
     ];
     const chosen = encourages[Math.floor(Math.random() * encourages.length)];
     this.speak(chosen, onEnd);
+  }
+
+  public speakGreeting(childName: string, onEnd?: () => void) {
+    const name = childName.trim() || 'Faqih';
+    this.speak(`Halo ${name}! Ayo semangat belajar mengaji bersamaku!`, onEnd);
   }
 
   public stop() {

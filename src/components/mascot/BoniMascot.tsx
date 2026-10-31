@@ -4,6 +4,7 @@ import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
 
 interface BoniMascotProps {
+  characterName?: string;
   mood?: 'idle' | 'happy' | 'cheering' | 'thinking';
   size?: 'sm' | 'md' | 'lg';
   showSpeechBubble?: boolean;
@@ -15,15 +16,18 @@ interface BoniMascotProps {
 }
 
 export const BoniMascot: React.FC<BoniMascotProps> = ({
+  characterName = 'Faqih',
   mood = 'idle',
   size = 'md',
   showSpeechBubble = false,
-  speechText = 'Ayo belajar mengaji bersama Boni!',
+  speechText,
   equippedHat = 'hat-default',
   equippedGlasses = 'glasses-none',
   equippedCape = 'cape-none',
   onClick,
 }) => {
+  const effectiveSpeechText = speechText || `Ayo belajar mengaji bersama ${characterName}!`;
+
   const sizeMap = {
     sm: 'w-20 h-20',
     md: 'w-32 h-32',
@@ -32,7 +36,7 @@ export const BoniMascot: React.FC<BoniMascotProps> = ({
 
   const handleTap = () => {
     soundManager.playPop();
-    ttsNarrator.speak('Halo! Boni siap menemanimu!');
+    ttsNarrator.speak(`Halo! ${characterName} siap menemanimu!`);
     onClick?.();
   };
 
@@ -45,7 +49,7 @@ export const BoniMascot: React.FC<BoniMascotProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           className="mb-2 max-w-[200px] bg-white border-2 border-duo-green/40 shadow-duo-card rounded-2xl p-2.5 text-center text-xs md:text-sm font-bold text-slate-700 relative z-20"
         >
-          {speechText}
+          {effectiveSpeechText}
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white" />
         </motion.div>
       )}

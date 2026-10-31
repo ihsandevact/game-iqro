@@ -60,6 +60,7 @@ export interface CostumeItem {
 }
 
 export interface UserProgress {
+  childName: string;
   currentIqroLevel: IqroLevelId;
   completedStages: Record<string, { stars: number; highscore: number }>;
   starsTotal: number;

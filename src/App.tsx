@@ -15,6 +15,7 @@ import { useProgressStore } from './core/storage/useProgressStore';
 export function App() {
   const {
     progress,
+    setChildName,
     setIqroLevel,
     completeStage,
     toggleSound,
@@ -53,6 +54,7 @@ export function App() {
         {isAppLoading && (
           <SplashScreen
             onComplete={() => setIsAppLoading(false)}
+            childName={progress.childName}
             equippedHat={progress.equippedHat}
             equippedGlasses={progress.equippedGlasses}
             equippedCape={progress.equippedCape}
@@ -78,6 +80,7 @@ export function App() {
         equippedCape={progress.equippedCape}
         onBuyItem={buyCostume}
         onEquipItem={equipCostume}
+        childName={progress.childName}
       >
         <JourneyMap
           currentBook={currentBook}
@@ -93,6 +96,10 @@ export function App() {
           stage={selectedStage}
           onClose={() => setSelectedStage(null)}
           onComplete={handleCompleteStage}
+          childName={progress.childName}
+          equippedHat={progress.equippedHat}
+          equippedGlasses={progress.equippedGlasses}
+          equippedCape={progress.equippedCape}
         />
       )}
 
@@ -100,6 +107,8 @@ export function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        childName={progress.childName}
+        onUpdateChildName={setChildName}
         currentLevel={progress.currentIqroLevel}
         starsTotal={progress.starsTotal}
         gemsTotal={progress.gemsTotal}
@@ -110,6 +119,9 @@ export function App() {
         onResetAll={resetAllProgress}
         isInstallable={isInstallable}
         onInstallPwa={installApp}
+        equippedHat={progress.equippedHat}
+        equippedGlasses={progress.equippedGlasses}
+        equippedCape={progress.equippedCape}
       />
 
       {/* iOS Safari Guide Modal */}
