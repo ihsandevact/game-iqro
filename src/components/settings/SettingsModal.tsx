@@ -116,12 +116,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         onResetLevel(currentLevel);
         setResetSuccessMsg(`Progres Iqro ${currentLevel} berhasil diulang dari awal!`);
         soundManager.playCorrect();
-        ttsNarrator.speak('Progres berhasil direset!');
+        ttsNarrator.speakResetSuccess();
       } else {
         onResetAll();
         setResetSuccessMsg('Seluruh petualangan berhasil direset ke kondisi awal!');
         soundManager.playCorrect();
-        ttsNarrator.speak('Progres berhasil direset!');
+        ttsNarrator.speakResetSuccess();
       }
 
       setParentalMath(null);

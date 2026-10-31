@@ -153,9 +153,19 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
 
   // Waw / Wa
   'waw': '/audio/letters/waw.mp3',
+  'wau': '/audio/letters/waw.mp3',
   'wa': '/audio/letters/waw.mp3',
   'و': '/audio/letters/waw.mp3',
   'وَ': '/audio/letters/waw.mp3',
+
+  // Mad Asli (2 Harakat) aliases
+  'baa': '/audio/letters/ba.mp3',
+  'taa': '/audio/letters/ta.mp3',
+  'jaa': '/audio/letters/jim.mp3',
+  'dzaa': '/audio/letters/dzal.mp3',
+  'shoo': '/audio/letters/shod.mp3',
+  'kaa': '/audio/letters/kaf.mp3',
+  'qoo': '/audio/letters/qof.mp3',
 
   // Ha (besar/pangkal)
   'haa': '/audio/letters/haa.mp3',
@@ -237,33 +247,50 @@ class TTSNarrator {
     if (single) return [single];
 
     // 2. Hyphenated / space-separated Latin (e.g. "Ba-Ta", "Ka-Ta-Ba")
+    // Strictly requires 2 to 5 parts, and ALL parts MUST be valid Hijaiyah letters!
     if (trimmed.includes('-') || trimmed.includes(' ')) {
       const parts = trimmed.split(/[- ]+/).filter(Boolean);
+      if (parts.length >= 2 && parts.length <= 5) {
+        const paths: string[] = [];
+        let allValid = true;
+        for (const p of parts) {
+          const path = this.getLetterAudioPath(p);
+          if (path) {
+            paths.push(path);
+          } else {
+            allValid = false;
+            break;
+          }
+        }
+        if (allValid && paths.length === parts.length) {
+          return paths;
+        }
+      }
+    }
+
+    // 3. Arabic word character-by-character analysis (Iqro 2 joined letters ONLY)
+    // Strictly requires Arabic characters in the string!
+    if (/[\u0600-\u06FF]/.test(trimmed)) {
       const paths: string[] = [];
-      for (const p of parts) {
-        const path = this.getLetterAudioPath(p);
-        if (path) paths.push(path);
+      const chars = trimmed.split('');
+      for (let i = 0; i < chars.length; i++) {
+        const c = chars[i];
+        // Skip harakat marks (fathah, kasrah, dammah, sukun, etc.)
+        if (/[\u064B-\u065F\u0670]/.test(c)) continue;
+        // Skip trailing/connecting Alif in Mad Asli (e.g. in "بَا")
+        if (c === 'ا' && paths.length > 0) continue;
+
+        const path = this.getLetterAudioPath(c);
+        if (path) {
+          paths.push(path);
+        }
       }
-      if (paths.length > 0) return paths;
-    }
-
-    // 3. Arabic word character-by-character analysis (Iqro 2 joined letters)
-    const paths: string[] = [];
-    const chars = trimmed.split('');
-    for (let i = 0; i < chars.length; i++) {
-      const c = chars[i];
-      // Skip harakat marks (fathah, kasrah, dammah, sukun, etc.)
-      if (/[\u064B-\u065F\u0670]/.test(c)) continue;
-      // Skip trailing/connecting Alif in Mad Asli (e.g. in "بَا")
-      if (c === 'ا' && paths.length > 0) continue;
-
-      const path = this.getLetterAudioPath(c);
-      if (path) {
-        paths.push(path);
+      if (paths.length > 0) {
+        return paths;
       }
     }
 
-    return paths;
+    return [];
   }
 
   public playAudio(src: string, onEnd?: () => void): boolean {
@@ -414,6 +441,45 @@ class TTSNarrator {
     }
   }
 
+  // Universal Prompt Target Extractor: handles colons, prefixes, adjectives, and question marks
+  public extractTargetFromPrompt(text: string): string {
+    const clean = text.replace(/\([^)]*\)/g, '').trim();
+
+    // 1. If colon ":", target is after colon (e.g. "Ayo coba tulis: RO - ZA!", "bacaan: BA - TA!")
+    if (clean.includes(':')) {
+      let afterColon = clean.split(':')[1].trim();
+      afterColon = afterColon.replace(/^(?:huruf|kata|bacaan)\s+/i, '').trim();
+      afterColon = afterColon.replace(/[!?.]+$/, '').trim();
+      if (afterColon) return afterColon;
+    }
+
+    // 2. Match after "huruf", "kata", "bacaan"
+    const m = clean.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
+    if (m) {
+      let target = m[1].trim().replace(/[!?.]+$/, '').trim();
+      // If space-separated without hyphen (e.g. "KHA bertopi"), take the first word if valid
+      const words = target.split(/\s+/);
+      if (words.length > 1 && !target.includes('-')) {
+        if (this.getLetterAudioPath(words[0])) {
+          return words[0];
+        }
+      }
+      if (!['tiga', 'pertama', 'pamungkas', 'panjang', 'pendek'].includes(target.toLowerCase())) {
+        return target;
+      }
+    }
+
+    // 3. Match before question mark e.g. "Yang mana huruf A?", "Yang mana ZA?"
+    const qMatch = clean.match(/([A-Za-z'ء-ي\- ]+)\s*\?/);
+    if (qMatch) {
+      let target = qMatch[1].trim();
+      target = target.replace(/^(?:yang\s+mana|mana|apa)\s+(?:huruf|kata|bacaan\s+)?/i, '').trim();
+      return target;
+    }
+
+    return clean;
+  }
+
   // Smart Speech Dispatcher: parses prompt and chains natural audio
   public speak(text: string, onEnd?: () => void) {
     const lower = text.toLowerCase().trim();
@@ -428,6 +494,18 @@ class TTSNarrator {
     if (lower.includes('senang berkenalan') || lower.includes('petualangan belajar iqro')) {
       return this.playAudio('/audio/prompts/prompt_kenalan_sukses.mp3', onEnd);
     }
+    if (lower.includes('memakai') || lower.includes('cocok sekali')) {
+      return this.playAudio('/audio/prompts/prompt_pakai_kostum.mp3', onEnd);
+    }
+    if (lower.includes('berhasil dibeli')) {
+      return this.playAudio('/audio/prompts/prompt_beli_sukses.mp3', onEnd);
+    }
+    if (lower.includes('permata belum cukup')) {
+      return this.playAudio('/audio/prompts/prompt_permata_kurang.mp3', onEnd);
+    }
+    if (lower.includes('berhasil direset') || lower.includes('data direset')) {
+      return this.playAudio('/audio/prompts/prompt_reset_sukses.mp3', onEnd);
+    }
     if (lower.includes('semangat belajar mengaji') || lower.includes('halo')) {
       return this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
     }
@@ -437,37 +515,33 @@ class TTSNarrator {
 
     // 1. Balloon game prompt
     if (lower.includes('balon') || lower.includes('letuskan') || lower.includes('pecahkan')) {
-      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
-      const letter = match ? match[1].trim() : '';
-      if (letter && this.getWordAudioPaths(letter).length > 0) {
-        return this.askPopLetter(letter, onEnd);
+      const target = this.extractTargetFromPrompt(cleanText);
+      if (target && this.getWordAudioPaths(target).length > 0) {
+        return this.askPopLetter(target, onEnd);
       }
     }
 
     // 2. Tracing game prompt
     if (lower.includes('tulis')) {
-      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
-      const letter = match ? match[1].trim() : '';
-      if (letter && this.getWordAudioPaths(letter).length > 0) {
-        return this.askTraceLetter(letter, onEnd);
+      const target = this.extractTargetFromPrompt(cleanText);
+      if (target && this.getWordAudioPaths(target).length > 0) {
+        return this.askTraceLetter(target, onEnd);
       }
     }
 
     // 3. Which one ("Yang mana") prompt
     if (lower.includes('mana')) {
-      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i) || cleanText.match(/([A-Za-z'ء-ي\- ]+)\s*\?/i);
-      const letter = match ? match[1].trim() : '';
-      if (letter && this.getWordAudioPaths(letter).length > 0) {
-        return this.askWhichLetter(letter, onEnd);
+      const target = this.extractTargetFromPrompt(cleanText);
+      if (target && this.getWordAudioPaths(target).length > 0) {
+        return this.askWhichLetter(target, onEnd);
       }
     }
 
     // 4. Find letter ("Cari" / "Pilih") prompt
     if (lower.includes('cari') || lower.includes('pilih')) {
-      const match = cleanText.match(/(?:huruf|bacaan|kata)\s+([A-Za-z'ء-ي\- ]+)/i);
-      const letter = match ? match[1].trim() : '';
-      if (letter && this.getWordAudioPaths(letter).length > 0) {
-        return this.askFindLetter(letter, onEnd);
+      const target = this.extractTargetFromPrompt(cleanText);
+      if (target && this.getWordAudioPaths(target).length > 0) {
+        return this.askFindLetter(target, onEnd);
       }
     }
 
@@ -547,6 +621,26 @@ class TTSNarrator {
 
   public speakIntroductionSuccess(onEnd?: () => void) {
     this.playAudio('/audio/prompts/prompt_kenalan_sukses.mp3', onEnd);
+  }
+
+  public speakEquipCostume(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_pakai_kostum.mp3', onEnd);
+  }
+
+  public speakBuyCostume(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_beli_sukses.mp3', onEnd);
+  }
+
+  public speakNotEnoughGems(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_permata_kurang.mp3', onEnd);
+  }
+
+  public speakResetSuccess(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_reset_sukses.mp3', onEnd);
+  }
+
+  public speakLessonComplete(onEnd?: () => void) {
+    this.playAudio('/audio/prompts/prompt_selesai.mp3', onEnd);
   }
 
   public isSpeaking(): boolean {

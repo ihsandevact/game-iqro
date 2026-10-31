@@ -38,17 +38,19 @@ export const IqroWardrobe: React.FC<IqroWardrobeProps> = ({
     const isUnlocked = unlockedItems.includes(item.id);
 
     if (isUnlocked) {
+      soundManager.playPop();
       onEquipItem(item.category, item.id);
-      ttsNarrator.speak(`${childName} memakai ${item.name}! Keren sekali!`);
+      ttsNarrator.speakEquipCostume();
     } else {
       if (gemsTotal >= item.price) {
         const success = onBuyItem(item);
         if (success) {
-          ttsNarrator.speak(`Hore! ${item.name} berhasil dibeli!`);
+          soundManager.playCorrect();
+          ttsNarrator.speakBuyCostume();
         }
       } else {
         soundManager.playGentleWrong();
-        ttsNarrator.speak('Permata belum cukup, ayo belajar lagi untuk mengumpulkan permata!');
+        ttsNarrator.speakNotEnoughGems();
       }
     }
   };

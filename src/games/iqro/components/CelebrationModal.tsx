@@ -30,7 +30,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
   useEffect(() => {
     // Play celebratory fanfare
     soundManager.playFanfare();
-    ttsNarrator.speak(`Luar biasa ${childName}! Pelajaran selesai, kamu hebat sekali!`);
+    ttsNarrator.speakLessonComplete();
 
     // Trigger colorful confetti explosion
     try {
