@@ -121,7 +121,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </p>
       </motion.div>
 
-      {/* Center: Playful Moving Mascot Boni (Walk & Bounce Cycle) */}
+      {/* Center: Playful Moving Mascot Iqro (Walk & Bounce Cycle) */}
       <div className="flex flex-col items-center justify-center my-auto relative z-10">
         <motion.div
           animate={{

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
 
-interface BoniMascotProps {
+export interface IqroMascotProps {
   characterName?: string;
   mood?: 'idle' | 'happy' | 'cheering' | 'thinking';
   size?: 'sm' | 'md' | 'lg';
@@ -15,7 +15,9 @@ interface BoniMascotProps {
   onClick?: () => void;
 }
 
-export const BoniMascot: React.FC<BoniMascotProps> = ({
+export type BoniMascotProps = IqroMascotProps;
+
+export const IqroMascot: React.FC<IqroMascotProps> = ({
   characterName = 'Faqih',
   mood = 'idle',
   size = 'md',
@@ -223,3 +225,5 @@ export const BoniMascot: React.FC<BoniMascotProps> = ({
     </div>
   );
 };
+
+export const BoniMascot = IqroMascot;

@@ -103,10 +103,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight mb-1">
-            Kenalan dengan Boni, yuk!
+            Kenalan dengan Iqro, yuk!
           </h2>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 max-w-xs leading-relaxed mb-4">
-            Boni siap jadi sahabat setia menemani langkahmu belajar membaca Al-Qur'an.
+            Iqro siap jadi sahabat setia menemani langkahmu belajar membaca Al-Qur'an.
           </p>
 
           {/* Interactive Mascot Presentation */}
@@ -119,7 +119,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
               equippedGlasses={equippedGlasses}
               equippedCape={equippedCape}
               showSpeechBubble={true}
-              speechText="Namaku Boni! Siapa namamu?"
+              speechText="Namaku Iqro! Siapa namamu?"
               onClick={handleReplayGreeting}
             />
 
@@ -128,10 +128,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
               type="button"
               onClick={handleReplayGreeting}
               className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-duo-green bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200 transition active:scale-95 shadow-xs"
-              title="Dengarkan suara Boni"
+              title="Dengarkan suara Iqro"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>Dengar Sapaan Boni</span>
+              <span>Dengar Sapaan Iqro</span>
             </button>
           </div>
 

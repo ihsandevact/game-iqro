@@ -7,7 +7,7 @@ import { BoniMascot } from '../mascot/BoniMascot';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
 
-interface BoniWardrobeProps {
+export interface IqroWardrobeProps {
   gemsTotal: number;
   unlockedItems: string[];
   equippedHat: string;
@@ -18,7 +18,9 @@ interface BoniWardrobeProps {
   childName?: string;
 }
 
-export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
+export type BoniWardrobeProps = IqroWardrobeProps;
+
+export const IqroWardrobe: React.FC<IqroWardrobeProps> = ({
   gemsTotal,
   unlockedItems,
   equippedHat,
@@ -254,3 +256,5 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
     </div>
   );
 };
+
+export const BoniWardrobe = IqroWardrobe;

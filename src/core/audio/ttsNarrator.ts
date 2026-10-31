@@ -422,7 +422,7 @@ class TTSNarrator {
     if (lower.includes('pelajaran selesai') || lower.includes('luar biasa')) {
       return this.playAudio('/audio/prompts/prompt_selesai.mp3', onEnd);
     }
-    if (lower.includes('kenalan') || lower.includes('siapa nama') || lower.includes('namaku boni')) {
+    if (lower.includes('kenalan') || lower.includes('siapa nama') || lower.includes('namaku iqro') || lower.includes('namaku boni')) {
       return this.playAudio('/audio/prompts/prompt_kenalan.mp3', onEnd);
     }
     if (lower.includes('senang berkenalan') || lower.includes('petualangan belajar iqro')) {

@@ -22,7 +22,7 @@ AUDIO_ITEMS = [
     # Celebrations & Greetings
     ("prompts/prompt_selesai.mp3", "Alhamdulillah! Pelajaran selesai, kamu hebat sekali!"),
     ("prompts/prompt_sapaan.mp3", "Halo! Ayo semangat belajar mengaji bersamaku!"),
-    ("prompts/prompt_kenalan.mp3", "Assalamu'alaikum sahabat cilik! Kenalan yuk, namaku Boni! Siapa namamu?"),
+    ("prompts/prompt_kenalan.mp3", "Assalamu'alaikum sahabat cilik! Kenalan yuk, namaku Iqro! Siapa namamu?"),
     ("prompts/prompt_kenalan_sukses.mp3", "Wah hebat! Senang berkenalan denganmu! Bismillah, ayo kita mulai petualangan belajar Iqro!"),
     ("prompts/prompt_dengarkan.mp3", "Dengarkan suara huruf ini!"),
     ("prompts/prompt_cari_ba.mp3", "Ayo cari huruf BA!"),
