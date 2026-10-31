@@ -171,7 +171,8 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
 
   // Hamzah
   'hamzah': '/audio/letters/hamzah.mp3',
-  'ء': '/audio/letters/hamzah.mp3',
+  'ء': '/audio/letters/a.mp3',
+  'ءَ': '/audio/letters/a.mp3',
 
   // Ya
   'ya': '/audio/letters/ya.mp3',
@@ -405,6 +406,9 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'tsuu': '/audio/letters/tsuu.mp3',
   'ثُوْ': '/audio/letters/tsuu.mp3',
   'ثُو': '/audio/letters/tsuu.mp3',
+  'juu': '/audio/letters/juu.mp3',
+  'جُوْ': '/audio/letters/juu.mp3',
+  'جُو': '/audio/letters/juu.mp3',
   'duu': '/audio/letters/duu.mp3',
   'دُوْ': '/audio/letters/duu.mp3',
   'دُو': '/audio/letters/duu.mp3',
