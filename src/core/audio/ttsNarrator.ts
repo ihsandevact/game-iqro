@@ -3,35 +3,35 @@ import { getAllCachedAudioForName } from './customAudioCache';
 // Authentic Studio Makhraj Audio & Indonesian Child-Friendly Narrator Engine
 
 export const LETTER_AUDIO_MAP: Record<string, string> = {
-  // Alif / A
+  // Alif / A (Fathah murni: "A")
   'alif': '/audio/letters/alif.mp3',
-  'a': '/audio/letters/alif.mp3',
-  'ا': '/audio/letters/alif.mp3',
-  'اَ': '/audio/letters/alif.mp3',
-  'أ': '/audio/letters/alif.mp3',
-  'أَ': '/audio/letters/alif.mp3',
+  'a': '/audio/letters/a.mp3',
+  'ا': '/audio/letters/a.mp3',
+  'اَ': '/audio/letters/a.mp3',
+  'أ': '/audio/letters/a.mp3',
+  'أَ': '/audio/letters/a.mp3',
 
-  // Ba
+  // Ba (Fathah: "Ba")
   'ba': '/audio/letters/ba.mp3',
   'ب': '/audio/letters/ba.mp3',
   'بَ': '/audio/letters/ba.mp3',
 
-  // Ta
+  // Ta (Fathah: "Ta")
   'ta': '/audio/letters/ta.mp3',
   'ت': '/audio/letters/ta.mp3',
   'تَ': '/audio/letters/ta.mp3',
 
-  // Tsa / Tha
+  // Tsa / Tha (Fathah: "Tsa")
   'tsa': '/audio/letters/tsa.mp3',
   'tha': '/audio/letters/tsa.mp3',
   'ث': '/audio/letters/tsa.mp3',
   'ثَ': '/audio/letters/tsa.mp3',
 
-  // Jim / Ja
+  // Jim / Ja (Fathah murni: "Ja")
   'jim': '/audio/letters/jim.mp3',
-  'ja': '/audio/letters/jim.mp3',
-  'ج': '/audio/letters/jim.mp3',
-  'جَ': '/audio/letters/jim.mp3',
+  'ja': '/audio/letters/ja.mp3',
+  'ج': '/audio/letters/ja.mp3',
+  'جَ': '/audio/letters/ja.mp3',
 
   // Ha (halus/pedas)
   'ha': '/audio/letters/ha.mp3',
@@ -44,17 +44,17 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'خ': '/audio/letters/kho.mp3',
   'خَ': '/audio/letters/kho.mp3',
 
-  // Dal / Da
+  // Dal / Da (Fathah murni: "Da")
   'dal': '/audio/letters/dal.mp3',
-  'da': '/audio/letters/dal.mp3',
-  'د': '/audio/letters/dal.mp3',
-  'دَ': '/audio/letters/dal.mp3',
+  'da': '/audio/letters/da.mp3',
+  'د': '/audio/letters/da.mp3',
+  'دَ': '/audio/letters/da.mp3',
 
-  // Dzal / Dza
+  // Dzal / Dza (Fathah murni: "Dza")
   'dzal': '/audio/letters/dzal.mp3',
-  'dza': '/audio/letters/dzal.mp3',
-  'ذ': '/audio/letters/dzal.mp3',
-  'ذَ': '/audio/letters/dzal.mp3',
+  'dza': '/audio/letters/dza.mp3',
+  'ذ': '/audio/letters/dza.mp3',
+  'ذَ': '/audio/letters/dza.mp3',
 
   // Ro / Ra
   'ro': '/audio/letters/ro.mp3',
@@ -62,36 +62,36 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'ر': '/audio/letters/ro.mp3',
   'رَ': '/audio/letters/ro.mp3',
 
-  // Zai / Za
+  // Zai / Za (Fathah murni: "Za")
   'zai': '/audio/letters/zai.mp3',
   'zay': '/audio/letters/zai.mp3',
-  'za': '/audio/letters/zai.mp3',
-  'ز': '/audio/letters/zai.mp3',
-  'زَ': '/audio/letters/zai.mp3',
+  'za': '/audio/letters/za.mp3',
+  'ز': '/audio/letters/za.mp3',
+  'زَ': '/audio/letters/za.mp3',
 
-  // Sin / Sa
+  // Sin / Sa (Fathah murni: "Sa")
   'sin': '/audio/letters/sin.mp3',
-  'sa': '/audio/letters/sin.mp3',
-  'س': '/audio/letters/sin.mp3',
-  'سَ': '/audio/letters/sin.mp3',
+  'sa': '/audio/letters/sa.mp3',
+  'س': '/audio/letters/sa.mp3',
+  'سَ': '/audio/letters/sa.mp3',
 
-  // Syin / Sya
+  // Syin / Sya (Fathah murni: "Sya")
   'syin': '/audio/letters/syin.mp3',
-  'sya': '/audio/letters/syin.mp3',
-  'ش': '/audio/letters/syin.mp3',
-  'شَ': '/audio/letters/syin.mp3',
+  'sya': '/audio/letters/sya.mp3',
+  'ش': '/audio/letters/sya.mp3',
+  'شَ': '/audio/letters/sya.mp3',
 
-  // Shod / Sho
+  // Shod / Sho (Fathah murni: "Sho")
   'shod': '/audio/letters/shod.mp3',
-  'sho': '/audio/letters/shod.mp3',
-  'ص': '/audio/letters/shod.mp3',
-  'صَ': '/audio/letters/shod.mp3',
+  'sho': '/audio/letters/sho.mp3',
+  'ص': '/audio/letters/sho.mp3',
+  'صَ': '/audio/letters/sho.mp3',
 
-  // Dhod / Dho
+  // Dhod / Dho (Fathah murni: "Dho")
   'dhod': '/audio/letters/dhod.mp3',
-  'dho': '/audio/letters/dhod.mp3',
-  'ض': '/audio/letters/dhod.mp3',
-  'ضَ': '/audio/letters/dhod.mp3',
+  'dho': '/audio/letters/dho.mp3',
+  'ض': '/audio/letters/dho.mp3',
+  'ضَ': '/audio/letters/dho.mp3',
 
   // Tho / Tha (tebal)
   'tho': '/audio/letters/tho.mp3',
@@ -105,69 +105,63 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'ظ': '/audio/letters/zho.mp3',
   'ظَ': '/audio/letters/zho.mp3',
 
-  // 'Ain / 'A
+  // 'Ain / 'A (Fathah murni: "'A")
   'ain': '/audio/letters/ain.mp3',
   "'ain": '/audio/letters/ain.mp3',
-  "'a": '/audio/letters/ain.mp3',
-  'ع': '/audio/letters/ain.mp3',
-  'عَ': '/audio/letters/ain.mp3',
+  "'a": '/audio/letters/ain_a.mp3',
+  '’a': '/audio/letters/ain_a.mp3',
+  '`a': '/audio/letters/ain_a.mp3',
+  'ain_a': '/audio/letters/ain_a.mp3',
+  'ع': '/audio/letters/ain_a.mp3',
+  'عَ': '/audio/letters/ain_a.mp3',
 
-  // Ghoin / Gho
+  // Ghoin / Gho (Fathah murni: "Gho")
   'ghoin': '/audio/letters/ghoin.mp3',
-  'gho': '/audio/letters/ghoin.mp3',
-  'غ': '/audio/letters/ghoin.mp3',
-  'غَ': '/audio/letters/ghoin.mp3',
+  'gho': '/audio/letters/gho.mp3',
+  'غ': '/audio/letters/gho.mp3',
+  'غَ': '/audio/letters/gho.mp3',
 
   // Fa
   'fa': '/audio/letters/fa.mp3',
   'ف': '/audio/letters/fa.mp3',
   'فَ': '/audio/letters/fa.mp3',
 
-  // Qof / Qo
+  // Qof / Qo (Fathah murni: "Qo")
   'qof': '/audio/letters/qof.mp3',
-  'qo': '/audio/letters/qof.mp3',
-  'ق': '/audio/letters/qof.mp3',
-  'قَ': '/audio/letters/qof.mp3',
+  'qo': '/audio/letters/qo.mp3',
+  'ق': '/audio/letters/qo.mp3',
+  'قَ': '/audio/letters/qo.mp3',
 
-  // Kaf / Ka
+  // Kaf / Ka (Fathah murni: "Ka")
   'kaf': '/audio/letters/kaf.mp3',
-  'ka': '/audio/letters/kaf.mp3',
-  'ك': '/audio/letters/kaf.mp3',
-  'كَ': '/audio/letters/kaf.mp3',
+  'ka': '/audio/letters/ka.mp3',
+  'ك': '/audio/letters/ka.mp3',
+  'كَ': '/audio/letters/ka.mp3',
 
-  // Lam / La
+  // Lam / La (Fathah murni: "La")
   'lam': '/audio/letters/lam.mp3',
-  'la': '/audio/letters/lam.mp3',
-  'ل': '/audio/letters/lam.mp3',
-  'لَ': '/audio/letters/lam.mp3',
+  'la': '/audio/letters/la.mp3',
+  'ل': '/audio/letters/la.mp3',
+  'لَ': '/audio/letters/la.mp3',
 
-  // Mim / Ma
+  // Mim / Ma (Fathah murni: "Ma")
   'mim': '/audio/letters/mim.mp3',
-  'ma': '/audio/letters/mim.mp3',
-  'م': '/audio/letters/mim.mp3',
-  'مَ': '/audio/letters/mim.mp3',
+  'ma': '/audio/letters/ma.mp3',
+  'م': '/audio/letters/ma.mp3',
+  'مَ': '/audio/letters/ma.mp3',
 
-  // Nun / Na
+  // Nun / Na (Fathah murni: "Na")
   'nun': '/audio/letters/nun.mp3',
-  'na': '/audio/letters/nun.mp3',
-  'ن': '/audio/letters/nun.mp3',
-  'نَ': '/audio/letters/nun.mp3',
+  'na': '/audio/letters/na.mp3',
+  'ن': '/audio/letters/na.mp3',
+  'نَ': '/audio/letters/na.mp3',
 
-  // Waw / Wa
+  // Waw / Wa (Fathah murni: "Wa")
   'waw': '/audio/letters/waw.mp3',
   'wau': '/audio/letters/waw.mp3',
-  'wa': '/audio/letters/waw.mp3',
-  'و': '/audio/letters/waw.mp3',
-  'وَ': '/audio/letters/waw.mp3',
-
-  // Mad Asli (2 Harakat) aliases
-  'baa': '/audio/letters/ba.mp3',
-  'taa': '/audio/letters/ta.mp3',
-  'jaa': '/audio/letters/jim.mp3',
-  'dzaa': '/audio/letters/dzal.mp3',
-  'shoo': '/audio/letters/shod.mp3',
-  'kaa': '/audio/letters/kaf.mp3',
-  'qoo': '/audio/letters/qof.mp3',
+  'wa': '/audio/letters/wa.mp3',
+  'و': '/audio/letters/wa.mp3',
+  'وَ': '/audio/letters/wa.mp3',
 
   // Ha (besar/pangkal)
   'haa': '/audio/letters/haa.mp3',
@@ -183,6 +177,62 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'ya': '/audio/letters/ya.mp3',
   'ي': '/audio/letters/ya.mp3',
   'يَ': '/audio/letters/ya.mp3',
+
+  // --- MAD ASLI FATHAH (2 HARAKAT PANJANG / ALIF) ---
+  'baa': '/audio/letters/baa.mp3',
+  'بَا': '/audio/letters/baa.mp3',
+  'taa': '/audio/letters/taa.mp3',
+  'تَا': '/audio/letters/taa.mp3',
+  'tsaa': '/audio/letters/tsaa.mp3',
+  'ثَا': '/audio/letters/tsaa.mp3',
+  'jaa': '/audio/letters/jaa.mp3',
+  'جَا': '/audio/letters/jaa.mp3',
+  'haaa': '/audio/letters/haaa.mp3',
+  'حَا': '/audio/letters/haaa.mp3',
+  'khoo': '/audio/letters/khoo.mp3',
+  'خَا': '/audio/letters/khoo.mp3',
+  'daa': '/audio/letters/daa.mp3',
+  'دَا': '/audio/letters/daa.mp3',
+  'dzaa': '/audio/letters/dzaa.mp3',
+  'ذَا': '/audio/letters/dzaa.mp3',
+  'roo': '/audio/letters/roo.mp3',
+  'raa': '/audio/letters/roo.mp3',
+  'رَا': '/audio/letters/roo.mp3',
+  'zaa': '/audio/letters/zaa.mp3',
+  'زَا': '/audio/letters/zaa.mp3',
+  'saa': '/audio/letters/saa.mp3',
+  'سَا': '/audio/letters/saa.mp3',
+  'syaa': '/audio/letters/syaa.mp3',
+  'شَا': '/audio/letters/syaa.mp3',
+  'shoo': '/audio/letters/shoo.mp3',
+  'صَا': '/audio/letters/shoo.mp3',
+  'dhoo': '/audio/letters/dhoo.mp3',
+  'ضَا': '/audio/letters/dhoo.mp3',
+  'thoo': '/audio/letters/thoo.mp3',
+  'طَا': '/audio/letters/thoo.mp3',
+  'zhoo': '/audio/letters/zhoo.mp3',
+  'ظَا': '/audio/letters/zhoo.mp3',
+  "'aa": '/audio/letters/ain_aa.mp3',
+  'ain_aa': '/audio/letters/ain_aa.mp3',
+  'عَا': '/audio/letters/ain_aa.mp3',
+  'ghoo': '/audio/letters/ghoo.mp3',
+  'غَا': '/audio/letters/ghoo.mp3',
+  'faa': '/audio/letters/faa.mp3',
+  'فَا': '/audio/letters/faa.mp3',
+  'qoo': '/audio/letters/qoo.mp3',
+  'قَا': '/audio/letters/qoo.mp3',
+  'kaa': '/audio/letters/kaa.mp3',
+  'كَا': '/audio/letters/kaa.mp3',
+  'laa': '/audio/letters/laa.mp3',
+  'لَا': '/audio/letters/laa.mp3',
+  'maa': '/audio/letters/maa.mp3',
+  'مَا': '/audio/letters/maa.mp3',
+  'naa': '/audio/letters/naa.mp3',
+  'نَا': '/audio/letters/naa.mp3',
+  'waa': '/audio/letters/waa.mp3',
+  'وَا': '/audio/letters/waa.mp3',
+  'yaa': '/audio/letters/yaa.mp3',
+  'يَا': '/audio/letters/yaa.mp3',
 
   // --- IQRO 3: KASRAH (-i) ---
   'i': '/audio/letters/i.mp3',
@@ -473,13 +523,17 @@ class TTSNarrator {
 
   public getLetterAudioPath(letter: string): string | null {
     if (!letter) return null;
-    const normalized = letter.trim().toLowerCase();
+    const normalized = letter.trim().toLowerCase().replace(/[’`]/g, "'");
     if (LETTER_AUDIO_MAP[normalized]) {
       return LETTER_AUDIO_MAP[normalized];
     }
     const cleanLatin = normalized.replace(/[^a-z']/g, '');
     if (LETTER_AUDIO_MAP[cleanLatin]) {
       return LETTER_AUDIO_MAP[cleanLatin];
+    }
+    const noApos = cleanLatin.replace(/'/g, '');
+    if (LETTER_AUDIO_MAP[noApos]) {
+      return LETTER_AUDIO_MAP[noApos];
     }
     return null;
   }
