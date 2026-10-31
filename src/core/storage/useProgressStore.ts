@@ -1,0 +1,96 @@
+import { useState, useEffect } from 'react';
+import { IqroLevelId, UserProgress } from '../types/gameTypes';
+import { soundManager } from '../audio/soundManager';
+
+const STORAGE_KEY = 'iqro_petualangan_progress_v1';
+
+const DEFAULT_PROGRESS: UserProgress = {
+  currentIqroLevel: 1,
+  completedStages: {},
+  starsTotal: 0,
+  gemsTotal: 25, // Initial welcome gift gems
+  streakDays: 1,
+  soundEnabled: true,
+  bgmEnabled: true,
+};
+
+export function useProgressStore() {
+  const [progress, setProgress] = useState<UserProgress>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return { ...DEFAULT_PROGRESS, ...JSON.parse(saved) };
+      }
+    } catch {
+      // fallback
+    }
+    return DEFAULT_PROGRESS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    } catch {
+      // ignore quota errors
+    }
+  }, [progress]);
+
+  const setIqroLevel = (level: IqroLevelId) => {
+    setProgress(prev => ({ ...prev, currentIqroLevel: level }));
+  };
+
+  const completeStage = (stageId: string, stars: number) => {
+    setProgress(prev => {
+      const existing = prev.completedStages[stageId];
+      const prevStars = existing?.stars || 0;
+      const additionalStars = Math.max(0, stars - prevStars);
+      const earnedGems = stars * 10;
+
+      return {
+        ...prev,
+        completedStages: {
+          ...prev.completedStages,
+          [stageId]: {
+            stars: Math.max(prevStars, stars),
+            highscore: 100
+          }
+        },
+        starsTotal: prev.starsTotal + additionalStars,
+        gemsTotal: prev.gemsTotal + earnedGems
+      };
+    });
+  };
+
+  const toggleSound = () => {
+    setProgress(prev => {
+      const next = !prev.soundEnabled;
+      soundManager.setSoundEnabled(next);
+      return { ...prev, soundEnabled: next };
+    });
+  };
+
+  const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
+    if (defaultUnlocked) return true;
+    // Unlocked if previous stage was completed
+    if (progress.completedStages[stageId]) return true;
+
+    // Check custom stage sequences
+    if (stageId === 'iqro1-u1-s1') return true;
+    if (stageId === 'iqro1-u1-s2') return !!progress.completedStages['iqro1-u1-s1'];
+    if (stageId === 'iqro1-u1-s3') return !!progress.completedStages['iqro1-u1-s2'];
+    if (stageId === 'iqro1-u1-s4') return !!progress.completedStages['iqro1-u1-s3'];
+
+    if (stageId === 'iqro1-u2-s1') return !!progress.completedStages['iqro1-u1-s4'];
+    if (stageId === 'iqro1-u2-s2') return !!progress.completedStages['iqro1-u2-s1'];
+
+    return false;
+  };
+
+  return {
+    progress,
+    setIqroLevel,
+    completeStage,
+    toggleSound,
+    isStageUnlocked,
+  };
+}

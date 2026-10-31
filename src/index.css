@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Duolingo 3D button utility classes */
+.btn-duo-green {
+  background-color: #58CC02;
+  box-shadow: 0 5px 0 #46A302;
+  transition: all 0.1s ease;
+}
+.btn-duo-green:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #46A302;
+}
+
+.btn-duo-yellow {
+  background-color: #FFC800;
+  box-shadow: 0 5px 0 #E5B400;
+  transition: all 0.1s ease;
+}
+.btn-duo-yellow:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #E5B400;
+}
+
+.btn-duo-blue {
+  background-color: #1CB0F6;
+  box-shadow: 0 5px 0 #1899D6;
+  transition: all 0.1s ease;
+}
+.btn-duo-blue:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #1899D6;
+}
+
+.btn-duo-gray {
+  background-color: #E5E5E5;
+  box-shadow: 0 5px 0 #AFAFAF;
+}
+
+/* Arabic typography clarity */
+.font-arabic {
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* Shimmer pulse for active level */
+@keyframes activePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 14px rgba(88, 204, 2, 0);
+  }
+}
+
+.active-pulse-node {
+  animation: activePulse 2s infinite ease-in-out;
+}
