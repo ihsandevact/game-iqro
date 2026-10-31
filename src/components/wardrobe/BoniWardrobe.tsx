@@ -52,18 +52,19 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-6 lg:p-7 shadow-sm flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start">
-      {/* Left: Mascot Wardrobe Preview Stage */}
-      <div className="w-full lg:w-72 flex flex-col items-center bg-gradient-to-b from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-3xl p-5 sm:p-6 shrink-0 relative overflow-hidden shadow-sm">
+    <div className="w-full bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-6 lg:p-7 shadow-sm flex flex-col gap-6">
+      {/* Top: Mascot Wardrobe Preview Hero Banner (Tampilan Vertikal Responsif) */}
+      <div className="w-full bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 border-2 border-emerald-200 rounded-3xl p-5 sm:p-6 relative overflow-hidden shadow-sm flex flex-col sm:flex-row items-center justify-between gap-5">
         {/* Decorative sparkles */}
         <div className="absolute top-3 left-3 text-emerald-400">
           <Sparkles className="w-5 h-5 animate-pulse" />
         </div>
 
-        <div className="my-2">
+        {/* Left: Mascot Showcase with Speech Bubble */}
+        <div className="flex items-center justify-center shrink-0">
           <BoniMascot
             mood="happy"
-            size="lg"
+            size="md"
             characterName={childName}
             equippedHat={equippedHat}
             equippedGlasses={equippedGlasses}
@@ -73,40 +74,54 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
           />
         </div>
 
-        <h3 className="text-base font-black text-slate-800 mt-2">Koleksi {childName}</h3>
-        <p className="text-xs font-semibold text-slate-500 text-center mt-0.5">
-          Dandani {childName} dengan pakaian favoritmu!
-        </p>
+        {/* Center: Title & Description */}
+        <div className="flex-1 text-center sm:text-left">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-black mb-2 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Koleksi & Lemari Pakaian</span>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+            Koleksi Kostum {childName}
+          </h3>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-1 max-w-lg leading-relaxed">
+            Kumpulkan permata dari belajar Iqro dan dandani {childName} dengan peci, kacamata, dan jubah santri terfavorit!
+          </p>
+        </div>
 
-        {/* Gems Wallet Pill */}
-        <div className="mt-4 flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-blue-200 shadow-sm">
-          <Gem className="w-5 h-5 fill-duo-blue text-duo-blue" />
+        {/* Right: Gems Wallet Pill */}
+        <div className="shrink-0 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-blue-200 shadow-sm">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+            <Gem className="w-6 h-6 fill-duo-blue text-duo-blue" />
+          </div>
           <div className="text-left">
-            <div className="text-[10px] font-black uppercase text-slate-400">Permata Kamu</div>
-            <div className="text-base font-black text-duo-blue">{gemsTotal} Permata</div>
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Permata Kamu</div>
+            <div className="text-lg font-black text-duo-blue leading-tight">{gemsTotal} Permata</div>
           </div>
         </div>
       </div>
 
-      {/* Right: Category Tabs & Item Grid */}
-      <div className="flex-1 w-full min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-4 border-b-2 border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
+      {/* Bottom: Store Header, Category Tabs & Item Grid (Vertical Downward Layout) */}
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b-2 border-slate-100">
+          <div className="flex items-center gap-2.5">
             <ShoppingBag className="w-6 h-6 text-duo-green" />
             <h2 className="text-lg sm:text-xl font-black text-slate-800">
               Toko Pakaian & Aksesoris
             </h2>
           </div>
+          <div className="text-xs font-bold text-slate-400">
+            {filteredItems.length} Pilihan Aksesoris
+          </div>
         </div>
 
-        {/* Category Tabs: Grid 3 Kolom Responsif (Bebas Scrollbar) */}
-        <div className="grid grid-cols-3 gap-2 mb-5 w-full">
+        {/* Category Tabs: Grid 3 Kolom Responsif */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 w-full max-w-md sm:max-w-lg">
           <button
             onClick={() => {
               soundManager.playPop();
               setSelectedCategory('hat');
             }}
-            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
+            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'hat'
                 ? 'bg-duo-green text-white shadow-duo-green'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -119,7 +134,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
               soundManager.playPop();
               setSelectedCategory('glasses');
             }}
-            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
+            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'glasses'
                 ? 'bg-duo-blue text-white shadow-duo-blue'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -132,7 +147,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
               soundManager.playPop();
               setSelectedCategory('cape');
             }}
-            className={`py-2.5 px-2 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
+            className={`py-2.5 px-3 rounded-2xl font-black text-xs sm:text-sm tracking-wide transition text-center whitespace-nowrap active:scale-95 ${
               selectedCategory === 'cape'
                 ? 'bg-duo-purple text-white shadow-duo-purple'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -142,8 +157,8 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
           </button>
         </div>
 
-        {/* Items Grid: Card Vertikal 3D Rapih */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {/* Items Grid: Card Vertikal 3D Rapih & Luas (Desktop 4 Kolom, Mobile 2 Kolom) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4.5">
           {filteredItems.map((item) => {
             const isUnlocked = unlockedItems.includes(item.id);
             const isEquipped =
@@ -157,7 +172,7 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
                 key={item.id}
                 whileHover={{ scale: 1.02 }}
                 className={`
-                  p-4 rounded-3xl border-2 flex flex-col justify-between transition relative
+                  p-4 sm:p-5 rounded-3xl border-2 flex flex-col justify-between transition relative
                   ${
                     isEquipped
                       ? 'bg-emerald-50/70 border-duo-green shadow-sm ring-2 ring-duo-green/20'
@@ -176,16 +191,16 @@ export const BoniWardrobe: React.FC<BoniWardrobeProps> = ({
                 )}
 
                 {/* Big Centered Icon Preview */}
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-3xl shadow-inner mt-1 mb-3">
+                <div className="w-18 h-18 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center text-3xl sm:text-4xl shadow-inner mt-1 mb-3">
                   {item.icon}
                 </div>
 
                 {/* Name & Description */}
                 <div className="text-center mb-4">
-                  <h4 className="font-black text-sm sm:text-base text-slate-800 mb-1 leading-snug">
+                  <h4 className="font-black text-sm sm:text-base text-slate-800 mb-1 leading-snug line-clamp-1">
                     {item.name}
                   </h4>
-                  <p className="text-xs font-semibold text-slate-500 leading-relaxed px-1">
+                  <p className="text-xs font-semibold text-slate-500 leading-relaxed px-1 line-clamp-2 min-h-[2.25rem]">
                     {item.description}
                   </p>
                 </div>
