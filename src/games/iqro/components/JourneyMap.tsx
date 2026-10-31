@@ -19,6 +19,34 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
   // Winding serpentine offsets in pixels for each successive step
   const windingOffsets = [0, -40, -65, -35, 0, 35, 65, 40];
 
+  const hasPlayableStages = currentBook.units.some((u) =>
+    u.stages.some((s) => s.questions && s.questions.length > 0)
+  );
+
+  if (!hasPlayableStages) {
+    return (
+      <div className="w-full max-w-md mx-auto py-10 px-4 text-center">
+        <div className="bg-white rounded-3xl border-2 border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col items-center">
+          <div className="w-20 h-20 rounded-3xl bg-amber-50 border-2 border-amber-200 flex items-center justify-center text-4xl mb-4 shadow-sm animate-bounce">
+            🕌
+          </div>
+          <span className="text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-100 px-3 py-1 rounded-full mb-2">
+            Segera Hadir
+          </span>
+          <h3 className="text-xl font-black text-slate-800 mb-1">
+            Petualangan {currentBook.title}
+          </h3>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 mb-2 max-w-xs leading-relaxed">
+            Materi {currentBook.subtitle} sedang disiapkan.
+          </p>
+          <p className="text-xs font-bold text-duo-green bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-2xl">
+            ⭐ Ayo selesaikan 21 tahap Iqro 1 hingga wisuda!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col items-center py-6 px-4">
       {currentBook.units.map((unit) => {
