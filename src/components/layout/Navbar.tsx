@@ -1,44 +1,24 @@
 import React, { useState } from 'react';
-import { Flame, Gem, Star, Volume2, VolumeX, Maximize2, Minimize2, ChevronDown, BookOpen, Settings, Download } from 'lucide-react';
+import { Flame, Gem, ChevronDown, BookOpen, Settings } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 
 interface NavbarProps {
   currentLevel: IqroLevelId;
   onSelectLevel: (lvl: IqroLevelId) => void;
-  stars: number;
   gems: number;
   streak: number;
-  soundEnabled: boolean;
-  onToggleSound: () => void;
   onOpenSettings: () => void;
-  isInstallable?: boolean;
-  onInstallPwa?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentLevel,
   onSelectLevel,
-  stars,
   gems,
   streak,
-  soundEnabled,
-  onToggleSound,
   onOpenSettings,
-  isInstallable = false,
-  onInstallPwa,
 }) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
-
-  const toggleFullscreen = () => {
-    soundManager.playPop();
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-    }
-  };
 
   const levelOptions: { id: IqroLevelId; label: string; color: string }[] = [
     { id: 1, label: 'Iqro 1: Huruf Tunggal', color: 'bg-duo-green' },
@@ -50,21 +30,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 md:px-6 py-2.5 transition-all">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
-        {/* Left: Brand & Iqro Level Switcher */}
-        <div className="relative flex items-center gap-2">
+    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b-2 border-slate-200 px-3 sm:px-6 py-2.5 transition-all select-none">
+      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+        {/* Left: Level Switcher */}
+        <div className="relative flex items-center gap-2 shrink-0">
           <button
             onClick={() => {
               soundManager.playPop();
               setLevelDropdownOpen(!levelDropdownOpen);
             }}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 active:scale-95 px-3 py-1.5 rounded-2xl border-2 border-slate-300 font-extrabold text-slate-800 transition"
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 active:scale-95 px-3 py-1.5 rounded-2xl border-2 border-slate-200 font-extrabold text-slate-800 transition"
           >
-            <div className="w-7 h-7 rounded-lg bg-duo-green flex items-center justify-center text-white font-black text-sm shadow-sm">
+            <div className="w-7 h-7 rounded-xl bg-duo-green flex items-center justify-center text-white font-black text-sm shadow-sm">
               {currentLevel}
             </div>
-            <span className="text-sm md:text-base font-black tracking-wide hidden sm:inline">
+            <span className="text-sm font-black tracking-wide hidden sm:inline">
               Iqro {currentLevel}
             </span>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${levelDropdownOpen ? 'rotate-180' : ''}`} />
@@ -72,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Level Dropdown Menu */}
           {levelDropdownOpen && (
-            <div className="absolute top-12 left-0 w-64 bg-white border-2 border-slate-200 rounded-2xl shadow-xl py-2 z-50">
-              <div className="px-3 py-1.5 text-xs font-black text-slate-400 uppercase tracking-wider">
+            <div className="absolute top-12 left-0 w-64 bg-white border-2 border-slate-200 rounded-3xl shadow-2xl py-2 z-50">
+              <div className="px-3.5 py-1.5 text-xs font-black text-slate-400 uppercase tracking-wider">
                 Pilih Tingkat Iqro
               </div>
               {levelOptions.map((opt) => (
@@ -84,11 +64,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onSelectLevel(opt.id);
                     setLevelDropdownOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left hover:bg-slate-50 transition ${
                     currentLevel === opt.id ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700'
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-md ${opt.color} text-white flex items-center justify-center text-xs font-black`}>
+                  <div className={`w-6 h-6 rounded-lg ${opt.color} text-white flex items-center justify-center text-xs font-black`}>
                     {opt.id}
                   </div>
                   <span className="text-xs font-bold">{opt.label}</span>
@@ -99,74 +79,35 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Center: Title on Tablet / Desktop */}
-        <div className="hidden lg:flex items-center gap-2 text-slate-700 font-extrabold text-lg">
+        <div className="hidden md:flex items-center gap-2 text-slate-700 font-extrabold text-base lg:text-lg">
           <BookOpen className="w-5 h-5 text-duo-green" />
           <span>Petualangan Iqro Ceria</span>
         </div>
 
-        {/* Right: Gamification Badges & Utility Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Gamification Badges & Clean Settings Gear */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Daily Streak Flame */}
-          <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full font-black text-xs sm:text-sm text-duo-orange">
+          <div className="flex items-center gap-1.5 bg-orange-50 border-2 border-orange-200/80 px-2.5 sm:px-3 py-1 rounded-full font-black text-xs sm:text-sm text-duo-orange shadow-sm">
             <Flame className="w-4 h-4 fill-duo-orange text-duo-orange animate-bounce" />
             <span>{streak}</span>
           </div>
 
           {/* Gems Counter */}
-          <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full font-black text-xs sm:text-sm text-duo-blue">
+          <div className="flex items-center gap-1.5 bg-blue-50 border-2 border-blue-200/80 px-2.5 sm:px-3 py-1 rounded-full font-black text-xs sm:text-sm text-duo-blue shadow-sm">
             <Gem className="w-4 h-4 fill-duo-blue text-duo-blue" />
             <span>{gems}</span>
           </div>
 
-          {/* Stars Total */}
-          <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full font-black text-xs sm:text-sm text-amber-600">
-            <Star className="w-4 h-4 fill-duo-yellow text-amber-500" />
-            <span>{stars}</span>
-          </div>
-
-          {/* Audio Mute/Unmute Button */}
-          <button
-            onClick={() => {
-              soundManager.playPop();
-              onToggleSound();
-            }}
-            title={soundEnabled ? 'Matikan Suara' : 'Hidupkan Suara'}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 border border-slate-300 text-slate-600 transition"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-red-500" />}
-          </button>
-
-          {/* Settings & Reset Button */}
+          {/* Settings & Controls Gear Button */}
           <button
             onClick={() => {
               soundManager.playPop();
               onOpenSettings();
             }}
-            title="Pengaturan & Reset"
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 border border-slate-300 text-slate-600 transition"
+            title="Pengaturan & Info"
+            className="p-2 sm:p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-90 border-2 border-slate-200 text-slate-600 transition shadow-sm"
           >
-            <Settings className="w-4 h-4" />
-          </button>
-
-          {/* PWA Install Button (If device supports install) */}
-          {isInstallable && onInstallPwa && (
-            <button
-              onClick={onInstallPwa}
-              title="Pasang Aplikasi ke Layar HP"
-              className="flex items-center gap-1.5 bg-duo-green hover:bg-duo-greenDark text-white px-2.5 py-1.5 rounded-xl font-black text-xs shadow-duo-green active:translate-y-0.5 transition"
-            >
-              <Download className="w-3.5 h-3.5 animate-bounce" />
-              <span className="hidden sm:inline">Pasang App</span>
-            </button>
-          )}
-
-          {/* Fullscreen Button (Poki Style) */}
-          <button
-            onClick={toggleFullscreen}
-            title={isFullscreen ? 'Keluar Fullscreen' : 'Layar Penuh'}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-90 border border-slate-300 text-slate-600 transition hidden sm:inline-flex"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
           </button>
         </div>
       </div>

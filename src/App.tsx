@@ -64,14 +64,9 @@ export function App() {
       <Navbar
         currentLevel={progress.currentIqroLevel}
         onSelectLevel={handleSelectLevel}
-        stars={progress.starsTotal}
         gems={progress.gemsTotal}
         streak={progress.streakDays}
-        soundEnabled={progress.soundEnabled}
-        onToggleSound={toggleSound}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        isInstallable={isInstallable}
-        onInstallPwa={installApp}
       />
 
       {/* Main Responsive Game Layout */}
