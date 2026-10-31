@@ -823,7 +823,7 @@ export const IQRO_BOOKS: IqroBook[] = [
                 type: 'listen-tap',
                 promptText: 'Yang mana huruf HA (Besar)?',
                 targetLetter: 'هَ',
-                targetName: 'Haa',
+                targetName: 'Ha',
                 options: [
                   { letter: 'هَ', name: 'Ha', isCorrect: true },
                   { letter: 'وَ', name: 'Wa', isCorrect: false },
@@ -1313,11 +1313,11 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q222',
                 type: 'listen-tap',
-                promptText: 'Yang mana bacaan: DZA - HAA?',
+                promptText: 'Yang mana bacaan: DZA - HA?',
                 targetLetter: 'ذَهَ',
-                targetName: 'Dza-Haa',
+                targetName: 'Dza-Ha',
                 options: [
-                  { letter: 'ذَهَ', name: 'Dza-Haa', isCorrect: true },
+                  { letter: 'ذَهَ', name: 'Dza-Ha', isCorrect: true },
                   { letter: 'دَهَ', name: 'Da-Ha', isCorrect: false },
                   { letter: 'زَهَ', name: 'Za-Ha', isCorrect: false }
                 ],
@@ -1704,11 +1704,11 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q245',
                 type: 'listen-tap',
-                promptText: 'Yang mana bacaan: FA - HAA?',
+                promptText: 'Yang mana bacaan: FA - HA?',
                 targetLetter: 'فَهَ',
-                targetName: 'Fa-Haa',
+                targetName: 'Fa-Ha',
                 options: [
-                  { letter: 'فَهَ', name: 'Fa-Haa', isCorrect: true },
+                  { letter: 'فَهَ', name: 'Fa-Ha', isCorrect: true },
                   { letter: 'قَهَ', name: 'Qo-Ha', isCorrect: false },
                   { letter: 'لَهَ', name: 'La-Ha', isCorrect: false }
                 ],
@@ -1773,11 +1773,11 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q249',
                 type: 'bubble-pop',
-                promptText: 'Pecahkan balon kata: FA - HI - MA!',
+                promptText: 'Pecahkan balon kata: FA - HA - MA!',
                 targetLetter: 'فَهِمَ',
-                targetName: 'Fa-Hi-Ma',
+                targetName: 'Fa-Ha-Ma',
                 options: [
-                  { letter: 'فَهِمَ', name: 'Fa-Hi-Ma', isCorrect: true },
+                  { letter: 'فَهِمَ', name: 'Fa-Ha-Ma', isCorrect: true },
                   { letter: 'كَتَبَ', name: 'Ka-Ta-Ba', isCorrect: false },
                   { letter: 'فَتَحَ', name: 'Fa-Ta-Ha', isCorrect: false },
                   { letter: 'بَلَغَ', name: 'Ba-La-Gho', isCorrect: false }
@@ -1791,7 +1791,7 @@ export const IQRO_BOOKS: IqroBook[] = [
                 targetName: 'Ba-La-Gho',
                 options: [
                   { letter: 'بَلَغَ', name: 'Ba-La-Gho', isCorrect: true },
-                  { letter: 'فَهِمَ', name: 'Fa-Hi-Ma', isCorrect: false },
+                  { letter: 'فَهِمَ', name: 'Fa-Ha-Ma', isCorrect: false },
                   { letter: 'كَتَبَ', name: 'Ka-Ta-Ba', isCorrect: false },
                   { letter: 'فَتَحَ', name: 'Fa-Ta-Ha', isCorrect: false }
                 ]
@@ -2035,7 +2035,7 @@ export const IQRO_BOOKS: IqroBook[] = [
                 options: [
                   { letter: 'صَابَرَ', name: 'Shoo-Ba-Ro', isCorrect: true },
                   { letter: 'صَبَرَ', name: 'Sho-Ba-Ro', isCorrect: false },
-                  { letter: 'جَاهَدَ', name: 'Jaa-Haa-Da', isCorrect: false }
+                  { letter: 'جَاهَدَ', name: 'Jaa-Ha-Da', isCorrect: false }
                 ],
                 hint: 'Shoo panjang dua harakat ber-Alif!'
               },
@@ -2044,9 +2044,9 @@ export const IQRO_BOOKS: IqroBook[] = [
                 type: 'listen-tap',
                 promptText: 'Yang mana kata ber-mad: JAA - HA - DA?',
                 targetLetter: 'جَاهَدَ',
-                targetName: 'Jaa-Haa-Da',
+                targetName: 'Jaa-Ha-Da',
                 options: [
-                  { letter: 'جَاهَدَ', name: 'Jaa-Haa-Da', isCorrect: true },
+                  { letter: 'جَاهَدَ', name: 'Jaa-Ha-Da', isCorrect: true },
                   { letter: 'جَهَدَ', name: 'Ja-Ha-Da', isCorrect: false },
                   { letter: 'شَاهَدَ', name: 'Syaa-Ha-Da', isCorrect: false }
                 ],
@@ -2131,9 +2131,9 @@ export const IQRO_BOOKS: IqroBook[] = [
                 type: 'bubble-pop',
                 promptText: 'Luar biasa! Pecahkan kata pamungkas: JAA - HA - DA!',
                 targetLetter: 'جَاهَدَ',
-                targetName: 'Jaa-Haa-Da',
+                targetName: 'Jaa-Ha-Da',
                 options: [
-                  { letter: 'جَاهَدَ', name: 'Jaa-Haa-Da', isCorrect: true },
+                  { letter: 'جَاهَدَ', name: 'Jaa-Ha-Da', isCorrect: true },
                   { letter: 'صَابَرَ', name: 'Shoo-Ba-Ro', isCorrect: false },
                   { letter: 'خَلَقَ', name: 'Kho-La-Qo', isCorrect: false },
                   { letter: 'كَانَ', name: 'Kaa-Na', isCorrect: false }
@@ -4246,7 +4246,7 @@ export const IQRO_BOOKS: IqroBook[] = [
                 type: 'bubble-pop',
                 promptText: 'Letuskan balon kata: SYA - HI - DA!',
                 targetLetter: 'شَهِدَ',
-                targetName: 'Sya-Hii-Da',
+                targetName: 'Sya-Hi-Da',
                 options: [
                   {
                     letter: 'شَهِدَ',
