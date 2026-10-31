@@ -18,10 +18,12 @@ import {
   User,
   Lock,
   Unlock,
+  Loader2,
 } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
+import { generateAndCacheAudiosForName } from '../../core/audio/customAudioCache';
 import { BoniMascot } from '../mascot/BoniMascot';
 import { useIsMobile } from '../../core/hooks/useIsMobile';
 
@@ -76,17 +78,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [resetSuccessMsg, setResetSuccessMsg] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState(childName || 'Faqih');
   const [isNameSaved, setIsNameSaved] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioSaveStatus, setAudioSaveStatus] = useState<'idle' | 'success' | 'offline'>('idle');
 
   if (!isOpen) return null;
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     const trimmed = nameInput.trim() || 'Faqih';
     setNameInput(trimmed);
     onUpdateChildName(trimmed);
+
+    if (isGeneratingAudio) return;
+
+    setIsGeneratingAudio(true);
+    setAudioSaveStatus('idle');
+
+    try {
+      // 1. Fetch & cache audio with id-ID-GadisNeural for the name
+      const result = await generateAndCacheAudiosForName(trimmed);
+
+      // 2. Preload into ttsNarrator
+      await ttsNarrator.loadChildAudio(trimmed);
+
+      setIsGeneratingAudio(false);
+
+      if (result.success) {
+        setAudioSaveStatus('success');
+        soundManager.playCorrect();
+        ttsNarrator.speakGreeting(trimmed);
+      } else {
+        setAudioSaveStatus('offline');
+        soundManager.playCorrect();
+        ttsNarrator.speakGreeting(trimmed);
+      }
+    } catch {
+      setIsGeneratingAudio(false);
+      setAudioSaveStatus('offline');
+      soundManager.playCorrect();
+      ttsNarrator.speakGreeting(trimmed);
+    }
+
     setIsNameSaved(true);
-    soundManager.playCorrect();
-    ttsNarrator.speakGreeting(trimmed);
-    setTimeout(() => setIsNameSaved(false), 2500);
+    setTimeout(() => {
+      setIsNameSaved(false);
+      setAudioSaveStatus('idle');
+    }, 3500);
   };
 
   const triggerResetGate = (target: 'level' | 'all' | 'unlock_all') => {
@@ -178,9 +214,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="sm:hidden flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-slate-800">Nama Panggilan Anak</span>
-                {isNameSaved && (
-                  <span className="text-[10px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-full border border-emerald-300 shadow-sm animate-pulse">
-                    ✓ Tersimpan
+                {isGeneratingAudio ? (
+                  <span className="text-[10px] font-black text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-300 shadow-sm animate-pulse flex items-center gap-1">
+                    <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                    <span>Menyiapkan...</span>
+                  </span>
+                ) : isNameSaved && (
+                  <span className={`text-[10px] font-black bg-white px-2 py-0.5 rounded-full border shadow-sm ${
+                    audioSaveStatus === 'offline'
+                      ? 'text-amber-600 border-amber-300'
+                      : 'text-emerald-600 border-emerald-300 animate-pulse'
+                  }`}>
+                    {audioSaveStatus === 'success' ? '✓ Suara Tersimpan!' : audioSaveStatus === 'offline' ? '✓ Tersimpan (Offline)' : '✓ Tersimpan'}
                   </span>
                 )}
               </div>
@@ -196,9 +241,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <label htmlFor="childNameInput" className="text-xs font-black text-slate-800">
                 Nama Panggilan Anak
               </label>
-              {isNameSaved && (
-                <span className="text-[10px] font-black text-emerald-600 bg-white px-2 py-0.5 rounded-full border border-emerald-300 shadow-sm animate-pulse">
-                  ✓ Tersimpan
+              {isGeneratingAudio ? (
+                <span className="text-[10px] font-black text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-300 shadow-sm animate-pulse flex items-center gap-1">
+                  <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                  <span>Mengunduh suara AI...</span>
+                </span>
+              ) : isNameSaved && (
+                <span className={`text-[10px] font-black bg-white px-2 py-0.5 rounded-full border shadow-sm ${
+                  audioSaveStatus === 'offline'
+                    ? 'text-amber-600 border-amber-300'
+                    : 'text-emerald-600 border-emerald-300 animate-pulse'
+                }`}>
+                  {audioSaveStatus === 'success' ? '✓ Suara Tersimpan!' : audioSaveStatus === 'offline' ? '✓ Tersimpan (Offline)' : '✓ Tersimpan'}
                 </span>
               )}
             </div>
@@ -208,6 +262,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 id="childNameInput"
                 type="text"
                 value={nameInput}
+                disabled={isGeneratingAudio}
                 onChange={(e) => {
                   setNameInput(e.target.value);
                   setIsNameSaved(false);
@@ -218,14 +273,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 }}
                 maxLength={15}
                 placeholder="Contoh: Faqih"
-                className="flex-1 min-w-0 px-3.5 py-2 text-xs sm:text-sm font-black text-slate-800 bg-white rounded-xl border-2 border-slate-300 focus:border-duo-green outline-none transition"
+                className="flex-1 min-w-0 px-3.5 py-2 text-xs sm:text-sm font-black text-slate-800 bg-white rounded-xl border-2 border-slate-300 focus:border-duo-green outline-none transition disabled:bg-slate-50 disabled:text-slate-500"
               />
               <button
                 onClick={handleSaveName}
-                className="px-4 py-2 bg-duo-green hover:bg-duo-greenDark active:scale-95 text-white font-black text-xs rounded-xl shadow-duo-green transition shrink-0 flex items-center gap-1.5"
+                disabled={isGeneratingAudio}
+                className="px-4 py-2 bg-duo-green hover:bg-duo-greenDark active:scale-95 text-white font-black text-xs rounded-xl shadow-duo-green transition shrink-0 flex items-center gap-1.5 disabled:opacity-75 disabled:cursor-not-allowed"
               >
-                <span>Simpan</span>
-                {isNameSaved && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                {isGeneratingAudio ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Menyiapkan...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Simpan</span>
+                    {isNameSaved && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </>
+                )}
               </button>
             </div>
 

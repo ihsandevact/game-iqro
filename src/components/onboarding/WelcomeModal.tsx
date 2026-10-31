@@ -4,6 +4,7 @@ import { Sparkles, Volume2, X, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
+import { generateAndCacheAudiosForName } from '../../core/audio/customAudioCache';
 import { BoniMascot } from '../mascot/BoniMascot';
 
 interface WelcomeModalProps {
@@ -79,6 +80,11 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
     soundManager.playCorrect();
     ttsNarrator.speakIntroductionSuccess();
+
+    // Trigger personalized audio generation in background
+    generateAndCacheAudiosForName(cleanName)
+      .then(() => ttsNarrator.loadChildAudio(cleanName))
+      .catch(() => {});
 
     // Give a brief moment for celebration animation before proceeding
     setTimeout(() => {

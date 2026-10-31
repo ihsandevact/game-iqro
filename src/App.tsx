@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { AppLayout } from './components/layout/AppLayout';
@@ -12,6 +12,7 @@ import { usePwaInstall } from './components/pwa/usePwaInstall';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
 import { useProgressStore } from './core/storage/useProgressStore';
+import { ttsNarrator } from './core/audio/ttsNarrator';
 
 export function App() {
   const {
@@ -34,6 +35,13 @@ export function App() {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+
+  // Preload personalized audio from IndexedDB for the active child name
+  useEffect(() => {
+    if (progress.childName) {
+      ttsNarrator.loadChildAudio(progress.childName);
+    }
+  }, [progress.childName]);
 
   // Get currently selected Iqro book (defaults to level 1)
   const currentBook =

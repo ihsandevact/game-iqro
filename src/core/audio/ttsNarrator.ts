@@ -1,3 +1,5 @@
+import { getAllCachedAudioForName } from './customAudioCache';
+
 // Authentic Studio Makhraj Audio & Indonesian Child-Friendly Narrator Engine
 
 export const LETTER_AUDIO_MAP: Record<string, string> = {
@@ -202,6 +204,8 @@ class TTSNarrator {
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private currentAudio: HTMLAudioElement | null = null;
   private isChainCancelled = false;
+  private activeChildName = '';
+  private customAudioUrls: Record<string, string> = {};
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -222,6 +226,47 @@ class TTSNarrator {
     if (idVoice) {
       this.voice = idVoice;
     }
+  }
+
+  public async loadChildAudio(childName: string): Promise<boolean> {
+    const trimmed = (childName || '').trim();
+    if (!trimmed) return false;
+
+    if (
+      this.activeChildName.toLowerCase() === trimmed.toLowerCase() &&
+      Object.keys(this.customAudioUrls).length > 0
+    ) {
+      return true;
+    }
+
+    this.releaseCustomAudioUrls();
+    this.activeChildName = trimmed;
+
+    try {
+      const blobs = await getAllCachedAudioForName(trimmed);
+      const urls: Record<string, string> = {};
+      for (const [key, blob] of Object.entries(blobs)) {
+        if (blob) {
+          urls[key] = URL.createObjectURL(blob);
+        }
+      }
+      this.customAudioUrls = urls;
+      return Object.keys(urls).length > 0;
+    } catch {
+      this.customAudioUrls = {};
+      return false;
+    }
+  }
+
+  public releaseCustomAudioUrls() {
+    for (const url of Object.values(this.customAudioUrls)) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }
+    this.customAudioUrls = {};
   }
 
   public getLetterAudioPath(letter: string): string | null {
@@ -596,10 +641,27 @@ class TTSNarrator {
     this.speak(letterName, onEnd);
   }
 
-  public speakPraise(_childNameOrOnEnd?: string | (() => void), onEnd?: () => void) {
+  public speakPraise(childNameOrOnEnd?: string | (() => void), onEnd?: () => void) {
     let callback = onEnd;
-    if (typeof _childNameOrOnEnd === 'function') {
-      callback = _childNameOrOnEnd;
+    let name = '';
+    if (typeof childNameOrOnEnd === 'function') {
+      callback = childNameOrOnEnd;
+    } else if (typeof childNameOrOnEnd === 'string') {
+      name = childNameOrOnEnd.trim();
+    }
+
+    const customPraiseKeys = ['praise_hebat', 'praise_pintar', 'praise_luarbiasa', 'praise_keren', 'praise_bagus'];
+    const availableCustom = customPraiseKeys
+      .map((k) => this.customAudioUrls[k])
+      .filter(Boolean);
+
+    if (
+      availableCustom.length > 0 &&
+      (!name || name.toLowerCase() === this.activeChildName.toLowerCase())
+    ) {
+      const chosen = availableCustom[Math.floor(Math.random() * availableCustom.length)];
+      this.playAudio(chosen, callback);
+      return;
     }
 
     const chosen = PRAISE_AUDIO_LIST[Math.floor(Math.random() * PRAISE_AUDIO_LIST.length)];
@@ -611,7 +673,16 @@ class TTSNarrator {
     this.playAudio(chosen, onEnd);
   }
 
-  public speakGreeting(_childName?: string, onEnd?: () => void) {
+  public speakGreeting(childName?: string, onEnd?: () => void) {
+    const name = childName?.trim() || '';
+    if (
+      this.customAudioUrls['prompt_sapaan'] &&
+      (!name || name.toLowerCase() === this.activeChildName.toLowerCase())
+    ) {
+      this.playAudio(this.customAudioUrls['prompt_sapaan'], onEnd);
+      return;
+    }
+
     this.playAudio('/audio/prompts/prompt_sapaan.mp3', onEnd);
   }
 
@@ -639,8 +710,24 @@ class TTSNarrator {
     this.playAudio('/audio/prompts/prompt_reset_sukses.mp3', onEnd);
   }
 
-  public speakLessonComplete(onEnd?: () => void) {
-    this.playAudio('/audio/prompts/prompt_selesai.mp3', onEnd);
+  public speakLessonComplete(childNameOrOnEnd?: string | (() => void), onEnd?: () => void) {
+    let callback = onEnd;
+    let name = '';
+    if (typeof childNameOrOnEnd === 'function') {
+      callback = childNameOrOnEnd;
+    } else if (typeof childNameOrOnEnd === 'string') {
+      name = childNameOrOnEnd.trim();
+    }
+
+    if (
+      this.customAudioUrls['prompt_selesai'] &&
+      (!name || name.toLowerCase() === this.activeChildName.toLowerCase())
+    ) {
+      this.playAudio(this.customAudioUrls['prompt_selesai'], callback);
+      return;
+    }
+
+    this.playAudio('/audio/prompts/prompt_selesai.mp3', callback);
   }
 
   public isSpeaking(): boolean {

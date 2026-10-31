@@ -1,11 +1,77 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { synthesizeEdgeTTS } from './server/ttsHandler.js'
+
+function edgeTtsVitePlugin() {
+  return {
+    name: 'edge-tts-server',
+    configureServer(server: any) {
+      server.middlewares.use('/api/tts', async (req: any, res: any) => {
+        if (req.method === 'OPTIONS') {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          res.statusCode = 200;
+          res.end();
+          return;
+        }
+
+        try {
+          let text = '';
+          let voice = 'id-ID-GadisNeural';
+          let rate = '+5%';
+          let pitch = '+4Hz';
+
+          if (req.method === 'GET') {
+            const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+            text = url.searchParams.get('text') || '';
+            voice = url.searchParams.get('voice') || voice;
+            rate = url.searchParams.get('rate') || rate;
+            pitch = url.searchParams.get('pitch') || pitch;
+          } else if (req.method === 'POST') {
+            let bodyStr = '';
+            for await (const chunk of req) {
+              bodyStr += chunk;
+            }
+            const body = bodyStr ? JSON.parse(bodyStr) : {};
+            text = body.text || '';
+            voice = body.voice || voice;
+            rate = body.rate || rate;
+            pitch = body.pitch || pitch;
+          }
+
+          if (!text) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Text parameter is required' }));
+            return;
+          }
+
+          const buffer = await synthesizeEdgeTTS({ text, voice, rate, pitch });
+
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Content-Length', buffer.length);
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.statusCode = 200;
+          res.end(buffer);
+        } catch (err: any) {
+          console.error('[Edge TTS Plugin Error]:', err);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message || 'TTS Synthesis error' }));
+        }
+      });
+    }
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    edgeTtsVitePlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/*.png'],
