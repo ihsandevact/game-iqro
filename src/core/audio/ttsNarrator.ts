@@ -290,7 +290,7 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'نِ': '/audio/letters/ni.mp3',
   'wi': '/audio/letters/wi.mp3',
   'وِ': '/audio/letters/wi.mp3',
-  'hii': '/audio/letters/hii.mp3',
+  'hi_besar': '/audio/letters/hii.mp3',
   'هِ': '/audio/letters/hii.mp3',
   'yi': '/audio/letters/yi.mp3',
   'يِ': '/audio/letters/yi.mp3',
@@ -350,12 +350,12 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'نُ': '/audio/letters/nu.mp3',
   'wu': '/audio/letters/wu.mp3',
   'وُ': '/audio/letters/wu.mp3',
-  'huu': '/audio/letters/huu.mp3',
+  'hu_besar': '/audio/letters/huu.mp3',
   'هُ': '/audio/letters/huu.mp3',
   'yu': '/audio/letters/yu.mp3',
   'يُ': '/audio/letters/yu.mp3',
 
-  // --- IQRO 3: MAD ASLI (KASRAH + YA & DHAMMAH + WAWU) ---
+  // --- MAD ASLI KASRAH (2 HARAKAT PANJANG / YA SUKUN) ---
   'bii': '/audio/letters/bii.mp3',
   'بِيْ': '/audio/letters/bii.mp3',
   'بِي': '/audio/letters/bii.mp3',
@@ -368,15 +368,49 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'jii': '/audio/letters/jii.mp3',
   'جِيْ': '/audio/letters/jii.mp3',
   'جِي': '/audio/letters/jii.mp3',
+  'hii': '/audio/letters/hii.mp3',
+  'حِيْ': '/audio/letters/hii.mp3',
+  'حِي': '/audio/letters/hii.mp3',
+  'khii': '/audio/letters/khii.mp3',
+  'خِيْ': '/audio/letters/khii.mp3',
+  'خِي': '/audio/letters/khii.mp3',
   'dii': '/audio/letters/dii.mp3',
   'دِيْ': '/audio/letters/dii.mp3',
   'دِي': '/audio/letters/dii.mp3',
+  'dzii': '/audio/letters/dzii.mp3',
+  'ذِيْ': '/audio/letters/dzii.mp3',
+  'ذِي': '/audio/letters/dzii.mp3',
   'rii': '/audio/letters/rii.mp3',
   'رِيْ': '/audio/letters/rii.mp3',
   'رِي': '/audio/letters/rii.mp3',
+  'zii': '/audio/letters/zii.mp3',
+  'زِيْ': '/audio/letters/zii.mp3',
+  'زِي': '/audio/letters/zii.mp3',
   'sii': '/audio/letters/sii.mp3',
   'سِيْ': '/audio/letters/sii.mp3',
   'سِي': '/audio/letters/sii.mp3',
+  'syii': '/audio/letters/syii.mp3',
+  'شِيْ': '/audio/letters/syii.mp3',
+  'شِي': '/audio/letters/syii.mp3',
+  'shii': '/audio/letters/shii.mp3',
+  'صِيْ': '/audio/letters/shii.mp3',
+  'صِي': '/audio/letters/shii.mp3',
+  'dhii': '/audio/letters/dhii.mp3',
+  'ضِيْ': '/audio/letters/dhii.mp3',
+  'ضِي': '/audio/letters/dhii.mp3',
+  'thii': '/audio/letters/thii.mp3',
+  'طِيْ': '/audio/letters/thii.mp3',
+  'طِي': '/audio/letters/thii.mp3',
+  'zhii': '/audio/letters/zhii.mp3',
+  'ظِيْ': '/audio/letters/zhii.mp3',
+  'ظِي': '/audio/letters/zhii.mp3',
+  "'ii": '/audio/letters/ain_ii.mp3',
+  'ain_ii': '/audio/letters/ain_ii.mp3',
+  'عِيْ': '/audio/letters/ain_ii.mp3',
+  'عِي': '/audio/letters/ain_ii.mp3',
+  'ghii': '/audio/letters/ghii.mp3',
+  'غِيْ': '/audio/letters/ghii.mp3',
+  'غِي': '/audio/letters/ghii.mp3',
   'fii': '/audio/letters/fii.mp3',
   'فِيْ': '/audio/letters/fii.mp3',
   'فِي': '/audio/letters/fii.mp3',
@@ -395,7 +429,14 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'nii': '/audio/letters/nii.mp3',
   'نِيْ': '/audio/letters/nii.mp3',
   'نِي': '/audio/letters/nii.mp3',
+  'wii': '/audio/letters/wii.mp3',
+  'وِيْ': '/audio/letters/wii.mp3',
+  'وِي': '/audio/letters/wii.mp3',
+  'yii': '/audio/letters/yii.mp3',
+  'يِيْ': '/audio/letters/yii.mp3',
+  'يِي': '/audio/letters/yii.mp3',
 
+  // --- MAD ASLI DHAMMAH (2 HARAKAT PANJANG / WAW SUKUN) ---
   'buu': '/audio/letters/buu.mp3',
   'بُوْ': '/audio/letters/buu.mp3',
   'بُو': '/audio/letters/buu.mp3',
@@ -405,15 +446,52 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'tsuu': '/audio/letters/tsuu.mp3',
   'ثُوْ': '/audio/letters/tsuu.mp3',
   'ثُو': '/audio/letters/tsuu.mp3',
+  'juu': '/audio/letters/juu.mp3',
+  'جُوْ': '/audio/letters/juu.mp3',
+  'جُو': '/audio/letters/juu.mp3',
+  'huu': '/audio/letters/huu.mp3',
+  'حُوْ': '/audio/letters/huu.mp3',
+  'حُو': '/audio/letters/huu.mp3',
+  'khuu': '/audio/letters/khuu.mp3',
+  'خُوْ': '/audio/letters/khuu.mp3',
+  'خُو': '/audio/letters/khuu.mp3',
   'duu': '/audio/letters/duu.mp3',
   'دُوْ': '/audio/letters/duu.mp3',
   'دُو': '/audio/letters/duu.mp3',
+  'dzuu': '/audio/letters/dzuu.mp3',
+  'ذُوْ': '/audio/letters/dzuu.mp3',
+  'ذُو': '/audio/letters/dzuu.mp3',
   'ruu': '/audio/letters/ruu.mp3',
   'رُوْ': '/audio/letters/ruu.mp3',
   'رُو': '/audio/letters/ruu.mp3',
+  'zuu': '/audio/letters/zuu.mp3',
+  'زُوْ': '/audio/letters/zuu.mp3',
+  'زُو': '/audio/letters/zuu.mp3',
   'suu': '/audio/letters/suu.mp3',
   'سُوْ': '/audio/letters/suu.mp3',
   'سُو': '/audio/letters/suu.mp3',
+  'syuu': '/audio/letters/syuu.mp3',
+  'شُوْ': '/audio/letters/syuu.mp3',
+  'شُو': '/audio/letters/syuu.mp3',
+  'shuu': '/audio/letters/shuu.mp3',
+  'صُوْ': '/audio/letters/shuu.mp3',
+  'صُو': '/audio/letters/shuu.mp3',
+  'dhuu': '/audio/letters/dhuu.mp3',
+  'ضُوْ': '/audio/letters/dhuu.mp3',
+  'ضُو': '/audio/letters/dhuu.mp3',
+  'thuu': '/audio/letters/thuu.mp3',
+  'طُوْ': '/audio/letters/thuu.mp3',
+  'طُو': '/audio/letters/thuu.mp3',
+  'zhuu': '/audio/letters/zhuu.mp3',
+  'ظُوْ': '/audio/letters/zhuu.mp3',
+  'ظُو': '/audio/letters/zhuu.mp3',
+  "'uu": '/audio/letters/ain_uu.mp3',
+  'ain_uu': '/audio/letters/ain_uu.mp3',
+  'عُوْ': '/audio/letters/ain_uu.mp3',
+  'عُو': '/audio/letters/ain_uu.mp3',
+  'ghuu': '/audio/letters/ghuu.mp3',
+  'غُوْ': '/audio/letters/ghuu.mp3',
+  'غُو': '/audio/letters/ghuu.mp3',
   'fuu': '/audio/letters/fuu.mp3',
   'فُوْ': '/audio/letters/fuu.mp3',
   'فُو': '/audio/letters/fuu.mp3',
@@ -432,6 +510,9 @@ export const LETTER_AUDIO_MAP: Record<string, string> = {
   'nuu': '/audio/letters/nuu.mp3',
   'نُوْ': '/audio/letters/nuu.mp3',
   'نُو': '/audio/letters/nuu.mp3',
+  'wuu': '/audio/letters/wuu.mp3',
+  'وُوْ': '/audio/letters/wuu.mp3',
+  'وُو': '/audio/letters/wuu.mp3',
   'yuu': '/audio/letters/yuu.mp3',
   'يُوْ': '/audio/letters/yuu.mp3',
   'يُو': '/audio/letters/yuu.mp3',
@@ -527,13 +608,24 @@ class TTSNarrator {
     if (LETTER_AUDIO_MAP[normalized]) {
       return LETTER_AUDIO_MAP[normalized];
     }
+    // Explicit 'Ain checks to avoid accidental strip to Alif
+    if (normalized === "'a") return '/audio/letters/ain_a.mp3';
+    if (normalized === "'i") return '/audio/letters/ain_i.mp3';
+    if (normalized === "'u") return '/audio/letters/ain_u.mp3';
+    if (normalized === "'aa") return '/audio/letters/ain_aa.mp3';
+    if (normalized === "'ii") return '/audio/letters/ain_ii.mp3';
+    if (normalized === "'uu") return '/audio/letters/ain_uu.mp3';
+
     const cleanLatin = normalized.replace(/[^a-z']/g, '');
     if (LETTER_AUDIO_MAP[cleanLatin]) {
       return LETTER_AUDIO_MAP[cleanLatin];
     }
-    const noApos = cleanLatin.replace(/'/g, '');
-    if (LETTER_AUDIO_MAP[noApos]) {
-      return LETTER_AUDIO_MAP[noApos];
+    // Only strip apostrophe if it didn't represent 'Ain ('a, 'i, 'u, 'aa, 'ii, 'uu)
+    if (!cleanLatin.startsWith("'")) {
+      const noApos = cleanLatin.replace(/'/g, '');
+      if (LETTER_AUDIO_MAP[noApos]) {
+        return LETTER_AUDIO_MAP[noApos];
+      }
     }
     return null;
   }
@@ -543,15 +635,11 @@ class TTSNarrator {
     if (!word) return [];
     const trimmed = word.trim();
 
-    // 1. Single letter direct match
-    const single = this.getLetterAudioPath(trimmed);
-    if (single) return [single];
-
-    // 2. Hyphenated / space-separated Latin (e.g. "Ba-Ta", "Ka-Ta-Ba")
-    // Strictly requires 2 to 5 parts, and ALL parts MUST be valid Hijaiyah letters!
+    // 1. Hyphenated / space-separated Latin or Arabic combos FIRST (e.g. "Ba-Ta", "Ma-'A", "Ka-Ta-Ba")
+    // Strictly requires 2 to 6 parts, and ALL parts MUST be valid Hijaiyah letters!
     if (trimmed.includes('-') || trimmed.includes(' ')) {
       const parts = trimmed.split(/[- ]+/).filter(Boolean);
-      if (parts.length >= 2 && parts.length <= 5) {
+      if (parts.length >= 2 && parts.length <= 6) {
         const paths: string[] = [];
         let allValid = true;
         for (const p of parts) {
@@ -569,29 +657,14 @@ class TTSNarrator {
       }
     }
 
-    // 3. Arabic word character/syllable analysis (Iqro 2 & Iqro 3 joined letters)
+    // 2. Arabic word character/syllable analysis (Iqro 2 & Iqro 3 joined letters)
     // Strictly requires Arabic characters in the string!
     if (/[\u0600-\u06FF]/.test(trimmed)) {
-      // 3a. Check if trimmed has spaces/hyphens between Arabic letters/syllables (e.g. "بَ - بِ - بُ")
-      if (trimmed.includes(' ') || trimmed.includes('-')) {
-        const arParts = trimmed.split(/[- ]+/).filter(Boolean);
-        const paths: string[] = [];
-        let allMatched = true;
-        for (const p of arParts) {
-          const path = this.getLetterAudioPath(p);
-          if (path) {
-            paths.push(path);
-          } else {
-            allMatched = false;
-            break;
-          }
-        }
-        if (allMatched && paths.length === arParts.length) {
-          return paths;
-        }
-      }
+      // 2a. Direct single Arabic letter match
+      const direct = this.getLetterAudioPath(trimmed);
+      if (direct) return [direct];
 
-      // 3b. Syllable segmentation for connected Arabic words (e.g. "كُتِبَ", "حَسُنَ", "بِيْدِيْ")
+      // 2b. Syllable segmentation for connected Arabic words (e.g. "كُتِبَ", "حَسُنَ", "بِيْدِيْ")
       // Syllable = Consonant + optional harakat + optional mad letter (Alif, Ya, Waw with optional sukun)
       const syllableRegex = /([\u0621-\u064A][\u064B-\u0652]?(?:[اى]|[يو][\u0652]?|[\u0670])?)/g;
       const syllables = trimmed.match(syllableRegex);
@@ -621,7 +694,7 @@ class TTSNarrator {
         }
       }
 
-      // 3c. Fallback char-by-char for simple fathah joined words
+      // 2c. Fallback char-by-char for simple fathah joined words
       const paths: string[] = [];
       const chars = trimmed.split('');
       for (let i = 0; i < chars.length; i++) {
@@ -638,6 +711,10 @@ class TTSNarrator {
         return paths;
       }
     }
+
+    // 3. Single letter direct match (for standalone letters)
+    const single = this.getLetterAudioPath(trimmed);
+    if (single) return [single];
 
     return [];
   }
