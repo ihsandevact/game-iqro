@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
+  MicOff,
   Square,
   Play,
   Pause,
@@ -16,6 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
+  Radio,
+  Sliders,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { IQRO_BOOKS } from '../../games/iqro/data/iqroLevels';
@@ -103,6 +106,13 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
   const [approvedRecords, setApprovedRecords] = useState<Record<string, StudioRecordingRecord>>({});
   const [isVoiceOverrideActive, setIsVoiceOverrideActive] = useState<boolean>(false);
 
+  // Audio Device state
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [activeDeviceLabel, setActiveDeviceLabel] = useState<string>('');
+  const [isHardwareMuted, setIsHardwareMuted] = useState<boolean>(false);
+  const [isTestingMic, setIsTestingMic] = useState<boolean>(false);
+
   // Recorder state
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordDuration, setRecordDuration] = useState<number>(0);
@@ -125,19 +135,39 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
   const playbackAudioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Web Audio refs for VU-meter
+  // Web Audio refs for VU-meter (prevent GC)
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
-  // Load all existing recordings on mount
+  // Enumerate input devices
+  const refreshAudioDevices = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const inputs = devices.filter((d) => d.kind === 'audioinput');
+      setAudioDevices(inputs);
+      if (inputs.length > 0 && !selectedDeviceId) {
+        setSelectedDeviceId(inputs[0].deviceId);
+        if (inputs[0].label) {
+          setActiveDeviceLabel(inputs[0].label);
+        }
+      }
+    } catch (e) {
+      console.warn('enumerateDevices error:', e);
+    }
+  }, [selectedDeviceId]);
+
+  // Load all existing recordings and audio devices on mount
   useEffect(() => {
     if (isOpen) {
       loadRecords();
       setIsVoiceOverrideActive(isStudioVoiceEnabled());
+      refreshAudioDevices();
     }
-  }, [isOpen]);
+  }, [isOpen, refreshAudioDevices]);
 
   const loadRecords = async () => {
     try {
@@ -148,20 +178,18 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     }
   };
 
-  // Clean up object URLs when draft changes or unmounts
-  useEffect(() => {
-    return () => {
-      if (draftAudio?.url) {
-        URL.revokeObjectURL(draftAudio.url);
-      }
-      cleanupAudioContext();
-    };
-  }, [draftAudio]);
-
-  const cleanupAudioContext = () => {
+  const cleanupAudioContext = useCallback(() => {
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
+    }
+    if (sourceNodeRef.current) {
+      try {
+        sourceNodeRef.current.disconnect();
+      } catch {
+        // ignore
+      }
+      sourceNodeRef.current = null;
     }
     if (audioContextRef.current) {
       try {
@@ -177,7 +205,18 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       micStreamRef.current = null;
     }
     setMicLevel(0);
-  };
+    setIsHardwareMuted(false);
+  }, []);
+
+  // Clean up object URLs when draft changes or unmounts
+  useEffect(() => {
+    return () => {
+      if (draftAudio?.url) {
+        URL.revokeObjectURL(draftAudio.url);
+      }
+      cleanupAudioContext();
+    };
+  }, [draftAudio, cleanupAudioContext]);
 
   // Filtered questions
   const filteredQuestions = useMemo(() => {
@@ -222,7 +261,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     setNotification({ type, message });
     setTimeout(() => {
       setNotification((prev) => (prev?.message === message ? null : prev));
-    }, 4000);
+    }, 4500);
   };
 
   // Stop any active playback
@@ -240,20 +279,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     setIsPlayingApproved(false);
   }, []);
 
-  // Reset draft when selecting another question
-  const selectQuestion = (idx: number) => {
-    stopPlayback();
-    if (isRecording) {
-      stopRecording();
-    }
-    if (draftAudio?.url) {
-      URL.revokeObjectURL(draftAudio.url);
-    }
-    setDraftAudio(null);
-    setRecordDuration(0);
-    setSelectedIndex(idx);
-  };
-
   // Stop recording handler
   const stopRecording = useCallback(() => {
     if (recordTimerRef.current) {
@@ -263,7 +288,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
-        // Force-flush remaining chunks before stopping
         mediaRecorderRef.current.requestData();
       } catch (e) {
         console.warn('requestData error:', e);
@@ -273,59 +297,134 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     }
   }, []);
 
+  // Reset draft when selecting another question
+  const selectQuestion = (idx: number) => {
+    stopPlayback();
+    if (isRecording) {
+      stopRecording();
+    }
+    if (isTestingMic) {
+      cleanupAudioContext();
+      setIsTestingMic(false);
+    }
+    if (draftAudio?.url) {
+      URL.revokeObjectURL(draftAudio.url);
+    }
+    setDraftAudio(null);
+    setRecordDuration(0);
+    setSelectedIndex(idx);
+  };
+
+  // Setup Audio Stream & High-Sensitivity Time-Domain RMS VU-Meter
+  const setupAudioStreamAndVU = async (deviceId?: string): Promise<{ stream: MediaStream; ctx: AudioContext }> => {
+    cleanupAudioContext();
+
+    // Laptop mic arrays perform best with echoCancellation, noiseSuppression, and autoGainControl enabled
+    const constraints: MediaStreamConstraints = {
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+      },
+    };
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+
+    micStreamRef.current = stream;
+
+    // Detect hardware/OS mute state & label
+    const track = stream.getAudioTracks()[0];
+    if (track) {
+      setActiveDeviceLabel(track.label || 'Mikrofon Bawaan Laptop');
+      setIsHardwareMuted(track.muted);
+      track.onmute = () => setIsHardwareMuted(true);
+      track.onunmute = () => setIsHardwareMuted(false);
+    }
+
+    refreshAudioDevices();
+
+    // Set up Web Audio Analyser
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+    audioContextRef.current = ctx;
+
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.2;
+    analyserRef.current = analyser;
+
+    const source = ctx.createMediaStreamSource(stream);
+    sourceNodeRef.current = source; // Keep strong ref to prevent GC
+    source.connect(analyser);
+
+    // High-sensitivity RMS calculation
+    const dataArray = new Uint8Array(analyser.fftSize);
+    const updateLevel = () => {
+      if (!analyserRef.current) return;
+      analyserRef.current.getByteTimeDomainData(dataArray);
+
+      let sumSquares = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const norm = (dataArray[i] - 128) / 128; // -1.0 to 1.0
+        sumSquares += norm * norm;
+      }
+      const rms = Math.sqrt(sumSquares / dataArray.length); // 0.0 to 1.0
+      // Amplified scale so normal speech (rms 0.04 - 0.2) maps to 25% - 90%
+      const normalized = Math.min(100, Math.round(rms * 450));
+      setMicLevel(normalized);
+
+      animFrameRef.current = requestAnimationFrame(updateLevel);
+    };
+    updateLevel();
+
+    return { stream, ctx };
+  };
+
+  // Toggle Live Microphone Test Mode
+  const toggleTestMic = async () => {
+    if (isTestingMic) {
+      cleanupAudioContext();
+      setIsTestingMic(false);
+      return;
+    }
+
+    stopPlayback();
+    if (isRecording) {
+      stopRecording();
+    }
+
+    try {
+      await setupAudioStreamAndVU(selectedDeviceId);
+      setIsTestingMic(true);
+      showNotice('info', 'Mode Tes Mic Aktif. Silakan bicara ke laptop untuk melihat indikator bergerak.');
+    } catch (err) {
+      console.error('Tes mic error:', err);
+      showNotice('error', 'Gagal mengakses mikrofon untuk pengujian.');
+      setIsTestingMic(false);
+    }
+  };
+
   // Audio Recording Handlers
   const startRecording = async () => {
     stopPlayback();
+    if (isTestingMic) {
+      cleanupAudioContext();
+      setIsTestingMic(false);
+    }
+
     try {
-      // 1. Get raw audio stream with fallback
-      let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: true,
-          },
-        });
-      } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      }
-      micStreamRef.current = stream;
+      const { stream } = await setupAudioStreamAndVU(selectedDeviceId);
 
-      // 2. Set up Web Audio Analyser for live VU-meter
-      try {
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new AudioCtx();
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-        audioContextRef.current = ctx;
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyserRef.current = analyser;
-        const source = ctx.createMediaStreamSource(stream);
-        source.connect(analyser);
-
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        const updateLevel = () => {
-          if (!analyserRef.current) return;
-          analyserRef.current.getByteFrequencyData(dataArray);
-          let sum = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            sum += dataArray[i];
-          }
-          const avg = sum / dataArray.length;
-          // Scale 0-128 to 0-100%
-          const normalized = Math.min(100, Math.round((avg / 100) * 100));
-          setMicLevel(normalized);
-          animFrameRef.current = requestAnimationFrame(updateLevel);
-        };
-        updateLevel();
-      } catch (err) {
-        console.warn('Could not initialize AudioContext VU-meter:', err);
-      }
-
-      // 3. Determine best supported MIME type
+      // Determine best supported MIME type
       const candidates = [
         'audio/webm;codecs=opus',
         'audio/webm',
@@ -352,10 +451,8 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       };
 
       recorder.onstop = () => {
-        // Cleanup mic stream & analyser
         cleanupAudioContext();
 
-        // Strip codec parameter so HTMLAudioElement reliably plays the blob
         const rawMime = recorder.mimeType || chosenMime || 'audio/webm';
         const cleanMime = rawMime.split(';')[0].trim() || 'audio/webm';
         const blob = new Blob(audioChunksRef.current, { type: cleanMime });
@@ -386,7 +483,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       setIsRecording(true);
       setRecordDuration(0);
 
-      // Start elapsed timer
       const startTime = Date.now();
       recordTimerRef.current = window.setInterval(() => {
         setRecordDuration(Date.now() - startTime);
@@ -513,7 +609,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       await saveStudioRecording(record);
       setApprovedRecords((prev) => ({ ...prev, [currentItem.id]: record }));
 
-      // Reload narrator if in-game override is enabled
       if (isVoiceOverrideActive) {
         await ttsNarrator.loadStudioRecordings();
       }
@@ -522,12 +617,10 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
       showNotice('success', `Audio soal "${currentItem.targetName || currentItem.targetLetter}" berhasil di-approve!`);
 
-      // Clear draft & stop playback
       stopPlayback();
       if (draftAudio.url) URL.revokeObjectURL(draftAudio.url);
       setDraftAudio(null);
 
-      // Auto advance to next question
       if (selectedIndex < filteredQuestions.length - 1) {
         setSelectedIndex(selectedIndex + 1);
       }
@@ -636,8 +729,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in search
-      if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+      if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'SELECT') return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -695,15 +787,15 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-2 sm:p-4 overflow-hidden">
       <div className="relative flex flex-col w-full max-w-6xl h-[94vh] bg-white rounded-3xl shadow-2xl border-4 border-slate-200 overflow-hidden">
         {/* TOP HEADER: Branding, Progress, & Global Actions */}
-        <header className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-slate-50 border-b border-slate-200 select-none">
+        <header className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 bg-slate-50 border-b border-slate-200 select-none">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-12 h-12 bg-emerald-500 text-white rounded-2xl shadow-md shadow-emerald-500/20">
+            <div className="flex items-center justify-center w-11 h-11 bg-emerald-500 text-white rounded-2xl shadow-md shadow-emerald-500/20">
               <Mic className="w-6 h-6 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-800">Studio Rekaman Qari</h1>
-                <span className="text-xs font-extrabold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
+                <h1 className="text-lg font-black text-slate-800">Studio Rekaman Qari</h1>
+                <span className="text-[11px] font-extrabold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
                   Iqro 1–6
                 </span>
               </div>
@@ -714,7 +806,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
           </div>
 
           {/* Progress Pill */}
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-3 bg-white px-3.5 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex flex-col">
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 gap-4 mb-1">
                 <span>Progres Rekaman</span>
@@ -722,7 +814,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                   {totalApproved} / {totalQuestionsCount} ({progressPercent}%)
                 </span>
               </div>
-              <div className="w-44 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+              <div className="w-40 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <motion.div
                   className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
                   initial={{ width: 0 }}
@@ -921,7 +1013,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        {/* Status Icon */}
                         {isApproved ? (
                           <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600">
                             <CheckCircle2 className="w-4 h-4" />
@@ -952,7 +1043,6 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                         </div>
                       </div>
 
-                      {/* Arabic Preview */}
                       <span className="font-amiri text-lg font-bold text-emerald-700 px-2 py-0.5 bg-emerald-50/50 rounded-lg">
                         {item.targetLetter}
                       </span>
@@ -964,9 +1054,9 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
           </aside>
 
           {/* RIGHT AREA: Visual "Baca Ini" Prompter & Recording Studio */}
-          <main className="flex-1 flex flex-col justify-between bg-white overflow-y-auto p-4 sm:p-8">
+          <main className="flex-1 flex flex-col justify-between bg-white overflow-y-auto p-4 sm:p-6">
             {currentItem ? (
-              <div className="flex flex-col items-center justify-center max-w-2xl mx-auto w-full space-y-6 my-auto">
+              <div className="flex flex-col items-center justify-center max-w-2xl mx-auto w-full space-y-4 my-auto">
                 {/* Stage Info Header */}
                 <div className="flex flex-wrap items-center justify-center gap-2 text-center">
                   <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-black text-xs rounded-xl border border-emerald-300">
@@ -981,13 +1071,13 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                 </div>
 
                 {/* BIG PROMPTER CARD */}
-                <div className="w-full flex flex-col items-center justify-center p-8 bg-gradient-to-b from-slate-50 to-emerald-50/40 rounded-3xl border-2 border-emerald-200/80 shadow-lg text-center relative overflow-hidden">
-                  <div className="text-xs font-extrabold text-emerald-600 tracking-wider uppercase mb-2">
+                <div className="w-full flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-b from-slate-50 to-emerald-50/40 rounded-3xl border-2 border-emerald-200/80 shadow-md text-center relative overflow-hidden">
+                  <div className="text-xs font-extrabold text-emerald-600 tracking-wider uppercase mb-1">
                     Lafal Yang Harus Dibacakan:
                   </div>
 
                   {/* Giant Arabic Text */}
-                  <div className="font-amiri text-7xl sm:text-8xl md:text-9xl font-bold text-slate-800 my-2 drop-shadow-sm select-none leading-tight">
+                  <div className="font-amiri text-6xl sm:text-7xl md:text-8xl font-bold text-slate-800 my-1 drop-shadow-sm select-none leading-tight">
                     {currentItem.targetLetter}
                   </div>
 
@@ -998,13 +1088,13 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
 
                   {/* Makhraj / Harakat Hint */}
                   {currentItem.hint && (
-                    <div className="mt-4 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 max-w-md">
+                    <div className="mt-3 px-4 py-1.5 bg-white/80 backdrop-blur-sm rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 max-w-md">
                       💡 {currentItem.hint}
                     </div>
                   )}
 
                   {/* Approval Status Badge */}
-                  <div className="mt-4">
+                  <div className="mt-3">
                     {isCurrentApproved ? (
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-sm">
                         <CheckCircle2 className="w-4 h-4" />
@@ -1019,8 +1109,95 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                   </div>
                 </div>
 
+                {/* MICROPHONE DEVICE SELECTOR & TEST BAR */}
+                <div className="w-full max-w-xl bg-slate-50 border border-slate-200 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <Sliders className="w-4 h-4 text-slate-500 shrink-0" />
+                    <span className="font-bold text-slate-600 shrink-0">Mikrofon:</span>
+                    {audioDevices.length > 0 ? (
+                      <select
+                        value={selectedDeviceId}
+                        onChange={(e) => {
+                          setSelectedDeviceId(e.target.value);
+                          if (isTestingMic) {
+                            setupAudioStreamAndVU(e.target.value);
+                          }
+                        }}
+                        className="flex-1 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-emerald-500 truncate"
+                        title="Pilih perangkat mikrofon laptop atau headset Anda"
+                      >
+                        {audioDevices.map((dev, i) => (
+                          <option key={dev.deviceId || i} value={dev.deviceId}>
+                            {dev.label || `Mikrofon ${i + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="font-semibold text-slate-500 truncate">
+                        {activeDeviceLabel || 'Mikrofon Bawaan Laptop'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleTestMic}
+                      className={`px-3 py-1 rounded-xl font-bold flex items-center gap-1.5 border transition ${
+                        isTestingMic
+                          ? 'bg-rose-500 text-white border-rose-600 shadow-sm animate-pulse'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-sm'
+                      }`}
+                    >
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>{isTestingMic ? 'Tutup Tes' : 'Tes Mic'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* HARDWARE MUTE WARNING BANNER */}
+                {isHardwareMuted && (
+                  <div className="w-full max-w-xl bg-amber-500 text-white p-3 rounded-2xl flex items-center gap-2.5 text-xs font-bold shadow-md animate-bounce">
+                    <MicOff className="w-5 h-5 shrink-0" />
+                    <span>
+                      ⚠️ Mikrofon terdeteksi DI-MUTE oleh tombol fisik keyboard laptop (F4 / Fn+F4) atau sistem Windows. Tekan tombol tersebut untuk menyalakan mikrofon.
+                    </span>
+                  </div>
+                )}
+
+                {/* LIVE MIC TEST MODE HUD */}
+                {isTestingMic && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full max-w-xl bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 flex flex-col gap-2 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
+                      <span className="flex items-center gap-1.5">
+                        <Radio className="w-4 h-4 text-emerald-600 animate-spin" />
+                        Mode Tes Mikrofon Aktif — Silakan bersuara ke laptop
+                      </span>
+                      <span className={micLevel > 15 ? 'text-emerald-700 font-black' : 'text-slate-400'}>
+                        {micLevel > 15 ? `🟢 Suara Masuk (${micLevel}%)` : '⚪ Hening'}
+                      </span>
+                    </div>
+
+                    <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                      <motion.div
+                        className={`h-full rounded-full transition-all duration-75 ${
+                          micLevel > 60
+                            ? 'bg-rose-500'
+                            : micLevel > 20
+                            ? 'bg-emerald-500'
+                            : 'bg-amber-400'
+                        }`}
+                        style={{ width: `${Math.max(4, micLevel)}%` }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* RECORDING & VERIFICATION CONTROLS */}
-                <div className="w-full max-w-xl flex flex-col items-center space-y-4">
+                <div className="w-full max-w-xl flex flex-col items-center space-y-3.5">
                   {/* Live Recording HUD with Timer & VU-Meter */}
                   {isRecording && (
                     <motion.div
@@ -1044,9 +1221,9 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                       {/* Live Microphone Visual VU-Meter */}
                       <div className="w-full px-2 space-y-1">
                         <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                          <span>Indikator Mikrofon:</span>
+                          <span>Level Suara Mikrofon:</span>
                           <span className={micLevel > 15 ? 'text-emerald-600 font-black' : 'text-slate-400'}>
-                            {micLevel > 15 ? '🟢 Suara Terdeteksi' : micLevel > 0 ? '🟡 Mendeteksi...' : '⚪ Hening'}
+                            {micLevel > 15 ? `🟢 Suara Terdeteksi (${micLevel}%)` : '⚪ Hening (Cek tombol Mute laptop F4)'}
                           </span>
                         </div>
                         <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
@@ -1070,7 +1247,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                     {isRecording ? (
                       <button
                         onClick={stopRecording}
-                        className="flex items-center gap-2.5 px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-xl shadow-rose-600/30 active:scale-95 transition"
+                        className="flex items-center gap-2.5 px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-xl shadow-rose-600/30 active:scale-95 transition"
                       >
                         <Square className="w-5 h-5 fill-current" />
                         <span>Selesai Rekam (Stop)</span>
@@ -1078,7 +1255,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                     ) : (
                       <button
                         onClick={startRecording}
-                        className="flex items-center gap-2.5 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl shadow-xl shadow-emerald-500/30 active:scale-95 transition"
+                        className="flex items-center gap-2.5 px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl shadow-xl shadow-emerald-500/30 active:scale-95 transition"
                       >
                         <Mic className="w-5 h-5" />
                         <span>{draftAudio || isCurrentApproved ? 'Rekam Ulang' : 'Mulai Rekam Suara'}</span>
@@ -1089,7 +1266,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                     {isCurrentApproved && !draftAudio && !isRecording && (
                       <button
                         onClick={playApprovedAudio}
-                        className={`flex items-center gap-2 px-5 py-4 rounded-2xl font-bold text-sm shadow-md transition active:scale-95 ${
+                        className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-sm shadow-md transition active:scale-95 ${
                           isPlayingApproved
                             ? 'bg-emerald-600 text-white shadow-emerald-600/30 animate-pulse'
                             : 'bg-slate-800 hover:bg-slate-900 text-white'
@@ -1106,7 +1283,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                     <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="w-full bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-5 shadow-lg space-y-4"
+                      className="w-full bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-4 sm:p-5 shadow-lg space-y-3.5"
                     >
                       {/* Draft Card Header */}
                       <div className="flex items-center justify-between">
@@ -1187,7 +1364,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                   {isCurrentApproved && !draftAudio && !isRecording && (
                     <button
                       onClick={() => handleDeleteRecording(currentItem.id)}
-                      className="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center gap-1 transition pt-2"
+                      className="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center gap-1 transition pt-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Hapus Suara Resmi Soal Ini</span>
@@ -1196,7 +1373,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                 </div>
 
                 {/* BOTTOM NAVIGATION: Next / Prev Question */}
-                <div className="flex items-center justify-between w-full pt-4 border-t border-slate-200">
+                <div className="flex items-center justify-between w-full pt-3 border-t border-slate-200">
                   <button
                     onClick={() => selectQuestion(selectedIndex - 1)}
                     disabled={selectedIndex === 0}
