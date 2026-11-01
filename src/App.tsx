@@ -12,7 +12,8 @@ import { usePwaInstall } from './components/pwa/usePwaInstall';
 import { QariStudioDashboard } from './components/studio/QariStudioDashboard';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
-import { useProgressStore, ENABLE_IQRO_BEYOND_1 } from './core/storage/useProgressStore';
+import { useProgressStore } from './core/storage/useProgressStore';
+import { ENABLE_IQRO_BEYOND_1 } from './core/config/flags';
 import { ttsNarrator } from './core/audio/ttsNarrator';
 
 export function App() {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { IqroLevelId, UserProgress, CostumeItem, CostumeCategory } from '../types/gameTypes';
 import { soundManager } from '../audio/soundManager';
 import { IQRO_BOOKS } from '../../games/iqro/data/iqroLevels';
+import { ENABLE_IQRO_BEYOND_1 } from '../config/flags';
 
 // Flatten all stages across books and units for dynamic sequential progression
 const ALL_STAGES_SEQUENCE: string[] = IQRO_BOOKS.flatMap((book) =>
@@ -15,7 +16,7 @@ const BOOK_FIRST_STAGES = new Set(
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
 
 // FEATURE FLAG: Set to false to lock Iqro > 1 (temporarily locked for public & local release)
-export const ENABLE_IQRO_BEYOND_1 = false;
+export { ENABLE_IQRO_BEYOND_1 };
 
 const DEFAULT_PROGRESS: UserProgress = {
   childName: 'Faqih',
