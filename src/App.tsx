@@ -201,10 +201,6 @@ export function App() {
         equippedCape={progress.equippedCape}
         unlockedAllLevels={!!progress.unlockedAllLevels}
         onToggleUnlockAllLevels={toggleUnlockAllLevels}
-        onOpenStudio={() => {
-          setIsSettingsOpen(false);
-          openStudio();
-        }}
       />
 
       {/* iOS Safari Guide Modal */}
