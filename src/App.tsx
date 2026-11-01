@@ -38,15 +38,46 @@ export function App() {
   const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
 
-  // Check URL query parameter to directly open studio (e.g. ?studio=true or #studio)
+  // Sync URL query/hash parameter with Studio page view
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('studio') === 'true' || params.get('mode') === 'studio' || window.location.hash === '#studio') {
-        setIsStudioOpen(true);
-      }
+      const handleHashOrQuery = () => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('studio') === 'true' || params.get('mode') === 'studio' || window.location.hash === '#studio') {
+          setIsStudioOpen(true);
+        } else {
+          setIsStudioOpen(false);
+        }
+      };
+      handleHashOrQuery();
+      window.addEventListener('popstate', handleHashOrQuery);
+      window.addEventListener('hashchange', handleHashOrQuery);
+      return () => {
+        window.removeEventListener('popstate', handleHashOrQuery);
+        window.removeEventListener('hashchange', handleHashOrQuery);
+      };
     }
   }, []);
+
+  const openStudio = () => {
+    setIsStudioOpen(true);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('studio', 'true');
+      window.history.pushState({ view: 'studio' }, '', url.toString());
+    }
+  };
+
+  const closeStudio = () => {
+    setIsStudioOpen(false);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('studio');
+      if (url.hash === '#studio') url.hash = '';
+      const newQuery = url.search ? url.search : '';
+      window.history.pushState({}, '', url.pathname + newQuery);
+    }
+  };
 
   // Preload personalized audio from IndexedDB for the active child name
   useEffect(() => {
@@ -70,6 +101,14 @@ export function App() {
   const handleCompleteStage = (stageId: string, stars: number) => {
     completeStage(stageId, stars);
   };
+
+  if (isStudioOpen) {
+    return (
+      <div className="w-full min-h-[100dvh] flex flex-col font-sans select-none">
+        <QariStudioDashboard onBack={closeStudio} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col font-sans select-none">
@@ -104,7 +143,7 @@ export function App() {
         gems={progress.gemsTotal}
         streak={progress.streakDays}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenStudio={() => setIsStudioOpen(true)}
+        onOpenStudio={openStudio}
       />
 
       {/* Main Responsive Game Layout */}
@@ -162,13 +201,10 @@ export function App() {
         equippedCape={progress.equippedCape}
         unlockedAllLevels={!!progress.unlockedAllLevels}
         onToggleUnlockAllLevels={toggleUnlockAllLevels}
-        onOpenStudio={() => setIsStudioOpen(true)}
-      />
-
-      {/* Qari Audio Recording Studio Dashboard */}
-      <QariStudioDashboard
-        isOpen={isStudioOpen}
-        onClose={() => setIsStudioOpen(false)}
+        onOpenStudio={() => {
+          setIsSettingsOpen(false);
+          openStudio();
+        }}
       />
 
       {/* iOS Safari Guide Modal */}
