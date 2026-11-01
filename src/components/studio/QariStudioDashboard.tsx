@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
   Square,
   Play,
+  Pause,
   RotateCcw,
   CheckCircle2,
   Download,
@@ -46,6 +47,14 @@ export interface StudioItem {
   targetName: string;
   promptText: string;
   hint?: string;
+}
+
+export interface DraftAudio {
+  blob: Blob;
+  url: string;
+  durationMs: number;
+  sizeBytes: number;
+  mimeType: string;
 }
 
 interface QariStudioDashboardProps {
@@ -95,10 +104,16 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
   const [isVoiceOverrideActive, setIsVoiceOverrideActive] = useState<boolean>(false);
 
   // Recorder state
-  const [recordingStatus, setRecordingStatus] = useState<'idle' | 'recording' | 'recorded' | 'playing'>('idle');
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordDuration, setRecordDuration] = useState<number>(0);
-  const [draftBlob, setDraftBlob] = useState<Blob | null>(null);
-  const [draftUrl, setDraftUrl] = useState<string | null>(null);
+  const [micLevel, setMicLevel] = useState<number>(0); // 0 - 100 for VU-meter
+  const [draftAudio, setDraftAudio] = useState<DraftAudio | null>(null);
+
+  // Playback state
+  const [isPlayingDraft, setIsPlayingDraft] = useState<boolean>(false);
+  const [isPlayingApproved, setIsPlayingApproved] = useState<boolean>(false);
+
+  // UI state
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isImporting, setIsImporting] = useState<boolean>(false);
@@ -109,6 +124,12 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
   const recordTimerRef = useRef<number | null>(null);
   const playbackAudioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Web Audio refs for VU-meter
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
 
   // Load all existing recordings on mount
   useEffect(() => {
@@ -127,14 +148,36 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     }
   };
 
-  // Clean up object URLs when draft changes
+  // Clean up object URLs when draft changes or unmounts
   useEffect(() => {
     return () => {
-      if (draftUrl) {
-        URL.revokeObjectURL(draftUrl);
+      if (draftAudio?.url) {
+        URL.revokeObjectURL(draftAudio.url);
       }
+      cleanupAudioContext();
     };
-  }, [draftUrl]);
+  }, [draftAudio]);
+
+  const cleanupAudioContext = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close().catch(() => {});
+      } catch {
+        // ignore
+      }
+      audioContextRef.current = null;
+      analyserRef.current = null;
+    }
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
+    }
+    setMicLevel(0);
+  };
 
   // Filtered questions
   const filteredQuestions = useMemo(() => {
@@ -174,44 +217,132 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
   const isCurrentApproved = currentItem ? !!approvedRecords[currentItem.id] : false;
   const currentApprovedRecord = currentItem ? approvedRecords[currentItem.id] : null;
 
-  // Reset draft when selecting another question
-  const selectQuestion = (idx: number) => {
-    stopPlayback();
-    if (recordingStatus === 'recording') {
-      stopRecording();
-    }
-    setDraftBlob(null);
-    if (draftUrl) URL.revokeObjectURL(draftUrl);
-    setDraftUrl(null);
-    setRecordingStatus('idle');
-    setRecordDuration(0);
-    setSelectedIndex(idx);
-  };
-
   // Notification helper
   const showNotice = (type: 'success' | 'error' | 'info', message: string) => {
     setNotification({ type, message });
     setTimeout(() => {
       setNotification((prev) => (prev?.message === message ? null : prev));
-    }, 3500);
+    }, 4000);
   };
+
+  // Stop any active playback
+  const stopPlayback = useCallback(() => {
+    if (playbackAudioRef.current) {
+      try {
+        playbackAudioRef.current.pause();
+        playbackAudioRef.current.currentTime = 0;
+      } catch {
+        // ignore
+      }
+      playbackAudioRef.current = null;
+    }
+    setIsPlayingDraft(false);
+    setIsPlayingApproved(false);
+  }, []);
+
+  // Reset draft when selecting another question
+  const selectQuestion = (idx: number) => {
+    stopPlayback();
+    if (isRecording) {
+      stopRecording();
+    }
+    if (draftAudio?.url) {
+      URL.revokeObjectURL(draftAudio.url);
+    }
+    setDraftAudio(null);
+    setRecordDuration(0);
+    setSelectedIndex(idx);
+  };
+
+  // Stop recording handler
+  const stopRecording = useCallback(() => {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      try {
+        // Force-flush remaining chunks before stopping
+        mediaRecorderRef.current.requestData();
+      } catch (e) {
+        console.warn('requestData error:', e);
+      }
+      mediaRecorderRef.current.stop();
+      soundManager.playPop();
+    }
+  }, []);
 
   // Audio Recording Handlers
   const startRecording = async () => {
     stopPlayback();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunksRef.current = [];
+      // 1. Get raw audio stream with fallback
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: true,
+          },
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+      micStreamRef.current = stream;
 
-      // Determine best supported MIME type
-      let mimeType = 'audio/webm;codecs=opus';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        if (MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
-        else if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
-        else mimeType = '';
+      // 2. Set up Web Audio Analyser for live VU-meter
+      try {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        audioContextRef.current = ctx;
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyserRef.current = analyser;
+        const source = ctx.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        const updateLevel = () => {
+          if (!analyserRef.current) return;
+          analyserRef.current.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / dataArray.length;
+          // Scale 0-128 to 0-100%
+          const normalized = Math.min(100, Math.round((avg / 100) * 100));
+          setMicLevel(normalized);
+          animFrameRef.current = requestAnimationFrame(updateLevel);
+        };
+        updateLevel();
+      } catch (err) {
+        console.warn('Could not initialize AudioContext VU-meter:', err);
       }
 
-      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      // 3. Determine best supported MIME type
+      const candidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+        'audio/aac',
+      ];
+      let chosenMime = '';
+      for (const cand of candidates) {
+        if (MediaRecorder.isTypeSupported(cand)) {
+          chosenMime = cand;
+          break;
+        }
+      }
+
+      audioChunksRef.current = [];
+      const recorder = chosenMime ? new MediaRecorder(stream, { mimeType: chosenMime }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => {
@@ -221,16 +352,38 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       };
 
       recorder.onstop = () => {
-        stream.getTracks().forEach((track) => track.stop());
-        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        // Cleanup mic stream & analyser
+        cleanupAudioContext();
+
+        // Strip codec parameter so HTMLAudioElement reliably plays the blob
+        const rawMime = recorder.mimeType || chosenMime || 'audio/webm';
+        const cleanMime = rawMime.split(';')[0].trim() || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type: cleanMime });
+
+        if (blob.size === 0) {
+          showNotice('error', '⚠️ Rekaman kosong (0 byte). Pastikan mikrofon aktif dan tidak dimute di Windows/Browser.');
+          setIsRecording(false);
+          return;
+        }
+
         const url = URL.createObjectURL(blob);
-        setDraftBlob(blob);
-        setDraftUrl(url);
-        setRecordingStatus('recorded');
+        if (draftAudio?.url) {
+          URL.revokeObjectURL(draftAudio.url);
+        }
+
+        setDraftAudio({
+          blob,
+          url,
+          durationMs: recordDuration,
+          sizeBytes: blob.size,
+          mimeType: cleanMime,
+        });
+        setIsRecording(false);
+        showNotice('success', `Rekaman siap! Durasi: ${(recordDuration / 1000).toFixed(1)}s (${(blob.size / 1024).toFixed(1)} KB)`);
       };
 
       recorder.start(100);
-      setRecordingStatus('recording');
+      setIsRecording(true);
       setRecordDuration(0);
 
       // Start elapsed timer
@@ -243,52 +396,104 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
     } catch (err) {
       console.error('Mikrofon error:', err);
       showNotice('error', 'Izin mikrofon ditolak atau tidak tersedia pada browser Anda.');
-      setRecordingStatus('idle');
+      setIsRecording(false);
+      cleanupAudioContext();
     }
   };
 
-  const stopRecording = () => {
-    if (recordTimerRef.current) {
-      clearInterval(recordTimerRef.current);
-      recordTimerRef.current = null;
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      soundManager.playPop();
-    }
-  };
-
-  // Playback handlers
-  const playAudio = (url: string) => {
+  // Playback helper with HTMLAudioElement and WebAudio fallback
+  const playUrl = (url: string, source: 'draft' | 'approved', onCleanup?: () => void) => {
     stopPlayback();
-    const audio = new Audio(url);
-    playbackAudioRef.current = audio;
-    setRecordingStatus('playing');
 
-    audio.onended = () => {
-      setRecordingStatus(draftBlob ? 'recorded' : 'idle');
+    const audio = new Audio();
+    audio.src = url;
+    audio.volume = 1.0;
+    playbackAudioRef.current = audio;
+
+    if (source === 'draft') setIsPlayingDraft(true);
+    else setIsPlayingApproved(true);
+
+    const cleanup = () => {
+      if (source === 'draft') setIsPlayingDraft(false);
+      else setIsPlayingApproved(false);
       playbackAudioRef.current = null;
+      if (onCleanup) onCleanup();
     };
-    audio.onerror = () => {
-      setRecordingStatus(draftBlob ? 'recorded' : 'idle');
-      playbackAudioRef.current = null;
+
+    audio.onended = cleanup;
+    audio.onpause = () => {
+      if (source === 'draft') setIsPlayingDraft(false);
+      else setIsPlayingApproved(false);
     };
-    audio.play().catch(() => {
-      setRecordingStatus(draftBlob ? 'recorded' : 'idle');
+    audio.onerror = (e) => {
+      console.error('Audio playback error:', e, audio.error);
+      const code = audio.error?.code;
+      const msg = audio.error?.message || (code ? `Kode error: ${code}` : 'Format audio tidak didukung');
+      showNotice('error', `Gagal memutar audio (${msg}). Silakan coba putar melalui pemutar audio di bawah.`);
+      cleanup();
+    };
+
+    audio.play().catch(async (err) => {
+      console.warn('HTMLAudioElement play() rejected, trying Web Audio API fallback:', err);
+      try {
+        await playWithWebAudio(url);
+        cleanup();
+      } catch (fallbackErr) {
+        console.error('WebAudio fallback error:', fallbackErr);
+        showNotice('error', 'Browser memblokir pemutaran otomatis. Silakan klik tombol putar pada kontrol audio.');
+        cleanup();
+      }
     });
   };
 
-  const stopPlayback = () => {
-    if (playbackAudioRef.current) {
-      playbackAudioRef.current.pause();
-      playbackAudioRef.current.currentTime = 0;
-      playbackAudioRef.current = null;
+  // Web Audio API playback fallback
+  const playWithWebAudio = async (url: string): Promise<void> => {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
     }
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    const sourceNode = ctx.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+    sourceNode.connect(ctx.destination);
+    return new Promise((resolve) => {
+      sourceNode.onended = () => {
+        try {
+          ctx.close().catch(() => {});
+        } catch {
+          // ignore
+        }
+        resolve();
+      };
+      sourceNode.start(0);
+    });
+  };
+
+  const playDraftAudio = () => {
+    if (!draftAudio) return;
+    if (isPlayingDraft) {
+      stopPlayback();
+      return;
+    }
+    playUrl(draftAudio.url, 'draft');
+  };
+
+  const playApprovedAudio = () => {
+    if (!currentApprovedRecord?.blob) return;
+    if (isPlayingApproved) {
+      stopPlayback();
+      return;
+    }
+    const url = URL.createObjectURL(currentApprovedRecord.blob);
+    playUrl(url, 'approved', () => URL.revokeObjectURL(url));
   };
 
   // Approval Handler
-  const handleApprove = async () => {
-    if (!draftBlob || !currentItem) return;
+  const handleApprove = useCallback(async () => {
+    if (!draftAudio || !currentItem) return;
 
     try {
       const record: StudioRecordingRecord = {
@@ -299,9 +504,9 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
         stageId: currentItem.stageId,
         stageType: currentItem.stageType,
         promptText: currentItem.promptText,
-        blob: draftBlob,
-        durationMs: recordDuration,
-        mimeType: draftBlob.type || 'audio/webm',
+        blob: draftAudio.blob,
+        durationMs: draftAudio.durationMs,
+        mimeType: draftAudio.mimeType,
         approvedAt: Date.now(),
       };
 
@@ -315,13 +520,12 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
 
       soundManager.playCorrect();
       confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
-      showNotice('success', `Audio soal ${currentItem.targetName || currentItem.targetLetter} berhasil di-approve!`);
+      showNotice('success', `Audio soal "${currentItem.targetName || currentItem.targetLetter}" berhasil di-approve!`);
 
-      // Clear draft
-      setDraftBlob(null);
-      if (draftUrl) URL.revokeObjectURL(draftUrl);
-      setDraftUrl(null);
-      setRecordingStatus('idle');
+      // Clear draft & stop playback
+      stopPlayback();
+      if (draftAudio.url) URL.revokeObjectURL(draftAudio.url);
+      setDraftAudio(null);
 
       // Auto advance to next question
       if (selectedIndex < filteredQuestions.length - 1) {
@@ -331,7 +535,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       console.error('Save error:', err);
       showNotice('error', 'Gagal menyimpan rekaman ke IndexedDB.');
     }
-  };
+  }, [draftAudio, currentItem, isVoiceOverrideActive, selectedIndex, filteredQuestions.length, stopPlayback]);
 
   const handleDeleteRecording = async (qId: string) => {
     try {
@@ -344,7 +548,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
       if (isVoiceOverrideActive) {
         await ttsNarrator.loadStudioRecordings();
       }
-      showNotice('info', 'Rekaman berhasil dihapus.');
+      showNotice('info', 'Rekaman resmi berhasil dihapus.');
     } catch {
       showNotice('error', 'Gagal menghapus rekaman.');
     }
@@ -437,21 +641,20 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
 
       if (e.code === 'Space') {
         e.preventDefault();
-        if (recordingStatus === 'idle' || recordingStatus === 'recorded') {
+        if (!isRecording) {
           startRecording();
-        } else if (recordingStatus === 'recording') {
+        } else {
           stopRecording();
         }
       } else if (e.code === 'KeyP') {
         e.preventDefault();
-        if (draftUrl) {
-          playAudio(draftUrl);
+        if (draftAudio) {
+          playDraftAudio();
         } else if (currentApprovedRecord?.blob) {
-          const url = URL.createObjectURL(currentApprovedRecord.blob);
-          playAudio(url);
+          playApprovedAudio();
         }
       } else if (e.code === 'Enter' || e.code === 'KeyA') {
-        if (draftBlob && recordingStatus === 'recorded') {
+        if (draftAudio && !isRecording) {
           e.preventDefault();
           handleApprove();
         }
@@ -470,7 +673,16 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, recordingStatus, draftBlob, draftUrl, selectedIndex, filteredQuestions.length, currentApprovedRecord]);
+  }, [
+    isOpen,
+    isRecording,
+    draftAudio,
+    selectedIndex,
+    filteredQuestions.length,
+    currentApprovedRecord,
+    handleApprove,
+    stopRecording,
+  ]);
 
   if (!isOpen) return null;
 
@@ -696,6 +908,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                 filteredQuestions.map((item, idx) => {
                   const isApproved = !!approvedRecords[item.id];
                   const isSelected = idx === selectedIndex;
+                  const hasDraft = isSelected && !!draftAudio;
 
                   return (
                     <button
@@ -727,6 +940,11 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                             <span className="text-[10px] font-bold px-1.5 py-0.2 bg-slate-100 text-slate-500 rounded">
                               Iqro {item.bookLevel}
                             </span>
+                            {hasDraft && (
+                              <span className="text-[10px] font-black px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded border border-amber-300 animate-pulse">
+                                Draft
+                              </span>
+                            )}
                           </div>
                           <p className="text-[11px] text-slate-500 line-clamp-1 max-w-[170px]">
                             {item.stageTitle}
@@ -802,21 +1020,57 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                 </div>
 
                 {/* RECORDING & VERIFICATION CONTROLS */}
-                <div className="w-full max-w-md flex flex-col items-center space-y-4">
-                  {/* Timer Display when Recording */}
-                  {recordingStatus === 'recording' && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 font-mono font-black text-lg rounded-2xl border border-rose-200 animate-pulse">
-                      <div className="w-3 h-3 rounded-full bg-rose-600" />
-                      <span>{(recordDuration / 1000).toFixed(1)}s</span>
-                    </div>
+                <div className="w-full max-w-xl flex flex-col items-center space-y-4">
+                  {/* Live Recording HUD with Timer & VU-Meter */}
+                  {isRecording && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="w-full bg-rose-50 border-2 border-rose-300 rounded-3xl p-4 flex flex-col items-center gap-2.5 shadow-lg"
+                    >
+                      <div className="flex items-center justify-between w-full px-2">
+                        <div className="flex items-center gap-2 text-rose-700 font-black text-sm">
+                          <span className="flex h-3 w-3 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+                          </span>
+                          <span>Sedang Merekam Suara...</span>
+                        </div>
+                        <div className="font-mono font-black text-lg text-rose-700 bg-white px-3 py-0.5 rounded-xl border border-rose-200 shadow-sm">
+                          {(recordDuration / 1000).toFixed(1)}s
+                        </div>
+                      </div>
+
+                      {/* Live Microphone Visual VU-Meter */}
+                      <div className="w-full px-2 space-y-1">
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                          <span>Indikator Mikrofon:</span>
+                          <span className={micLevel > 15 ? 'text-emerald-600 font-black' : 'text-slate-400'}>
+                            {micLevel > 15 ? '🟢 Suara Terdeteksi' : micLevel > 0 ? '🟡 Mendeteksi...' : '⚪ Hening'}
+                          </span>
+                        </div>
+                        <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                          <motion.div
+                            className={`h-full rounded-full transition-all duration-75 ${
+                              micLevel > 60
+                                ? 'bg-rose-500'
+                                : micLevel > 20
+                                ? 'bg-emerald-500'
+                                : 'bg-amber-400'
+                            }`}
+                            style={{ width: `${Math.max(4, micLevel)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
 
-                  {/* Main Record Buttons */}
-                  <div className="flex items-center justify-center gap-4 w-full">
-                    {recordingStatus === 'recording' ? (
+                  {/* Main Record & Approved Playback Buttons */}
+                  <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+                    {isRecording ? (
                       <button
                         onClick={stopRecording}
-                        className="flex items-center gap-2.5 px-6 py-4 bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-base rounded-2xl shadow-lg shadow-rose-500/30 active:scale-95 transition"
+                        className="flex items-center gap-2.5 px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-xl shadow-rose-600/30 active:scale-95 transition"
                       >
                         <Square className="w-5 h-5 fill-current" />
                         <span>Selesai Rekam (Stop)</span>
@@ -824,75 +1078,113 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({ isOpen
                     ) : (
                       <button
                         onClick={startRecording}
-                        className="flex items-center gap-2.5 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-base rounded-2xl shadow-lg shadow-emerald-500/30 active:scale-95 transition"
+                        className="flex items-center gap-2.5 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl shadow-xl shadow-emerald-500/30 active:scale-95 transition"
                       >
                         <Mic className="w-5 h-5" />
-                        <span>
-                          {draftBlob || isCurrentApproved ? 'Rekam Ulang' : 'Mulai Rekam Suara'}
-                        </span>
-                      </button>
-                    )}
-
-                    {/* Preview Player if Draft exists */}
-                    {draftUrl && recordingStatus !== 'recording' && (
-                      <button
-                        onClick={() => playAudio(draftUrl)}
-                        className="flex items-center gap-2 px-4 py-4 bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-blue-500/20 active:scale-95 transition"
-                      >
-                        <Play className="w-4 h-4 fill-current" />
-                        <span>Dengar Hasil</span>
+                        <span>{draftAudio || isCurrentApproved ? 'Rekam Ulang' : 'Mulai Rekam Suara'}</span>
                       </button>
                     )}
 
                     {/* Existing Approved Audio Playback */}
-                    {isCurrentApproved && !draftUrl && recordingStatus !== 'recording' && (
+                    {isCurrentApproved && !draftAudio && !isRecording && (
                       <button
-                        onClick={() => {
-                          if (currentApprovedRecord?.blob) {
-                            const url = URL.createObjectURL(currentApprovedRecord.blob);
-                            playAudio(url);
-                          }
-                        }}
-                        className="flex items-center gap-2 px-4 py-4 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-sm rounded-2xl shadow-md active:scale-95 transition"
+                        onClick={playApprovedAudio}
+                        className={`flex items-center gap-2 px-5 py-4 rounded-2xl font-bold text-sm shadow-md transition active:scale-95 ${
+                          isPlayingApproved
+                            ? 'bg-emerald-600 text-white shadow-emerald-600/30 animate-pulse'
+                            : 'bg-slate-800 hover:bg-slate-900 text-white'
+                        }`}
                       >
                         <Volume2 className="w-4 h-4" />
-                        <span>Putar Suara Resmi</span>
+                        <span>{isPlayingApproved ? 'Memutar...' : 'Putar Suara Resmi'}</span>
                       </button>
                     )}
                   </div>
 
-                  {/* APPROVAL ACTION BAR (When draft is ready) */}
-                  {draftBlob && recordingStatus === 'recorded' && (
+                  {/* DEDICATED DRAFT AUDIO RESULT CARD (Visible whenever draft exists) */}
+                  {draftAudio && !isRecording && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="w-full flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border-2 border-emerald-400 shadow-md"
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="w-full bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-5 shadow-lg space-y-4"
                     >
-                      <button
-                        onClick={() => {
-                          setDraftBlob(null);
-                          if (draftUrl) URL.revokeObjectURL(draftUrl);
-                          setDraftUrl(null);
-                          setRecordingStatus('idle');
-                        }}
-                        className="flex items-center justify-center gap-1.5 flex-1 py-3 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition"
-                      >
-                        <RotateCcw className="w-4 h-4 text-slate-500" />
-                        <span>Batalkan Draft</span>
-                      </button>
+                      {/* Draft Card Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-3 w-3 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                          </span>
+                          <span className="text-sm font-black text-amber-900">
+                            Hasil Rekaman Baru (Draft Siap)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-bold text-amber-800">
+                          <span className="px-2.5 py-0.5 bg-amber-200/80 rounded-full">
+                            ⏱️ {(draftAudio.durationMs / 1000).toFixed(1)}s
+                          </span>
+                          <span className="px-2.5 py-0.5 bg-amber-200/80 rounded-full">
+                            📦 {(draftAudio.sizeBytes / 1024).toFixed(1)} KB
+                          </span>
+                        </div>
+                      </div>
 
-                      <button
-                        onClick={handleApprove}
-                        className="flex items-center justify-center gap-2 flex-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm rounded-xl shadow-md shadow-emerald-500/25 active:scale-95 transition"
-                      >
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span>Approve & Simpan (Enter)</span>
-                      </button>
+                      {/* Interactive Player Controls */}
+                      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 rounded-2xl border border-amber-200 shadow-inner">
+                        <button
+                          onClick={playDraftAudio}
+                          className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-black text-sm shadow-md transition active:scale-95 whitespace-nowrap ${
+                            isPlayingDraft
+                              ? 'bg-amber-500 text-white shadow-amber-500/30 animate-pulse'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'
+                          }`}
+                        >
+                          {isPlayingDraft ? (
+                            <Pause className="w-5 h-5 fill-current" />
+                          ) : (
+                            <Play className="w-5 h-5 fill-current" />
+                          )}
+                          <span>{isPlayingDraft ? 'Pause' : 'Dengarkan Rekaman'}</span>
+                        </button>
+
+                        {/* Browser native audio player */}
+                        <div className="flex-1 w-full flex items-center">
+                          <audio
+                            controls
+                            src={draftAudio.url}
+                            className="w-full h-10 rounded-lg focus:outline-none"
+                            preload="auto"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Actions: Cancel Draft & Approve */}
+                      <div className="flex items-center gap-3 pt-1">
+                        <button
+                          onClick={() => {
+                            stopPlayback();
+                            if (draftAudio.url) URL.revokeObjectURL(draftAudio.url);
+                            setDraftAudio(null);
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-4 py-3 bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition"
+                        >
+                          <RotateCcw className="w-4 h-4 text-slate-400" />
+                          <span>Batalkan Draft</span>
+                        </button>
+
+                        <button
+                          onClick={handleApprove}
+                          className="flex items-center justify-center gap-2 flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-500/25 active:scale-95 transition"
+                        >
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span>Approve & Simpan (Enter)</span>
+                        </button>
+                      </div>
                     </motion.div>
                   )}
 
                   {/* Delete Button for already approved item */}
-                  {isCurrentApproved && !draftBlob && (
+                  {isCurrentApproved && !draftAudio && !isRecording && (
                     <button
                       onClick={() => handleDeleteRecording(currentItem.id)}
                       className="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center gap-1 transition pt-2"
