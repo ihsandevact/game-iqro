@@ -96,10 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
 
                     {!isUnlocked && (
-                      <div className="flex items-center gap-1 text-[10px] font-black text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-                        <Lock className="w-3 h-3" />
-                        <span>Segera Hadir</span>
-                      </div>
+                      <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     )}
                   </button>
                 );
