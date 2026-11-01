@@ -32,13 +32,13 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
             <Lock className="w-10 h-10 stroke-[2.5]" />
           </div>
           <span className="text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-100 px-3 py-1 rounded-full mb-2">
-            Tingkat Masih Terkunci
+            Segera Hadir
           </span>
           <h3 className="text-xl font-black text-slate-800 mb-2">
-            {currentBook.title} Belum Terbuka
+            Petualangan {currentBook.title}
           </h3>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 mb-5 max-w-xs leading-relaxed">
-            Selesaikan 22 tahapan dan lulus ujian wisuda di Iqro 1 untuk membuka gerbang petualangan {currentBook.title}!
+            Materi {currentBook.subtitle} saat ini sedang disiapkan. Ayo selesaikan 22 tahapan di Iqro 1 terlebih dahulu!
           </p>
           {onSwitchToBook && (
             <button

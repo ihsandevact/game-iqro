@@ -42,9 +42,16 @@ export function useProgressStore() {
           parsed.hasCompletedOnboarding ??
           (parsed.completedStages && Object.keys(parsed.completedStages).length > 0);
 
+        // Ensure public users are not stuck on locked level > 1
+        const currentIqroLevel =
+          parsed.currentIqroLevel && parsed.currentIqroLevel > 1 && !parsed.unlockedAllLevels
+            ? 1
+            : (parsed.currentIqroLevel || 1);
+
         return {
           ...DEFAULT_PROGRESS,
           ...parsed,
+          currentIqroLevel,
           hasCompletedOnboarding: !!hasCompletedOnboarding,
         };
       }
@@ -63,6 +70,10 @@ export function useProgressStore() {
   }, [progress]);
 
   const setIqroLevel = (level: IqroLevelId) => {
+    if (level > 1 && !isBookUnlocked(level)) {
+      soundManager.playGentleWrong();
+      return;
+    }
     setProgress(prev => ({ ...prev, currentIqroLevel: level }));
   };
 
@@ -131,19 +142,11 @@ export function useProgressStore() {
   };
 
   const isBookUnlocked = (bookLevel: IqroLevelId): boolean => {
-    if (progress.unlockedAllLevels) return true;
+    // Only Iqro 1 is accessible for public release
     if (bookLevel === 1) return true;
-    if (bookLevel === 2) {
-      // Iqro 2 unlocks when the final graduation stage of Iqro 1 is completed
-      return !!progress.completedStages['iqro1-u7-s4'];
-    }
-    if (bookLevel === 3) {
-      return !!progress.completedStages['iqro2-u7-s4'];
-    }
-    if (bookLevel === 4) {
-      // Iqro 4 unlocks when the final graduation exam of Iqro 3 is completed
-      return !!progress.completedStages['iqro3-u7-s4'];
-    }
+    // Allow developer / testing bypass if unlockedAllLevels is manually activated in Parental Settings
+    if (progress.unlockedAllLevels) return true;
+    // All Iqro levels > 1 (Iqro 2, 3, etc.) are strictly locked as "Segera Hadir"
     return false;
   };
 

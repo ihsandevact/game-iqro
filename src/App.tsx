@@ -91,6 +91,13 @@ export function App() {
     ttsNarrator.loadStudioRecordings();
   }, [isStudioOpen]);
 
+  // Fallback to Iqro 1 if currently selected book is locked (Segera Hadir)
+  useEffect(() => {
+    if (progress.currentIqroLevel > 1 && !isBookUnlocked(progress.currentIqroLevel)) {
+      setIqroLevel(1);
+    }
+  }, [progress.currentIqroLevel, isBookUnlocked]);
+
   // Get currently selected Iqro book (defaults to level 1)
   const currentBook =
     IQRO_BOOKS.find((b) => b.level === progress.currentIqroLevel) || IQRO_BOOKS[0];
