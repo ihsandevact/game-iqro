@@ -800,9 +800,9 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
 
   // Sub-component: Question Sidebar List (Reused in Desktop sidebar & Mobile list tab)
   const renderQuestionList = () => (
-    <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-slate-50 overflow-hidden">
       {/* Level Tabs */}
-      <div className="flex items-center gap-1.5 p-2.5 bg-slate-100 border-b border-slate-200 overflow-x-auto no-scrollbar shrink-0">
+      <div className="flex items-center gap-1.5 p-2 bg-slate-100 border-b border-slate-200 overflow-x-auto no-scrollbar shrink-0">
         <button
           onClick={() => setSelectedLevel('all')}
           className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition ${
@@ -829,7 +829,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
       </div>
 
       {/* Filter Bar: Search & Status */}
-      <div className="p-3 border-b border-slate-200 space-y-2 bg-white shrink-0">
+      <div className="p-2.5 sm:p-3 border-b border-slate-200 space-y-2 bg-white shrink-0">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
           <input
@@ -876,7 +876,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
       </div>
 
       {/* Scrollable Question Items */}
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-2.5 space-y-1.5">
         {filteredQuestions.length === 0 ? (
           <div className="py-16 text-center text-xs text-slate-400 font-semibold">
             Tidak ada soal yang sesuai dengan filter pencarian.
@@ -891,44 +891,44 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
               <button
                 key={item.id}
                 onClick={() => selectQuestion(idx, true)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl text-left border transition ${
+                className={`w-full flex items-center justify-between p-2.5 sm:p-3 rounded-2xl text-left border transition ${
                   isSelected
                     ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-400 shadow-sm'
                     : 'bg-white hover:bg-slate-50 border-slate-200'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                   {isApproved ? (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 text-slate-400 shrink-0">
-                      <Mic className="w-4 h-4" />
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 text-slate-400 shrink-0">
+                      <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                   )}
 
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black text-slate-800">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-black text-slate-800 truncate">
                         {item.targetName || item.targetLetter}
                       </span>
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 bg-slate-100 text-slate-500 rounded">
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 bg-slate-100 text-slate-500 rounded shrink-0">
                         Iqro {item.bookLevel}
                       </span>
                       {hasDraft && (
-                        <span className="text-[10px] font-black px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded border border-amber-300 animate-pulse">
+                        <span className="text-[10px] font-black px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded border border-amber-300 animate-pulse shrink-0">
                           Draft
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 line-clamp-1 max-w-[180px] sm:max-w-[220px]">
+                    <p className="text-[11px] text-slate-500 truncate max-w-[150px] sm:max-w-[200px]">
                       {item.stageTitle}
                     </p>
                   </div>
                 </div>
 
-                <span className="font-amiri text-lg font-bold text-emerald-700 px-2 py-0.5 bg-emerald-50/70 rounded-lg shrink-0">
+                <span className="font-amiri text-lg font-bold text-emerald-700 px-2 py-0.5 bg-emerald-50/70 rounded-lg shrink-0 ml-2">
                   {item.targetLetter}
                 </span>
               </button>
@@ -941,31 +941,31 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
 
   // Sub-component: Prompter & Studio Recording Core Area
   const renderPrompterArea = () => (
-    <div className="flex-1 flex flex-col justify-between w-full max-w-3xl mx-auto space-y-4 py-2 sm:py-4 px-2 sm:px-6">
+    <div className="flex-1 flex flex-col justify-between w-full max-w-2xl mx-auto space-y-3 sm:space-y-4 py-1 sm:py-4 px-1 sm:px-6">
       {/* Mobile Question Quick Switcher Header (Visible only on mobile) */}
-      <div className="flex md:hidden items-center justify-between bg-slate-100/90 border border-slate-200 px-3 py-2 rounded-2xl">
+      <div className="flex md:hidden items-center justify-between bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-2xl w-full">
         <button
           onClick={() => selectQuestion(selectedIndex - 1, false)}
           disabled={selectedIndex === 0}
-          className="p-1.5 text-slate-600 disabled:opacity-30 rounded-lg hover:bg-slate-200 transition"
+          className="p-1.5 text-slate-600 disabled:opacity-30 rounded-lg hover:bg-slate-200 active:scale-95 transition"
           title="Soal Sebelumnya"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col items-center">
-          <span className="text-[11px] font-black text-slate-700">
-            Soal {selectedIndex + 1} dari {filteredQuestions.length}
+        <div className="flex flex-col items-center min-w-0 px-2 text-center">
+          <span className="text-[11px] font-black text-slate-800 truncate">
+            Soal {selectedIndex + 1} dari {filteredQuestions.length} • {currentItem?.targetName || currentItem?.targetLetter}
           </span>
-          <span className="text-[10px] font-bold text-emerald-700">
-            {currentItem?.bookTitle} • {currentItem?.unitTitle}
+          <span className="text-[10px] font-bold text-emerald-700 truncate">
+            {currentItem?.bookTitle}
           </span>
         </div>
 
         <button
           onClick={() => selectQuestion(selectedIndex + 1, false)}
           disabled={selectedIndex === filteredQuestions.length - 1}
-          className="p-1.5 text-slate-600 disabled:opacity-30 rounded-lg hover:bg-slate-200 transition"
+          className="p-1.5 text-slate-600 disabled:opacity-30 rounded-lg hover:bg-slate-200 active:scale-95 transition"
           title="Soal Berikutnya"
         >
           <ChevronRight className="w-5 h-5" />
@@ -985,38 +985,38 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         </span>
       </div>
 
-      {/* BIG PROMPTER CARD */}
-      <div className="w-full flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-b from-slate-50 to-emerald-50/40 rounded-3xl border-2 border-emerald-200 shadow-md text-center relative overflow-hidden">
-        <div className="text-[11px] sm:text-xs font-extrabold text-emerald-600 tracking-wider uppercase mb-1">
-          Lafal Yang Harus Dibacakan:
+      {/* BIG PROMPTER CARD (Compact on mobile) */}
+      <div className="w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-b from-slate-50 to-emerald-50/40 rounded-3xl border-2 border-emerald-200 shadow-md text-center relative overflow-hidden">
+        <div className="text-[10px] sm:text-xs font-extrabold text-emerald-600 tracking-wider uppercase mb-0.5">
+          LAFAL YANG HARUS DIBACAKAN:
         </div>
 
         {/* Responsive Arabic Text: Dynamic Scale without horizontal clipping */}
-        <div className="font-amiri text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-slate-800 my-2 select-none leading-normal break-keep">
+        <div className="font-amiri text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-slate-800 my-1 sm:my-2 select-none leading-normal break-keep">
           {currentItem?.targetLetter}
         </div>
 
         {/* Transliteration / Guide */}
-        <div className="text-lg sm:text-xl md:text-2xl font-black text-emerald-700 tracking-wide mt-1">
+        <div className="text-base sm:text-xl md:text-2xl font-black text-emerald-700 tracking-wide">
           "{currentItem?.targetName || currentItem?.targetLetter}"
         </div>
 
         {/* Makhraj / Harakat Hint */}
         {currentItem?.hint && (
-          <div className="mt-3 px-3.5 py-1.5 bg-white/90 backdrop-blur-sm rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 max-w-md">
+          <div className="mt-2 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-xl text-[11px] sm:text-xs font-semibold text-slate-600 border border-slate-200 max-w-md">
             💡 {currentItem.hint}
           </div>
         )}
 
         {/* Approval Status Badge */}
-        <div className="mt-3">
+        <div className="mt-2.5">
           {isCurrentApproved ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 sm:py-1 bg-emerald-500 text-white text-[11px] sm:text-xs font-bold rounded-full shadow-sm">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Tersimpan & Di-Approve</span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-300">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-800 text-[11px] sm:text-xs font-bold rounded-full border border-amber-300">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>Belum Ada Rekaman Resmi</span>
             </div>
@@ -1024,11 +1024,29 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         </div>
       </div>
 
-      {/* MICROPHONE SELECTOR & TEST BAR */}
-      <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-          <Sliders className="w-4 h-4 text-slate-500 shrink-0" />
-          <span className="font-bold text-slate-600 shrink-0">Mikrofon:</span>
+      {/* MICROPHONE SELECTOR & TEST BAR (100% Responsive 2-Row Stack) */}
+      <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 sm:p-3 space-y-2 text-xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 font-bold text-slate-700">
+            <Sliders className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <span>Pilihan Mikrofon:</span>
+          </div>
+
+          <button
+            onClick={toggleTestMic}
+            className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1.5 border transition shrink-0 ${
+              isTestingMic
+                ? 'bg-rose-500 text-white border-rose-600 shadow-sm animate-pulse'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-sm'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5" />
+            <span>{isTestingMic ? 'Tutup Tes' : 'Tes Mic'}</span>
+          </button>
+        </div>
+
+        {/* Full width select so long device names never push out of screen */}
+        <div className="w-full">
           {audioDevices.length > 0 ? (
             <select
               value={selectedDeviceId}
@@ -1038,7 +1056,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
                   setupAudioStreamAndVU(e.target.value);
                 }
               }}
-              className="flex-1 bg-white border border-slate-300 text-slate-800 font-semibold rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-emerald-500 truncate"
+              className="w-full bg-white border border-slate-300 text-slate-800 font-semibold rounded-xl px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 truncate"
               title="Pilih perangkat mikrofon laptop atau headset Anda"
             >
               {audioDevices.map((dev, i) => (
@@ -1048,31 +1066,19 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
               ))}
             </select>
           ) : (
-            <span className="font-semibold text-slate-500 truncate">
-              {activeDeviceLabel || 'Mikrofon Bawaan Laptop'}
-            </span>
+            <div className="w-full bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl px-2.5 py-1.5 text-xs truncate">
+              {activeDeviceLabel || 'Mikrofon Bawaan'}
+            </div>
           )}
         </div>
-
-        <button
-          onClick={toggleTestMic}
-          className={`px-3 py-1 rounded-xl font-bold flex items-center gap-1.5 border transition shrink-0 ${
-            isTestingMic
-              ? 'bg-rose-500 text-white border-rose-600 shadow-sm animate-pulse'
-              : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-sm'
-          }`}
-        >
-          <Radio className="w-3.5 h-3.5" />
-          <span>{isTestingMic ? 'Tutup Tes' : 'Tes Mic'}</span>
-        </button>
       </div>
 
       {/* HARDWARE MUTE WARNING BANNER */}
       {isHardwareMuted && (
-        <div className="w-full bg-amber-500 text-white p-3 rounded-2xl flex items-center gap-2.5 text-xs font-bold shadow-md animate-bounce">
-          <MicOff className="w-5 h-5 shrink-0" />
+        <div className="w-full bg-amber-500 text-white p-2.5 sm:p-3 rounded-2xl flex items-center gap-2 text-xs font-bold shadow-md animate-bounce">
+          <MicOff className="w-4 h-4 shrink-0" />
           <span>
-            ⚠️ Mikrofon terdeteksi DI-MUTE oleh tombol keyboard laptop (F4 / Fn+F4) atau sistem Windows. Tekan tombol tersebut untuk menyalakan suara.
+            ⚠️ Mikrofon terdeteksi DI-MUTE oleh tombol keyboard laptop (F4) atau sistem Windows. Tekan tombol tersebut untuk menyalakan suara.
           </span>
         </div>
       )}
@@ -1082,12 +1088,12 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 flex flex-col gap-2 shadow-sm"
+          className="w-full bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 shadow-sm"
         >
           <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
-            <span className="flex items-center gap-1.5">
-              <Radio className="w-4 h-4 text-emerald-600 animate-spin" />
-              Mode Tes Mic Aktif — Bicara ke mikrofon
+            <span className="flex items-center gap-1.5 truncate">
+              <Radio className="w-3.5 h-3.5 text-emerald-600 animate-spin shrink-0" />
+              Mode Tes Mic Aktif
             </span>
             <span className={micLevel > 15 ? 'text-emerald-700 font-black' : 'text-slate-400'}>
               {micLevel > 15 ? `🟢 Suara Masuk (${micLevel}%)` : '⚪ Hening'}
@@ -1110,36 +1116,36 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
       )}
 
       {/* RECORDING & VERIFICATION CONTROLS */}
-      <div className="w-full flex flex-col items-center space-y-3.5">
+      <div className="w-full flex flex-col items-center space-y-3">
         {/* Live Recording HUD with Timer & VU-Meter */}
         {isRecording && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full bg-rose-50 border-2 border-rose-300 rounded-3xl p-4 flex flex-col items-center gap-2.5 shadow-lg"
+            className="w-full bg-rose-50 border-2 border-rose-300 rounded-3xl p-3 sm:p-4 flex flex-col items-center gap-2 shadow-lg"
           >
-            <div className="flex items-center justify-between w-full px-2">
-              <div className="flex items-center gap-2 text-rose-700 font-black text-sm">
-                <span className="flex h-3 w-3 relative">
+            <div className="flex items-center justify-between w-full px-1">
+              <div className="flex items-center gap-2 text-rose-700 font-black text-xs sm:text-sm">
+                <span className="flex h-2.5 w-2.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
                 </span>
                 <span>Sedang Merekam Suara...</span>
               </div>
-              <div className="font-mono font-black text-lg text-rose-700 bg-white px-3 py-0.5 rounded-xl border border-rose-200 shadow-sm">
+              <div className="font-mono font-black text-base text-rose-700 bg-white px-2.5 py-0.5 rounded-xl border border-rose-200 shadow-sm">
                 {(recordDuration / 1000).toFixed(1)}s
               </div>
             </div>
 
             {/* Live Microphone Visual VU-Meter */}
-            <div className="w-full px-2 space-y-1">
-              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+            <div className="w-full px-1 space-y-1">
+              <div className="flex justify-between text-[10px] sm:text-[11px] font-bold text-slate-600">
                 <span>Level Suara Mikrofon:</span>
                 <span className={micLevel > 15 ? 'text-emerald-600 font-black' : 'text-slate-400'}>
-                  {micLevel > 15 ? `🟢 Suara Terdeteksi (${micLevel}%)` : '⚪ Hening (Cek tombol Mute laptop F4)'}
+                  {micLevel > 15 ? `🟢 Suara Terdeteksi (${micLevel}%)` : '⚪ Hening'}
                 </span>
               </div>
-              <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
+              <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
                 <motion.div
                   className={`h-full rounded-full transition-all duration-75 ${
                     micLevel > 60
@@ -1156,11 +1162,11 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         )}
 
         {/* Main Record & Approved Playback Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 w-full">
           {isRecording ? (
             <button
               onClick={stopRecording}
-              className="flex items-center gap-2.5 px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-xl shadow-rose-600/30 active:scale-95 transition"
+              className="flex items-center justify-center gap-2.5 w-full sm:w-auto px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-base rounded-2xl shadow-xl shadow-rose-600/30 active:scale-95 transition"
             >
               <Square className="w-5 h-5 fill-current" />
               <span>Selesai Rekam (Stop)</span>
@@ -1168,7 +1174,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           ) : (
             <button
               onClick={startRecording}
-              className="flex items-center gap-2.5 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl shadow-xl shadow-emerald-500/30 active:scale-95 transition"
+              className="flex items-center justify-center gap-2.5 w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl shadow-xl shadow-emerald-500/30 active:scale-95 transition"
             >
               <Mic className="w-5 h-5" />
               <span>{draftAudio || isCurrentApproved ? 'Rekam Ulang' : 'Mulai Rekam Suara'}</span>
@@ -1179,7 +1185,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           {isCurrentApproved && !draftAudio && !isRecording && (
             <button
               onClick={playApprovedAudio}
-              className={`flex items-center gap-2 px-5 py-4 rounded-2xl font-bold text-sm shadow-md transition active:scale-95 ${
+              className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3.5 rounded-2xl font-bold text-sm shadow-md transition active:scale-95 ${
                 isPlayingApproved
                   ? 'bg-emerald-600 text-white shadow-emerald-600/30 animate-pulse'
                   : 'bg-slate-800 hover:bg-slate-900 text-white'
@@ -1196,78 +1202,77 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="w-full bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-4 sm:p-5 shadow-lg space-y-3.5"
+            className="w-full bg-amber-50/95 border-2 border-amber-300 rounded-3xl p-3.5 sm:p-5 shadow-lg space-y-3"
           >
             {/* Draft Card Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="flex h-3 w-3 relative">
+                <span className="flex h-2.5 w-2.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                 </span>
-                <span className="text-sm font-black text-amber-900">
+                <span className="text-xs sm:text-sm font-black text-amber-900">
                   Hasil Rekaman Baru (Draft Siap)
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-800">
-                <span className="px-2.5 py-0.5 bg-amber-200/80 rounded-full">
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-amber-800">
+                <span className="px-2 py-0.5 bg-amber-200/80 rounded-full">
                   ⏱️ {(draftAudio.durationMs / 1000).toFixed(1)}s
                 </span>
-                <span className="px-2.5 py-0.5 bg-amber-200/80 rounded-full">
+                <span className="px-2 py-0.5 bg-amber-200/80 rounded-full">
                   📦 {(draftAudio.sizeBytes / 1024).toFixed(1)} KB
                 </span>
               </div>
             </div>
 
             {/* Interactive Player Controls */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 rounded-2xl border border-amber-200 shadow-inner">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-amber-200 shadow-inner">
               <button
                 onClick={playDraftAudio}
-                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-black text-sm shadow-md transition active:scale-95 whitespace-nowrap w-full sm:w-auto ${
+                className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-xl font-black text-xs sm:text-sm shadow-md transition active:scale-95 whitespace-nowrap w-full sm:w-auto ${
                   isPlayingDraft
                     ? 'bg-amber-500 text-white shadow-amber-500/30 animate-pulse'
                     : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'
                 }`}
               >
                 {isPlayingDraft ? (
-                  <Pause className="w-5 h-5 fill-current" />
+                  <Pause className="w-4 h-4 fill-current" />
                 ) : (
-                  <Play className="w-5 h-5 fill-current" />
+                  <Play className="w-4 h-4 fill-current" />
                 )}
                 <span>{isPlayingDraft ? 'Pause' : 'Dengarkan Rekaman'}</span>
               </button>
 
-              {/* Browser native audio player */}
               <div className="flex-1 w-full flex items-center">
                 <audio
                   controls
                   src={draftAudio.url}
-                  className="w-full h-10 rounded-lg focus:outline-none"
+                  className="w-full h-9 sm:h-10 rounded-lg focus:outline-none"
                   preload="auto"
                 />
               </div>
             </div>
 
             {/* Actions: Cancel Draft & Approve */}
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-2 sm:gap-3 pt-1">
               <button
                 onClick={() => {
                   stopPlayback();
                   if (draftAudio.url) URL.revokeObjectURL(draftAudio.url);
                   setDraftAudio(null);
                 }}
-                className="flex items-center justify-center gap-1.5 px-4 py-3 bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition"
+                className="flex items-center justify-center gap-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition shrink-0"
               >
-                <RotateCcw className="w-4 h-4 text-slate-400" />
-                <span>Batalkan</span>
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span>Batal</span>
               </button>
 
               <button
                 onClick={handleApprove}
-                className="flex items-center justify-center gap-2 flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-500/25 active:scale-95 transition"
+                className="flex items-center justify-center gap-2 flex-1 py-3 sm:py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-500/25 active:scale-95 transition"
               >
-                <CheckCircle2 className="w-5 h-5" />
-                <span>Approve & Simpan (Enter)</span>
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Approve & Simpan</span>
               </button>
             </div>
           </motion.div>
@@ -1283,6 +1288,34 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
             <span>Hapus Suara Resmi Soal Ini</span>
           </button>
         )}
+      </div>
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <div className="flex md:hidden items-center justify-between w-full pt-2 pb-4 border-t border-slate-200">
+        <button
+          onClick={() => selectQuestion(selectedIndex - 1, false)}
+          disabled={selectedIndex === 0}
+          className="flex items-center gap-1 px-3 py-2 bg-slate-100 active:scale-95 text-slate-700 font-bold text-xs rounded-xl disabled:opacity-30 transition"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Sebelumnya</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('list')}
+          className="text-xs font-black text-emerald-600 hover:text-emerald-700 py-1 px-2 rounded-lg"
+        >
+          Daftar Soal ({selectedIndex + 1}/{filteredQuestions.length})
+        </button>
+
+        <button
+          onClick={() => selectQuestion(selectedIndex + 1, false)}
+          disabled={selectedIndex === filteredQuestions.length - 1}
+          className="flex items-center gap-1 px-3 py-2 bg-slate-100 active:scale-95 text-slate-700 font-bold text-xs rounded-xl disabled:opacity-30 transition"
+        >
+          <span>Berikutnya</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* DESKTOP BOTTOM NAVIGATION: Next / Prev Question & Shortcuts */}
@@ -1313,43 +1346,40 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
   );
 
   return (
-    <div className="min-h-screen w-full bg-slate-100 flex flex-col font-sans select-none text-slate-800">
-      {/* 1. TOP DEDICATED HEADER: Back Button, Progress & Actions */}
-      <header className="sticky top-0 z-40 w-full bg-white border-b-2 border-slate-200 py-2.5 px-3 sm:px-6 shadow-xs select-none">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+    <div className="min-h-screen w-full max-w-full bg-slate-100 flex flex-col font-sans select-none text-slate-800 overflow-x-hidden">
+      {/* 1. TOP DEDICATED HEADER: Back Button, Progress & Actions (Guaranteed No Horizontal Overflow) */}
+      <header className="sticky top-0 z-40 w-full bg-white border-b-2 border-slate-200 py-2 sm:py-2.5 px-2.5 sm:px-6 shadow-xs select-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
           {/* Left: Back to Game Button & Branding */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             <button
               onClick={handleBack}
-              className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3.5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-black text-xs sm:text-sm rounded-xl border border-slate-200 transition"
+              className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-black text-xs sm:text-sm rounded-xl border border-slate-200 transition shrink-0"
               title="Kembali ke Peta Permainan"
             >
-              <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-slate-600" />
-              <span>Kembali</span>
+              <ArrowLeft className="w-4 h-4 text-slate-600" />
+              <span className="hidden xs:inline">Kembali</span>
             </button>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 shrink-0">
-                <Mic className="w-5 h-5 animate-pulse" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 shrink-0">
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h1 className="text-sm sm:text-base font-black text-slate-800 tracking-tight">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 truncate">
+                  <h1 className="text-xs sm:text-base font-black text-slate-800 tracking-tight truncate">
                     Studio Qari
                   </h1>
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-md border border-emerald-300">
+                  <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 shrink-0">
                     Iqro 1–6
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 hidden sm:block">
-                  Rekam & approve audio resmi 208 soal
-                </p>
               </div>
             </div>
           </div>
 
           {/* Center: Progress Bar (Desktop & Tablet) */}
-          <div className="hidden lg:flex items-center gap-3 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="hidden lg:flex items-center gap-3 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-200 shadow-2xs shrink-0">
             <div className="flex flex-col">
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 gap-4 mb-1">
                 <span>Progres Rekaman</span>
@@ -1369,10 +1399,10 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Mobile Progress Pill */}
-            <div className="flex lg:hidden items-center text-[11px] font-black px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
-              {totalApproved}/{totalQuestionsCount} ({progressPercent}%)
+            <div className="flex lg:hidden items-center text-[10px] sm:text-[11px] font-black px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl shrink-0 whitespace-nowrap">
+              {totalApproved}/{totalQuestionsCount}
             </div>
 
             {/* Desktop Action Buttons */}
@@ -1428,10 +1458,10 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
             </div>
 
             {/* Mobile Options Menu Trigger */}
-            <div className="relative md:hidden">
+            <div className="relative md:hidden shrink-0">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-200 transition"
+                className="p-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-200 transition"
                 title="Menu Pengaturan Studio"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -1439,7 +1469,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
 
               {/* Mobile Options Dropdown Popover */}
               {isMobileMenuOpen && (
-                <div className="absolute right-0 top-11 w-56 bg-white border-2 border-slate-200 rounded-2xl shadow-xl py-2 z-50 text-xs font-bold space-y-1">
+                <div className="absolute right-0 top-10 w-56 bg-white border-2 border-slate-200 rounded-2xl shadow-xl py-2 z-50 text-xs font-bold space-y-1">
                   <button
                     onClick={handleToggleVoiceOverride}
                     className="w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-slate-50 text-slate-700"
@@ -1492,7 +1522,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-2xl shadow-xl text-xs sm:text-sm font-bold flex items-center gap-2 border ${
+            className={`fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-2xl shadow-xl text-xs sm:text-sm font-bold flex items-center gap-2 border max-w-[90vw] truncate ${
               notification.type === 'success'
                 ? 'bg-emerald-600 text-white border-emerald-500'
                 : notification.type === 'error'
@@ -1500,14 +1530,14 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
                 : 'bg-slate-800 text-white border-slate-700'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-            <span>{notification.message}</span>
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span className="truncate">{notification.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* 2. MOBILE TAB SWITCHER: Visible ONLY on mobile (< md) */}
-      <div className="md:hidden flex items-center bg-white border-b border-slate-200 px-3 py-2 sticky top-[53px] z-30">
+      <div className="md:hidden flex items-center bg-white border-b border-slate-200 px-2.5 py-1.5 sticky top-[49px] z-30 w-full">
         <div className="flex w-full bg-slate-100 p-1 rounded-xl">
           <button
             onClick={() => setMobileTab('prompter')}
@@ -1534,8 +1564,8 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         </div>
       </div>
 
-      {/* 3. MAIN CONTENT CONTAINER */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* 3. MAIN CONTENT CONTAINER (Zero horizontal overflow) */}
+      <div className="flex-1 flex overflow-hidden w-full max-w-full">
         {/* DESKTOP SPLIT VIEW (>= md): Left Sidebar always visible */}
         <aside className="hidden md:flex w-80 lg:w-96 flex-col bg-slate-50 border-r border-slate-200 h-[calc(100vh-64px)] shrink-0">
           {renderQuestionList()}
@@ -1547,7 +1577,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
         </main>
 
         {/* MOBILE VIEW (< md): Switch between Prompter or Question List Tab */}
-        <div className="flex md:hidden flex-1 flex-col w-full min-h-[calc(100vh-105px)] bg-white overflow-y-auto">
+        <div className="flex md:hidden flex-1 flex-col w-full max-w-full min-h-[calc(100vh-95px)] bg-white overflow-y-auto overflow-x-hidden p-2.5">
           {mobileTab === 'prompter' ? renderPrompterArea() : renderQuestionList()}
         </div>
       </div>
