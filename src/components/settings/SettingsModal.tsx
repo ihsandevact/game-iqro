@@ -19,6 +19,7 @@ import {
   Lock,
   Unlock,
   Loader2,
+  Mic,
 } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
@@ -47,6 +48,7 @@ interface SettingsModalProps {
   equippedCape?: string;
   unlockedAllLevels?: boolean;
   onToggleUnlockAllLevels?: (enabled?: boolean) => void;
+  onOpenStudio?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -69,6 +71,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   equippedCape = 'cape-none',
   unlockedAllLevels = false,
   onToggleUnlockAllLevels,
+  onOpenStudio,
 }) => {
   const isMobile = useIsMobile(768);
   const [resetTarget, setResetTarget] = useState<'level' | 'all' | 'unlock_all' | null>(null);
@@ -355,6 +358,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             {soundEnabled ? 'AKTIF' : 'MATI'}
+          </button>
+        </div>
+      </div>
+
+      {/* Studio Rekaman Qari */}
+      <div>
+        <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2.5">
+          Studio Rekaman Qari
+        </h3>
+        <div className="flex items-center justify-between p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-2xl shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Mic className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="text-xs sm:text-sm font-black text-slate-800">
+                Studio Rekaman Suara (Iqro 1–6)
+              </div>
+              <div className="text-[11px] font-semibold text-slate-500">
+                Rekam & approve suara resmi untuk seluruh 208 soal
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              soundManager.playPop();
+              onOpenStudio?.();
+              onClose();
+            }}
+            className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl shadow-md shadow-emerald-500/20 active:scale-95 transition whitespace-nowrap"
+          >
+            Buka Studio
           </button>
         </div>
       </div>

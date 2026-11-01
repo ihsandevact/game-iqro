@@ -30,7 +30,7 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
     const timer = setTimeout(() => {
       soundManager.playPop();
       if (question.targetName || question.targetLetter) {
-        ttsNarrator.askPopLetter(question.targetName || question.targetLetter);
+        ttsNarrator.askPopLetter(question.targetName || question.targetLetter, undefined, question.id);
       } else {
         ttsNarrator.speak(question.promptText);
       }
@@ -80,7 +80,7 @@ export const BubblePopGame: React.FC<BubblePopGameProps> = ({ question, onCorrec
         onClick={() => {
           soundManager.playPop();
           if (question.targetName || question.targetLetter) {
-            ttsNarrator.askPopLetter(question.targetName || question.targetLetter);
+            ttsNarrator.askPopLetter(question.targetName || question.targetLetter, undefined, question.id);
           } else {
             ttsNarrator.speak(question.promptText);
           }

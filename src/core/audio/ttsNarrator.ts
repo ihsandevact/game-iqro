@@ -1,4 +1,5 @@
 import { getAllCachedAudioForName } from './customAudioCache';
+import { getAllStudioRecordings, isStudioVoiceEnabled } from './qariStudioCache';
 
 // Authentic Studio Makhraj Audio & Indonesian Child-Friendly Narrator Engine
 
@@ -470,6 +471,7 @@ class TTSNarrator {
   private isChainCancelled = false;
   private activeChildName = '';
   private customAudioUrls: Record<string, string> = {};
+  private studioAudioUrls: Record<string, string> = {};
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -477,6 +479,9 @@ class TTSNarrator {
       window.speechSynthesis.onvoiceschanged = () => {
         this.initVoices();
       };
+    }
+    if (typeof window !== 'undefined') {
+      this.loadStudioRecordings();
     }
   }
 
@@ -533,13 +538,61 @@ class TTSNarrator {
     this.customAudioUrls = {};
   }
 
+  public async loadStudioRecordings(): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
+    if (!isStudioVoiceEnabled()) {
+      this.releaseStudioAudioUrls();
+      return false;
+    }
+
+    try {
+      this.releaseStudioAudioUrls();
+      const records = await getAllStudioRecordings();
+      const urls: Record<string, string> = {};
+      for (const [qId, rec] of Object.entries(records)) {
+        if (rec && rec.blob) {
+          const url = URL.createObjectURL(rec.blob);
+          urls[qId] = url;
+          if (rec.targetLetter) urls[rec.targetLetter.trim()] = url;
+          if (rec.targetName) urls[rec.targetName.trim().toLowerCase()] = url;
+        }
+      }
+      this.studioAudioUrls = urls;
+      return Object.keys(urls).length > 0;
+    } catch {
+      this.studioAudioUrls = {};
+      return false;
+    }
+  }
+
+  public releaseStudioAudioUrls() {
+    for (const url of Object.values(this.studioAudioUrls)) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }
+    this.studioAudioUrls = {};
+  }
+
   public getLetterAudioPath(letter: string): string | null {
     if (!letter) return null;
-    const normalized = letter.trim().toLowerCase().replace(/[’`]/g, "'");
+    const rawTrimmed = letter.trim();
+    if (this.studioAudioUrls[rawTrimmed]) {
+      return this.studioAudioUrls[rawTrimmed];
+    }
+    const normalized = rawTrimmed.toLowerCase().replace(/[’`]/g, "'");
+    if (this.studioAudioUrls[normalized]) {
+      return this.studioAudioUrls[normalized];
+    }
     if (LETTER_AUDIO_MAP[normalized]) {
       return LETTER_AUDIO_MAP[normalized];
     }
     const cleanLatin = normalized.replace(/[^a-z']/g, '');
+    if (this.studioAudioUrls[cleanLatin]) {
+      return this.studioAudioUrls[cleanLatin];
+    }
     if (LETTER_AUDIO_MAP[cleanLatin]) {
       return LETTER_AUDIO_MAP[cleanLatin];
     }
@@ -763,7 +816,11 @@ class TTSNarrator {
   }
 
   // Chained Audio: "Ayo cari..." + [Authentic Letter / Word Audio Chain]
-  public askFindLetter(letterKey: string, onEnd?: () => void) {
+  public askFindLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
+    if (questionId && this.studioAudioUrls[questionId]) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', this.studioAudioUrls[questionId]], onEnd);
+      return;
+    }
     const wordPaths = this.getWordAudioPaths(letterKey);
     if (wordPaths.length > 0) {
       this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', ...wordPaths], onEnd);
@@ -773,7 +830,11 @@ class TTSNarrator {
   }
 
   // Chained Audio: "Yang mana..." + [Authentic Letter / Word Audio Chain]
-  public askWhichLetter(letterKey: string, onEnd?: () => void) {
+  public askWhichLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
+    if (questionId && this.studioAudioUrls[questionId]) {
+      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', this.studioAudioUrls[questionId]], onEnd);
+      return;
+    }
     const wordPaths = this.getWordAudioPaths(letterKey);
     if (wordPaths.length > 0) {
       this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', ...wordPaths], onEnd);
@@ -783,7 +844,11 @@ class TTSNarrator {
   }
 
   // Chained Audio: "Ayo coba tulis..." + [Authentic Letter / Word Audio Chain]
-  public askTraceLetter(letterKey: string, onEnd?: () => void) {
+  public askTraceLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
+    if (questionId && this.studioAudioUrls[questionId]) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', this.studioAudioUrls[questionId]], onEnd);
+      return;
+    }
     const wordPaths = this.getWordAudioPaths(letterKey);
     if (wordPaths.length > 0) {
       this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', ...wordPaths], onEnd);
@@ -793,7 +858,11 @@ class TTSNarrator {
   }
 
   // Chained Audio: "Letuskan balon..." + [Authentic Letter / Word Audio Chain]
-  public askPopLetter(letterKey: string, onEnd?: () => void) {
+  public askPopLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
+    if (questionId && this.studioAudioUrls[questionId]) {
+      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', this.studioAudioUrls[questionId]], onEnd);
+      return;
+    }
     const wordPaths = this.getWordAudioPaths(letterKey);
     if (wordPaths.length > 0) {
       this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', ...wordPaths], onEnd);

@@ -33,7 +33,7 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
   const playPromptAudio = () => {
     soundManager.playPop();
     if (question.targetName || question.targetLetter) {
-      ttsNarrator.askFindLetter(question.targetName || question.targetLetter);
+      ttsNarrator.askFindLetter(question.targetName || question.targetLetter, undefined, question.id);
     } else {
       ttsNarrator.speak(question.promptText);
     }

@@ -9,6 +9,7 @@ import { WelcomeModal } from './components/onboarding/WelcomeModal';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { IosInstallModal } from './components/pwa/IosInstallModal';
 import { usePwaInstall } from './components/pwa/usePwaInstall';
+import { QariStudioDashboard } from './components/studio/QariStudioDashboard';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
 import { useProgressStore } from './core/storage/useProgressStore';
@@ -34,7 +35,18 @@ export function App() {
   const { isInstallable, showIosGuide, setShowIosGuide, installApp } = usePwaInstall();
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+
+  // Check URL query parameter to directly open studio (e.g. ?studio=true or #studio)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('studio') === 'true' || params.get('mode') === 'studio' || window.location.hash === '#studio') {
+        setIsStudioOpen(true);
+      }
+    }
+  }, []);
 
   // Preload personalized audio from IndexedDB for the active child name
   useEffect(() => {
@@ -92,6 +104,7 @@ export function App() {
         gems={progress.gemsTotal}
         streak={progress.streakDays}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenStudio={() => setIsStudioOpen(true)}
       />
 
       {/* Main Responsive Game Layout */}
@@ -149,6 +162,13 @@ export function App() {
         equippedCape={progress.equippedCape}
         unlockedAllLevels={!!progress.unlockedAllLevels}
         onToggleUnlockAllLevels={toggleUnlockAllLevels}
+        onOpenStudio={() => setIsStudioOpen(true)}
+      />
+
+      {/* Qari Audio Recording Studio Dashboard */}
+      <QariStudioDashboard
+        isOpen={isStudioOpen}
+        onClose={() => setIsStudioOpen(false)}
       />
 
       {/* iOS Safari Guide Modal */}
