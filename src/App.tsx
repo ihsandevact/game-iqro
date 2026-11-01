@@ -12,7 +12,7 @@ import { usePwaInstall } from './components/pwa/usePwaInstall';
 import { QariStudioDashboard } from './components/studio/QariStudioDashboard';
 import { IQRO_BOOKS } from './games/iqro/data/iqroLevels';
 import { Stage, IqroLevelId } from './core/types/gameTypes';
-import { useProgressStore } from './core/storage/useProgressStore';
+import { useProgressStore, ENABLE_IQRO_BEYOND_1 } from './core/storage/useProgressStore';
 import { ttsNarrator } from './core/audio/ttsNarrator';
 
 export function App() {
@@ -91,9 +91,18 @@ export function App() {
     ttsNarrator.loadStudioRecordings();
   }, [isStudioOpen]);
 
-  // Get currently selected Iqro book (defaults to level 1)
+  // Fallback to Iqro 1 if currently selected book is locked by feature flag
+  useEffect(() => {
+    if ((!ENABLE_IQRO_BEYOND_1 && progress.currentIqroLevel > 1) || (progress.currentIqroLevel > 1 && !isBookUnlocked(progress.currentIqroLevel))) {
+      setIqroLevel(1);
+    }
+  }, [progress.currentIqroLevel, isBookUnlocked, setIqroLevel]);
+
+  // Get currently selected Iqro book (strictly defaults to level 1 if beyond 1 is disabled)
   const currentBook =
-    IQRO_BOOKS.find((b) => b.level === progress.currentIqroLevel) || IQRO_BOOKS[0];
+    (!ENABLE_IQRO_BEYOND_1 && progress.currentIqroLevel > 1)
+      ? IQRO_BOOKS[0]
+      : (IQRO_BOOKS.find((b) => b.level === progress.currentIqroLevel) || IQRO_BOOKS[0]);
 
   const handleSelectLevel = (lvl: IqroLevelId) => {
     setIqroLevel(lvl);

@@ -14,6 +14,9 @@ const BOOK_FIRST_STAGES = new Set(
 
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
 
+// FEATURE FLAG: Set to false to lock Iqro > 1 (temporarily locked for public & local release)
+export const ENABLE_IQRO_BEYOND_1 = false;
+
 const DEFAULT_PROGRESS: UserProgress = {
   childName: 'Faqih',
   currentIqroLevel: 1,
@@ -42,9 +45,16 @@ export function useProgressStore() {
           parsed.hasCompletedOnboarding ??
           (parsed.completedStages && Object.keys(parsed.completedStages).length > 0);
 
+        // Force reset to Iqro 1 if level > 1 is locked by feature flag
+        const currentIqroLevel =
+          !ENABLE_IQRO_BEYOND_1 && parsed.currentIqroLevel > 1
+            ? 1
+            : (parsed.currentIqroLevel || 1);
+
         return {
           ...DEFAULT_PROGRESS,
           ...parsed,
+          currentIqroLevel,
           hasCompletedOnboarding: !!hasCompletedOnboarding,
         };
       }
@@ -63,6 +73,14 @@ export function useProgressStore() {
   }, [progress]);
 
   const setIqroLevel = (level: IqroLevelId) => {
+    if (level > 1 && !ENABLE_IQRO_BEYOND_1) {
+      soundManager.playGentleWrong();
+      return;
+    }
+    if (level > 1 && !isBookUnlocked(level)) {
+      soundManager.playGentleWrong();
+      return;
+    }
     setProgress(prev => ({ ...prev, currentIqroLevel: level }));
   };
 
@@ -131,8 +149,10 @@ export function useProgressStore() {
   };
 
   const isBookUnlocked = (bookLevel: IqroLevelId): boolean => {
-    if (progress.unlockedAllLevels) return true;
     if (bookLevel === 1) return true;
+    // Feature flag: if false, strictly lock all books > 1
+    if (!ENABLE_IQRO_BEYOND_1) return false;
+    if (progress.unlockedAllLevels) return true;
     if (bookLevel === 2) {
       // Iqro 2 unlocks when the final graduation stage of Iqro 1 is completed
       return !!progress.completedStages['iqro1-u7-s4'];
@@ -141,13 +161,17 @@ export function useProgressStore() {
       return !!progress.completedStages['iqro2-u7-s4'];
     }
     if (bookLevel === 4) {
-      // Iqro 4 unlocks when the final graduation exam of Iqro 3 is completed
       return !!progress.completedStages['iqro3-u7-s4'];
     }
     return false;
   };
 
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
+    // If Iqro > 1 is locked by feature flag, reject any non-Iqro 1 stage immediately
+    if (!ENABLE_IQRO_BEYOND_1 && !stageId.startsWith('iqro1-')) {
+      return false;
+    }
+
     if (progress.unlockedAllLevels) return true;
     if (progress.completedStages[stageId]) return true;
 
