@@ -16,6 +16,8 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  X,
   Trash2,
   Radio,
   Sliders,
@@ -127,6 +129,7 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
   const [activeDeviceLabel, setActiveDeviceLabel] = useState<string>('');
   const [isHardwareMuted, setIsHardwareMuted] = useState<boolean>(false);
   const [isTestingMic, setIsTestingMic] = useState<boolean>(false);
+  const [isMicModalOpen, setIsMicModalOpen] = useState<boolean>(false);
 
   // Recorder state
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -1045,32 +1048,25 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           </button>
         </div>
 
-        {/* Full width select so long device names never push out of screen */}
-        <div className="w-full">
-          {audioDevices.length > 0 ? (
-            <select
-              value={selectedDeviceId}
-              onChange={(e) => {
-                setSelectedDeviceId(e.target.value);
-                if (isTestingMic) {
-                  setupAudioStreamAndVU(e.target.value);
-                }
-              }}
-              className="w-full bg-white border border-slate-300 text-slate-800 font-semibold rounded-xl px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 truncate"
-              title="Pilih perangkat mikrofon laptop atau headset Anda"
-            >
-              {audioDevices.map((dev, i) => (
-                <option key={dev.deviceId || i} value={dev.deviceId}>
-                  {dev.label || `Mikrofon ${i + 1}`}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="w-full bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl px-2.5 py-1.5 text-xs truncate">
-              {activeDeviceLabel || 'Mikrofon Bawaan'}
+        {/* Trigger Button to open BottomSheet / Modal */}
+        <button
+          onClick={() => {
+            refreshAudioDevices();
+            setIsMicModalOpen(true);
+          }}
+          className="w-full flex items-center justify-between bg-white hover:bg-slate-50 active:scale-[0.99] border-2 border-slate-200 hover:border-emerald-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs transition text-left"
+          title="Klik untuk memilih mikrofon"
+        >
+          <div className="flex items-center gap-2 min-w-0 pr-2">
+            <div className="w-5 h-5 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <Mic className="w-3.5 h-3.5" />
             </div>
-          )}
-        </div>
+            <span className="truncate">
+              {audioDevices.find((d) => d.deviceId === selectedDeviceId)?.label || activeDeviceLabel || 'Pilih Mikrofon'}
+            </span>
+          </div>
+          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+        </button>
       </div>
 
       {/* HARDWARE MUTE WARNING BANNER */}
@@ -1581,6 +1577,120 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           {mobileTab === 'prompter' ? renderPrompterArea() : renderQuestionList()}
         </div>
       </div>
+
+      {/* 4. BOTTOMSHEET / MODAL UNTUK PEMILIHAN MIKROFON */}
+      <AnimatePresence>
+        {isMicModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4">
+            {/* Click backdrop to close */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0"
+              onClick={() => setIsMicModalOpen(false)}
+            />
+
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              className="relative z-10 w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border-t sm:border border-slate-200 max-h-[80vh] flex flex-col overflow-hidden"
+            >
+              {/* Mobile Drag Pill */}
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-2.5 sm:hidden shrink-0" />
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <Sliders className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800">Pilih Mikrofon</h3>
+                    <p className="text-[10px] font-semibold text-slate-400">Pilih perangkat audio untuk rekaman</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMicModalOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* List of Microphones */}
+              <div className="p-4 space-y-2 overflow-y-auto flex-1">
+                {audioDevices.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-slate-500 font-semibold bg-slate-50 rounded-2xl border border-slate-200">
+                    Tidak ada mikrofon eksternal yang terdeteksi. Sistem menggunakan mikrofon default.
+                  </div>
+                ) : (
+                  audioDevices.map((dev, i) => {
+                    const isSelected = dev.deviceId === selectedDeviceId || (!selectedDeviceId && i === 0);
+                    const label = dev.label || `Mikrofon ${i + 1}`;
+
+                    return (
+                      <button
+                        key={dev.deviceId || i}
+                        onClick={() => {
+                          setSelectedDeviceId(dev.deviceId);
+                          setActiveDeviceLabel(label);
+                          if (isTestingMic) {
+                            setupAudioStreamAndVU(dev.deviceId);
+                          }
+                          setIsMicModalOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 text-left transition ${
+                          isSelected
+                            ? 'bg-emerald-50/80 border-emerald-500 shadow-sm'
+                            : 'bg-white hover:bg-slate-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 pr-2">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                              isSelected
+                                ? 'bg-emerald-500 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            <Mic className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-black text-slate-800 truncate">
+                              {label}
+                            </div>
+                            <div className="text-[10px] font-semibold text-slate-400 truncate">
+                              {label.toLowerCase().includes('realtek')
+                                ? 'Mikrofon Bawaan Laptop'
+                                : label.toLowerCase().includes('default')
+                                ? 'Perangkat Default Sistem'
+                                : 'Perangkat Audio Input'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {isSelected ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Footer Helper */}
+              <div className="p-3 bg-slate-50 border-t border-slate-100 text-[11px] font-semibold text-slate-500 text-center">
+                💡 Pilih <b>"Microphone Array (Realtek)"</b> untuk mikrofon bawaan laptop Anda.
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
