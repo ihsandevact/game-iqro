@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Pilih Tingkat Iqro
               </div>
               {levelOptions.map((opt) => {
-                const isUnlocked = isBookUnlocked ? isBookUnlocked(opt.id) : true;
+                const isUnlocked = isBookUnlocked ? isBookUnlocked(opt.id) : opt.id === 1;
                 const isCurrent = currentLevel === opt.id;
 
                 return (

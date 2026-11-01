@@ -23,7 +23,7 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
   // Winding serpentine offsets in pixels for each successive step
   const windingOffsets = [0, -40, -65, -35, 0, 35, 65, 40];
 
-  // Check if book is locked by curriculum progression
+  // Check if book is locked by curriculum progression or feature flag
   if (isBookUnlocked && !isBookUnlocked(currentBook.level)) {
     return (
       <div className="w-full max-w-md mx-auto py-10 px-4 text-center">
