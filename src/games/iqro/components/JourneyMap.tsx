@@ -38,7 +38,7 @@ export const JourneyMap: React.FC<JourneyMapProps> = ({
             Petualangan {currentBook.title}
           </h3>
           <p className="text-xs sm:text-sm font-semibold text-slate-500 mb-5 max-w-xs leading-relaxed">
-            Materi {currentBook.subtitle} saat ini sedang disiapkan di studio. Ayo selesaikan 22 tahapan di Iqro 1 terlebih dahulu!
+            Materi {currentBook.subtitle} saat ini sedang disiapkan. Ayo selesaikan 22 tahapan di Iqro 1 terlebih dahulu!
           </p>
           {onSwitchToBook && (
             <button

@@ -15,7 +15,7 @@ const BOOK_FIRST_STAGES = new Set(
 
 const STORAGE_KEY = 'iqro_petualangan_progress_v1';
 
-// FEATURE FLAG: Set to false to lock Iqro > 1 (temporarily locked for public & local release)
+// FEATURE FLAG: Exported from flags.ts
 export { ENABLE_IQRO_BEYOND_1 };
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -46,9 +46,9 @@ export function useProgressStore() {
           parsed.hasCompletedOnboarding ??
           (parsed.completedStages && Object.keys(parsed.completedStages).length > 0);
 
-        // Force reset to Iqro 1 if level > 1 is locked by feature flag
+        // Force reset to Iqro 1 if level > 1 is locked by feature flag and not testing unlocked
         const currentIqroLevel =
-          !ENABLE_IQRO_BEYOND_1 && parsed.currentIqroLevel > 1
+          !ENABLE_IQRO_BEYOND_1 && parsed.currentIqroLevel > 1 && !parsed.unlockedAllLevels
             ? 1
             : (parsed.currentIqroLevel || 1);
 
@@ -74,10 +74,6 @@ export function useProgressStore() {
   }, [progress]);
 
   const setIqroLevel = (level: IqroLevelId) => {
-    if (level > 1 && !ENABLE_IQRO_BEYOND_1) {
-      soundManager.playGentleWrong();
-      return;
-    }
     if (level > 1 && !isBookUnlocked(level)) {
       soundManager.playGentleWrong();
       return;
@@ -151,9 +147,9 @@ export function useProgressStore() {
 
   const isBookUnlocked = (bookLevel: IqroLevelId): boolean => {
     if (bookLevel === 1) return true;
+    if (progress.unlockedAllLevels) return true;
     // Feature flag: if false, strictly lock all books > 1
     if (!ENABLE_IQRO_BEYOND_1) return false;
-    if (progress.unlockedAllLevels) return true;
     if (bookLevel === 2) {
       // Iqro 2 unlocks when the final graduation stage of Iqro 1 is completed
       return !!progress.completedStages['iqro1-u7-s4'];
@@ -169,7 +165,7 @@ export function useProgressStore() {
 
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
     // If Iqro > 1 is locked by feature flag, reject any non-Iqro 1 stage immediately
-    if (!ENABLE_IQRO_BEYOND_1 && !stageId.startsWith('iqro1-')) {
+    if (!ENABLE_IQRO_BEYOND_1 && !stageId.startsWith('iqro1-') && !progress.unlockedAllLevels) {
       return false;
     }
 
