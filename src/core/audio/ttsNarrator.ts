@@ -473,6 +473,11 @@ class TTSNarrator {
   private customAudioUrls: Record<string, string> = {};
   private studioAudioUrls: Record<string, string> = {};
 
+  // Web Audio engine for rock-solid decoding of recorded WebM/Opus blobs
+  private webAudioCtx: AudioContext | null = null;
+  private currentSourceNode: AudioBufferSourceNode | null = null;
+  private decodedBufferCache: Map<string, AudioBuffer> = new Map();
+
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       this.initVoices();
@@ -494,6 +499,68 @@ class TTSNarrator {
 
     if (idVoice) {
       this.voice = idVoice;
+    }
+  }
+
+  private getAudioContext(): AudioContext | null {
+    if (typeof window === 'undefined') return null;
+    if (!this.webAudioCtx) {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) {
+        this.webAudioCtx = new AudioCtx();
+      }
+    }
+    if (this.webAudioCtx && this.webAudioCtx.state === 'suspended') {
+      this.webAudioCtx.resume().catch(() => {});
+    }
+    return this.webAudioCtx;
+  }
+
+  /**
+   * Direct Web Audio playback: seamlessly decodes and plays WebM Opus blobs
+   * and any audio format without HTMLAudioElement duration/codec hang issues.
+   */
+  public async playWithWebAudio(url: string, onEnd?: () => void): Promise<boolean> {
+    const ctx = this.getAudioContext();
+    if (!ctx) {
+      onEnd?.();
+      return false;
+    }
+
+    try {
+      this.stop();
+      this.isChainCancelled = false;
+
+      let buffer = this.decodedBufferCache.get(url);
+      if (!buffer) {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = await ctx.decodeAudioData(arrayBuffer);
+        this.decodedBufferCache.set(url, buffer);
+      }
+
+      const sourceNode = ctx.createBufferSource();
+      sourceNode.buffer = buffer;
+      sourceNode.connect(ctx.destination);
+      this.currentSourceNode = sourceNode;
+
+      let called = false;
+      const finish = () => {
+        if (!called) {
+          called = true;
+          this.currentSourceNode = null;
+          onEnd?.();
+        }
+      };
+
+      sourceNode.onended = finish;
+      sourceNode.start(0);
+      return true;
+    } catch (err) {
+      console.warn('TTSNarrator WebAudio playback error:', err);
+      this.currentSourceNode = null;
+      onEnd?.();
+      return false;
     }
   }
 
@@ -531,6 +598,7 @@ class TTSNarrator {
     for (const url of Object.values(this.customAudioUrls)) {
       try {
         URL.revokeObjectURL(url);
+        this.decodedBufferCache.delete(url);
       } catch {
         // ignore
       }
@@ -552,9 +620,38 @@ class TTSNarrator {
       for (const [qId, rec] of Object.entries(records)) {
         if (rec && rec.blob) {
           const url = URL.createObjectURL(rec.blob);
+
+          // 1. Map by question ID exact and lowercased (e.g. 'q1', 'q201')
           urls[qId] = url;
-          if (rec.targetLetter) urls[rec.targetLetter.trim()] = url;
-          if (rec.targetName) urls[rec.targetName.trim().toLowerCase()] = url;
+          urls[qId.toLowerCase()] = url;
+
+          // 2. Map by Arabic target letter (with and without harakat)
+          if (rec.targetLetter) {
+            const rawArabic = rec.targetLetter.trim();
+            urls[rawArabic] = url;
+            const strippedArabic = rawArabic.replace(/[\u064B-\u065F\u0670]/g, '');
+            if (strippedArabic && !urls[strippedArabic]) {
+              urls[strippedArabic] = url;
+            }
+          }
+
+          // 3. Map by Latin target name (e.g. 'ba', 'ba-ta', 'bata')
+          if (rec.targetName) {
+            const rawName = rec.targetName.trim().toLowerCase();
+            urls[rawName] = url;
+            const cleanLatin = rawName.replace(/[^a-z0-9']/g, '');
+            if (cleanLatin && !urls[cleanLatin]) {
+              urls[cleanLatin] = url;
+            }
+            const noApos = cleanLatin.replace(/'/g, '');
+            if (noApos && !urls[noApos]) {
+              urls[noApos] = url;
+            }
+            const hyphenated = rawName.replace(/\s+/g, '-');
+            if (hyphenated && !urls[hyphenated]) {
+              urls[hyphenated] = url;
+            }
+          }
         }
       }
       this.studioAudioUrls = urls;
@@ -569,6 +666,7 @@ class TTSNarrator {
     for (const url of Object.values(this.studioAudioUrls)) {
       try {
         URL.revokeObjectURL(url);
+        this.decodedBufferCache.delete(url);
       } catch {
         // ignore
       }
@@ -579,6 +677,8 @@ class TTSNarrator {
   public getLetterAudioPath(letter: string): string | null {
     if (!letter) return null;
     const rawTrimmed = letter.trim();
+
+    // Studio recordings take priority if studio voice is enabled
     if (this.studioAudioUrls[rawTrimmed]) {
       return this.studioAudioUrls[rawTrimmed];
     }
@@ -586,17 +686,22 @@ class TTSNarrator {
     if (this.studioAudioUrls[normalized]) {
       return this.studioAudioUrls[normalized];
     }
-    if (LETTER_AUDIO_MAP[normalized]) {
-      return LETTER_AUDIO_MAP[normalized];
-    }
     const cleanLatin = normalized.replace(/[^a-z']/g, '');
     if (this.studioAudioUrls[cleanLatin]) {
       return this.studioAudioUrls[cleanLatin];
     }
+    const noApos = cleanLatin.replace(/'/g, '');
+    if (this.studioAudioUrls[noApos]) {
+      return this.studioAudioUrls[noApos];
+    }
+
+    // Default authentic letter audio maps
+    if (LETTER_AUDIO_MAP[normalized]) {
+      return LETTER_AUDIO_MAP[normalized];
+    }
     if (LETTER_AUDIO_MAP[cleanLatin]) {
       return LETTER_AUDIO_MAP[cleanLatin];
     }
-    const noApos = cleanLatin.replace(/'/g, '');
     if (LETTER_AUDIO_MAP[noApos]) {
       return LETTER_AUDIO_MAP[noApos];
     }
@@ -607,6 +712,13 @@ class TTSNarrator {
   public getWordAudioPaths(word: string): string[] {
     if (!word) return [];
     const trimmed = word.trim();
+
+    // 0. Direct studio audio match for full word (e.g. "Ba-Ta" or "كُتِبَ")
+    if (this.studioAudioUrls[trimmed]) return [this.studioAudioUrls[trimmed]];
+    const lowerTrimmed = trimmed.toLowerCase();
+    if (this.studioAudioUrls[lowerTrimmed]) return [this.studioAudioUrls[lowerTrimmed]];
+    const cleanLatin = lowerTrimmed.replace(/[^a-z0-9']/g, '');
+    if (this.studioAudioUrls[cleanLatin]) return [this.studioAudioUrls[cleanLatin]];
 
     // 1. Single letter direct match
     const single = this.getLetterAudioPath(trimmed);
@@ -713,8 +825,15 @@ class TTSNarrator {
       return true;
     }
 
+    // Blob URLs (e.g. from studio recordings or mic) decode 100% reliably via Web Audio API
+    if (src.startsWith('blob:')) {
+      this.playWithWebAudio(src, onEnd);
+      return true;
+    }
+
     try {
       this.stop();
+      this.isChainCancelled = false;
       const audio = new Audio(src);
       this.currentAudio = audio;
 
@@ -730,20 +849,20 @@ class TTSNarrator {
       audio.onended = finish;
       audio.onerror = () => {
         this.currentAudio = null;
-        onEnd?.();
+        this.playWithWebAudio(src, finish);
       };
 
       const promise = audio.play();
       if (promise !== undefined) {
         promise.catch(() => {
           this.currentAudio = null;
-          onEnd?.();
+          this.playWithWebAudio(src, finish);
         });
       }
       return true;
     } catch {
-      onEnd?.();
-      return false;
+      this.playWithWebAudio(src, onEnd);
+      return true;
     }
   }
 
@@ -765,43 +884,84 @@ class TTSNarrator {
       }
 
       const src = srcs[idx++];
+      let called = false;
+      const advance = () => {
+        if (!called) {
+          called = true;
+          if (this.isChainCancelled) {
+            this.currentAudio = null;
+            onEnd?.();
+            return;
+          }
+          // Snappy transition: 25ms after question prompt, or 80ms between joined syllables
+          const isPrompt = src.includes('/prompts/');
+          const gap = isPrompt ? 25 : 80;
+          setTimeout(playNext, gap);
+        }
+      };
+
+      if (src.startsWith('blob:')) {
+        this.playWithWebAudio(src, advance);
+        return;
+      }
+
       try {
         const audio = new Audio(src);
         this.currentAudio = audio;
 
-        let called = false;
-        const advance = () => {
-          if (!called) {
-            called = true;
-            if (this.isChainCancelled) {
-              this.currentAudio = null;
-              onEnd?.();
-              return;
-            }
-            // Snappy transition: 25ms after question prompt, or 80ms between joined syllables
-            const isPrompt = src.includes('/prompts/');
-            const gap = isPrompt ? 25 : 80;
-            setTimeout(playNext, gap);
-          }
-        };
-
         audio.onended = advance;
-        audio.onerror = advance;
+        audio.onerror = () => {
+          this.currentAudio = null;
+          this.playWithWebAudio(src, advance);
+        };
 
         const promise = audio.play();
         if (promise !== undefined) {
-          promise.catch(advance);
+          promise.catch(() => {
+            this.currentAudio = null;
+            this.playWithWebAudio(src, advance);
+          });
         }
       } catch {
-        playNext();
+        this.playWithWebAudio(src, advance);
       }
     };
 
     playNext();
   }
 
+  private getStudioUrl(letterKey?: string, questionId?: string): string | null {
+    if (questionId && this.studioAudioUrls[questionId]) {
+      return this.studioAudioUrls[questionId];
+    }
+    if (questionId && this.studioAudioUrls[questionId.toLowerCase()]) {
+      return this.studioAudioUrls[questionId.toLowerCase()];
+    }
+    if (!letterKey) return null;
+
+    const trimmed = letterKey.trim();
+    if (this.studioAudioUrls[trimmed]) return this.studioAudioUrls[trimmed];
+
+    const lower = trimmed.toLowerCase();
+    if (this.studioAudioUrls[lower]) return this.studioAudioUrls[lower];
+
+    const clean = lower.replace(/[^a-z0-9']/g, '');
+    if (this.studioAudioUrls[clean]) return this.studioAudioUrls[clean];
+
+    const strippedArabic = trimmed.replace(/[\u064B-\u065F\u0670]/g, '');
+    if (strippedArabic && this.studioAudioUrls[strippedArabic]) {
+      return this.studioAudioUrls[strippedArabic];
+    }
+
+    return null;
+  }
+
   // Play authentic human studio letter or joined-word audio directly
   public playLetter(letterKey: string, onEnd?: () => void): boolean {
+    const studioUrl = this.getStudioUrl(letterKey);
+    if (studioUrl) {
+      return this.playAudio(studioUrl, onEnd);
+    }
     const audioPath = this.getLetterAudioPath(letterKey);
     if (audioPath) {
       return this.playAudio(audioPath, onEnd);
@@ -817,8 +977,9 @@ class TTSNarrator {
 
   // Chained Audio: "Ayo cari..." + [Authentic Letter / Word Audio Chain]
   public askFindLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
-    if (questionId && this.studioAudioUrls[questionId]) {
-      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', this.studioAudioUrls[questionId]], onEnd);
+    const studioUrl = this.getStudioUrl(letterKey, questionId);
+    if (studioUrl) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_cari.mp3', studioUrl], onEnd);
       return;
     }
     const wordPaths = this.getWordAudioPaths(letterKey);
@@ -831,8 +992,9 @@ class TTSNarrator {
 
   // Chained Audio: "Yang mana..." + [Authentic Letter / Word Audio Chain]
   public askWhichLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
-    if (questionId && this.studioAudioUrls[questionId]) {
-      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', this.studioAudioUrls[questionId]], onEnd);
+    const studioUrl = this.getStudioUrl(letterKey, questionId);
+    if (studioUrl) {
+      this.playAudioChain(['/audio/prompts/prompt_yang_mana.mp3', studioUrl], onEnd);
       return;
     }
     const wordPaths = this.getWordAudioPaths(letterKey);
@@ -845,8 +1007,9 @@ class TTSNarrator {
 
   // Chained Audio: "Ayo coba tulis..." + [Authentic Letter / Word Audio Chain]
   public askTraceLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
-    if (questionId && this.studioAudioUrls[questionId]) {
-      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', this.studioAudioUrls[questionId]], onEnd);
+    const studioUrl = this.getStudioUrl(letterKey, questionId);
+    if (studioUrl) {
+      this.playAudioChain(['/audio/prompts/prompt_ayo_tulis.mp3', studioUrl], onEnd);
       return;
     }
     const wordPaths = this.getWordAudioPaths(letterKey);
@@ -859,8 +1022,9 @@ class TTSNarrator {
 
   // Chained Audio: "Letuskan balon..." + [Authentic Letter / Word Audio Chain]
   public askPopLetter(letterKey: string, onEnd?: () => void, questionId?: string) {
-    if (questionId && this.studioAudioUrls[questionId]) {
-      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', this.studioAudioUrls[questionId]], onEnd);
+    const studioUrl = this.getStudioUrl(letterKey, questionId);
+    if (studioUrl) {
+      this.playAudioChain(['/audio/prompts/prompt_letuskan_balon.mp3', studioUrl], onEnd);
       return;
     }
     const wordPaths = this.getWordAudioPaths(letterKey);
@@ -1116,7 +1280,7 @@ class TTSNarrator {
   }
 
   public isSpeaking(): boolean {
-    return !!this.currentUtterance || !!this.currentAudio;
+    return !!this.currentUtterance || !!this.currentAudio || !!this.currentSourceNode;
   }
 
   public stop() {
@@ -1129,6 +1293,16 @@ class TTSNarrator {
         // ignore
       }
       this.currentAudio = null;
+    }
+
+    if (this.currentSourceNode) {
+      try {
+        this.currentSourceNode.stop();
+        this.currentSourceNode.disconnect();
+      } catch {
+        // ignore
+      }
+      this.currentSourceNode = null;
     }
 
     this.currentUtterance = null;

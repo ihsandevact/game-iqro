@@ -1343,31 +1343,31 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
 
   return (
     <div className="min-h-screen w-full max-w-full bg-slate-100 flex flex-col font-sans select-none text-slate-800 overflow-x-hidden">
-      {/* 1. TOP DEDICATED HEADER: Back Button, Progress & Actions (Guaranteed No Horizontal Overflow) */}
-      <header className="sticky top-0 z-40 w-full bg-white border-b-2 border-slate-200 py-2 sm:py-2.5 px-2.5 sm:px-6 shadow-xs select-none">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
+      {/* 1. TOP DEDICATED HEADER: Back Button, Progress & Actions (Guaranteed Zero Horizontal Overflow) */}
+      <header className="sticky top-0 z-40 w-full bg-white border-b-2 border-slate-200 py-1.5 sm:py-2.5 px-2 sm:px-6 shadow-xs select-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 sm:gap-4">
           {/* Left: Back to Game Button & Branding */}
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-2.5 min-w-0">
             <button
               onClick={handleBack}
-              className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-black text-xs sm:text-sm rounded-xl border border-slate-200 transition shrink-0"
+              className="flex items-center gap-1 p-1.5 sm:px-3 sm:py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-black text-xs sm:text-sm rounded-xl border border-slate-200 transition shrink-0"
               title="Kembali ke Peta Permainan"
             >
               <ArrowLeft className="w-4 h-4 text-slate-600" />
-              <span className="hidden xs:inline">Kembali</span>
+              <span className="hidden sm:inline">Kembali</span>
             </button>
 
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
               <div className="hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-500/20 shrink-0">
                 <Mic className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex items-center gap-1 truncate">
                   <h1 className="text-xs sm:text-base font-black text-slate-800 tracking-tight truncate">
                     Studio Qari
                   </h1>
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 shrink-0">
-                    Iqro 1–6
+                  <span className="text-[9px] sm:text-[10px] font-extrabold px-1 py-0.2 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 shrink-0">
+                    1–6
                   </span>
                 </div>
               </div>
@@ -1395,11 +1395,25 @@ export const QariStudioDashboard: React.FC<QariStudioDashboardProps> = ({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Mobile Progress Pill */}
-            <div className="flex lg:hidden items-center text-[10px] sm:text-[11px] font-black px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl shrink-0 whitespace-nowrap">
+            <div className="flex lg:hidden items-center text-[10px] sm:text-[11px] font-black px-1.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl shrink-0 whitespace-nowrap">
               {totalApproved}/{totalQuestionsCount}
             </div>
+
+            {/* Mobile 1-Tap Voice Override Toggle Pill */}
+            <button
+              onClick={handleToggleVoiceOverride}
+              className={`flex md:hidden items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-black border transition shrink-0 ${
+                isVoiceOverrideActive
+                  ? 'bg-emerald-500 text-white border-emerald-600 shadow-2xs'
+                  : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+              }`}
+              title="Aktifkan atau nonaktifkan audio studio di dalam permainan"
+            >
+              <Volume2 className="w-3 h-3" />
+              <span>{isVoiceOverrideActive ? 'Aktif' : 'Game: Off'}</span>
+            </button>
 
             {/* Desktop Action Buttons */}
             <div className="hidden md:flex items-center gap-1.5">

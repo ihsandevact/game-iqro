@@ -86,6 +86,11 @@ export function App() {
     }
   }, [progress.childName]);
 
+  // Preload authentic studio recordings whenever app mounts or studio view closes
+  useEffect(() => {
+    ttsNarrator.loadStudioRecordings();
+  }, [isStudioOpen]);
+
   // Get currently selected Iqro book (defaults to level 1)
   const currentBook =
     IQRO_BOOKS.find((b) => b.level === progress.currentIqroLevel) || IQRO_BOOKS[0];
