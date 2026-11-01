@@ -46,9 +46,9 @@ export function useProgressStore() {
           parsed.hasCompletedOnboarding ??
           (parsed.completedStages && Object.keys(parsed.completedStages).length > 0);
 
-        // Force reset to Iqro 1 if level > 1 is locked by feature flag and not testing unlocked
+        // Force reset to Iqro 1 if level > 1 is locked by feature flag (even if unlockedAllLevels is true)
         const currentIqroLevel =
-          !ENABLE_IQRO_BEYOND_1 && parsed.currentIqroLevel > 1 && !parsed.unlockedAllLevels
+          !ENABLE_IQRO_BEYOND_1 && parsed.currentIqroLevel > 1
             ? 1
             : (parsed.currentIqroLevel || 1);
 
@@ -74,7 +74,7 @@ export function useProgressStore() {
   }, [progress]);
 
   const setIqroLevel = (level: IqroLevelId) => {
-    if (level > 1 && !isBookUnlocked(level)) {
+    if (level > 1 && (!ENABLE_IQRO_BEYOND_1 || !isBookUnlocked(level))) {
       soundManager.playGentleWrong();
       return;
     }
@@ -147,9 +147,9 @@ export function useProgressStore() {
 
   const isBookUnlocked = (bookLevel: IqroLevelId): boolean => {
     if (bookLevel === 1) return true;
-    if (progress.unlockedAllLevels) return true;
-    // Feature flag: if false, strictly lock all books > 1
+    // Feature flag: if false, strictly lock all books > 1 (even if unlockedAllLevels is true)
     if (!ENABLE_IQRO_BEYOND_1) return false;
+    if (progress.unlockedAllLevels) return true;
     if (bookLevel === 2) {
       // Iqro 2 unlocks when the final graduation stage of Iqro 1 is completed
       return !!progress.completedStages['iqro1-u7-s4'];
@@ -164,8 +164,8 @@ export function useProgressStore() {
   };
 
   const isStageUnlocked = (stageId: string, defaultUnlocked?: boolean): boolean => {
-    // If Iqro > 1 is locked by feature flag, reject any non-Iqro 1 stage immediately
-    if (!ENABLE_IQRO_BEYOND_1 && !stageId.startsWith('iqro1-') && !progress.unlockedAllLevels) {
+    // If Iqro > 1 is locked by feature flag, reject any non-Iqro 1 stage immediately (even if unlockedAllLevels is true)
+    if (!ENABLE_IQRO_BEYOND_1 && !stageId.startsWith('iqro1-')) {
       return false;
     }
 

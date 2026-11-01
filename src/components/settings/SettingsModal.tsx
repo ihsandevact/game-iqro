@@ -21,6 +21,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
+import { ENABLE_IQRO_BEYOND_1 } from '../../core/config/flags';
 import { soundManager } from '../../core/audio/soundManager';
 import { ttsNarrator } from '../../core/audio/ttsNarrator';
 import { generateAndCacheAudiosForName } from '../../core/audio/customAudioCache';
@@ -493,7 +494,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   <div>
                     <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
-                      <span>Buka Semua Tingkat Iqro</span>
+                      <span>{ENABLE_IQRO_BEYOND_1 ? 'Buka Semua Tingkat Iqro' : 'Buka Semua Tahap Iqro 1'}</span>
                       {unlockedAllLevels ? (
                         <span className="text-[10px] font-black bg-duo-green text-white px-2 py-0.5 rounded-full">
                           Aktif
@@ -506,8 +507,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                     <div className="text-[11px] font-semibold text-slate-400">
                       {unlockedAllLevels
-                        ? 'Semua buku & stage terbuka bebas tanpa harus wisuda bertahap'
-                        : 'Buka Iqro 2, 3, dst tanpa perlu menyelesaikan Iqro 1 dahulu'}
+                        ? ENABLE_IQRO_BEYOND_1
+                          ? 'Semua buku & stage terbuka bebas tanpa harus wisuda bertahap'
+                          : 'Seluruh 22 tahapan di Iqro 1 terbuka bebas'
+                        : ENABLE_IQRO_BEYOND_1
+                        ? 'Buka Iqro 2, 3, dst tanpa perlu menyelesaikan Iqro 1 dahulu'
+                        : 'Buka semua 22 tahap Iqro 1 tanpa harus menyelesaikan urutan'}
                     </div>
                   </div>
                 </div>
