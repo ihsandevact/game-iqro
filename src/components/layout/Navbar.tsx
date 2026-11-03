@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flame, Gem, ChevronDown, BookOpen, Settings, Lock, Mic } from 'lucide-react';
+import { Flame, Gem, ChevronDown, BookOpen, Settings, Lock } from 'lucide-react';
 import { IqroLevelId } from '../../core/types/gameTypes';
 import { soundManager } from '../../core/audio/soundManager';
 
@@ -10,7 +10,6 @@ interface NavbarProps {
   gems: number;
   streak: number;
   onOpenSettings: () => void;
-  onOpenStudio?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -20,7 +19,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   gems,
   streak,
   onOpenSettings,
-  onOpenStudio,
 }) => {
   const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
 
@@ -124,20 +122,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Gem className="w-4 h-4 fill-duo-blue text-duo-blue" />
             <span>{gems}</span>
           </div>
-
-          {/* Studio Rekaman Qari Button */}
-          {onOpenStudio && (
-            <button
-              onClick={() => {
-                soundManager.playPop();
-                onOpenStudio();
-              }}
-              title="Studio Rekaman Qari (Iqro 1–6)"
-              className="p-2 sm:p-2.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 active:scale-90 border-2 border-emerald-300 text-emerald-600 transition shadow-sm"
-            >
-              <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 animate-pulse" />
-            </button>
-          )}
 
           {/* Settings & Controls Gear Button */}
           <button

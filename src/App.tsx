@@ -60,14 +60,7 @@ export function App() {
     }
   }, []);
 
-  const openStudio = () => {
-    setIsStudioOpen(true);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('studio', 'true');
-      window.history.pushState({ view: 'studio' }, '', url.toString());
-    }
-  };
+
 
   const closeStudio = () => {
     setIsStudioOpen(false);
@@ -158,7 +151,6 @@ export function App() {
         gems={progress.gemsTotal}
         streak={progress.streakDays}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenStudio={openStudio}
       />
 
       {/* Main Responsive Game Layout */}
