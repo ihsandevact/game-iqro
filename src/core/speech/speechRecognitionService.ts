@@ -2,10 +2,9 @@
  * Layanan Web Speech Recognition untuk Deteksi Suara & Pelafalan
  * 
  * Membungkus SpeechRecognition / webkitSpeechRecognition API
- * dengan penanganan siklus hidup yang aman, reaktif, dan ramah anak.
+ * dengan mode continuous listening, multi-alternatives, dan auto-resilience.
  */
 
-// Deklarasi interface SpeechRecognition untuk TypeScript
 interface IWindowSpeech extends Window {
   SpeechRecognition?: any;
   webkitSpeechRecognition?: any;
@@ -28,6 +27,7 @@ export class SpeechRecognitionService {
   private currentOnEnd: (() => void) | null = null;
   private currentOnError: ((err: string, code?: string) => void) | null = null;
   private isExplicitlyStopped = false;
+  private activeOptions: StartListeningOptions | null = null;
 
   public isSupported(): boolean {
     if (typeof window === 'undefined') return false;
@@ -40,7 +40,7 @@ export class SpeechRecognitionService {
   }
 
   /**
-   * Mulai mendengarkan suara pengguna melalui mikrofon
+   * Mulai mendengarkan suara pengguna melalui mikrofon secara terus-menerus
    */
   public startListening(options: StartListeningOptions): boolean {
     if (!this.isSupported()) {
@@ -50,92 +50,15 @@ export class SpeechRecognitionService {
       return false;
     }
 
-    // Bersihkan sesi sebelumnya jika masih ada
     this.stopListening();
 
     try {
-      const win = window as IWindowSpeech;
-      const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
-      this.recognition = new SpeechRecognitionClass();
+      this.activeOptions = options;
       this.isExplicitlyStopped = false;
-      this.state = 'listening';
       this.currentOnEnd = options.onEnd || null;
       this.currentOnError = options.onError || null;
 
-      // Konfigurasi
-      this.recognition.continuous = false;
-      this.recognition.interimResults = true;
-      this.recognition.maxAlternatives = 5;
-      this.recognition.lang = options.lang || 'id-ID'; // Default fonetik Indonesia
-
-      this.recognition.onresult = (event: any) => {
-        const transcripts: string[] = [];
-        let isFinal = false;
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const res = event.results[i];
-          if (res.isFinal) isFinal = true;
-
-          for (let j = 0; j < res.length; j++) {
-            const transcript = res[j].transcript;
-            if (transcript && !transcripts.includes(transcript)) {
-              transcripts.push(transcript);
-            }
-          }
-        }
-
-        if (transcripts.length > 0) {
-          options.onResult(transcripts, isFinal);
-        }
-      };
-
-      this.recognition.onerror = (event: any) => {
-        const error = event.error;
-        let userMessage = 'Terjadi kendala pada mikrofon.';
-
-        switch (error) {
-          case 'not-allowed':
-          case 'permission-denied':
-            userMessage = 'Izin mikrofon belum diberikan. Silakan izinkan akses mikrofon di browser.';
-            break;
-          case 'no-speech':
-            userMessage = 'Suara belum terdengar. Ayo coba ucapkan lebih dekat ke mikrofon ya!';
-            break;
-          case 'network':
-            userMessage = 'Koneksi pengenalan suara terputus. Pastikan perangkat terhubung internet.';
-            break;
-          case 'aborted':
-            // Dihentikan secara sengaja, abaikan pesan error
-            return;
-          default:
-            userMessage = `Kendala suara (${error}).`;
-            break;
-        }
-
-        this.state = 'error';
-        if (this.currentOnError && !this.isExplicitlyStopped) {
-          this.currentOnError(userMessage, error);
-        }
-      };
-
-      this.recognition.onend = () => {
-        this.clearTimer();
-        this.state = 'idle';
-        if (this.currentOnEnd && !this.isExplicitlyStopped) {
-          this.currentOnEnd();
-        }
-      };
-
-      this.recognition.start();
-
-      // Timeout penjaga agar mikrofon tidak menggantung jika anak terdiam lama
-      const timeout = options.timeoutMs || 8000;
-      this.silenceTimer = setTimeout(() => {
-        if (this.state === 'listening') {
-          this.stopListening();
-        }
-      }, timeout);
-
+      this.initRecognition(options);
       return true;
     } catch (e: any) {
       this.state = 'error';
@@ -144,6 +67,97 @@ export class SpeechRecognitionService {
       }
       return false;
     }
+  }
+
+  private initRecognition(options: StartListeningOptions): void {
+    const win = window as IWindowSpeech;
+    const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
+    this.recognition = new SpeechRecognitionClass();
+    this.state = 'listening';
+
+    // Konfigurasi sensitif tinggi
+    this.recognition.continuous = true; // Tetap dengarkan tanpa terputus di tengah jalan
+    this.recognition.interimResults = true; // Berikan hasil sementara secepat mungkin
+    this.recognition.maxAlternatives = 10; // Ambil hingga 10 hipotesis kata dari Google ASR
+    this.recognition.lang = options.lang || 'ar-SA'; // Default Arab untuk fonetik huruf Hijaiyah
+
+    this.recognition.onresult = (event: any) => {
+      const transcripts: string[] = [];
+      let isFinal = false;
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        if (res.isFinal) isFinal = true;
+
+        for (let j = 0; j < res.length; j++) {
+          const transcript = res[j].transcript;
+          if (transcript && !transcripts.includes(transcript.trim())) {
+            transcripts.push(transcript.trim());
+          }
+        }
+      }
+
+      if (transcripts.length > 0) {
+        options.onResult(transcripts, isFinal);
+      }
+    };
+
+    this.recognition.onerror = (event: any) => {
+      const error = event.error;
+      let userMessage = 'Terjadi kendala pada mikrofon.';
+
+      switch (error) {
+        case 'not-allowed':
+        case 'permission-denied':
+          userMessage = 'Izin mikrofon belum diberikan. Silakan klik ikon gembok di address bar browser dan izinkan mikrofon.';
+          this.isExplicitlyStopped = true;
+          break;
+        case 'no-speech':
+          // Pada mode continuous, no-speech bisa terjadi saat hening, jangan batalkan
+          return;
+        case 'network':
+          userMessage = 'Pengenalan suara memerlukan koneksi internet aktif.';
+          break;
+        case 'aborted':
+          return;
+        default:
+          userMessage = `Kendala suara (${error}).`;
+          break;
+      }
+
+      this.state = 'error';
+      if (this.currentOnError && !this.isExplicitlyStopped) {
+        this.currentOnError(userMessage, error);
+      }
+    };
+
+    this.recognition.onend = () => {
+      // Auto-reconnect jika belum dihentikan secara sengaja
+      if (!this.isExplicitlyStopped && this.state === 'listening' && this.activeOptions) {
+        try {
+          this.recognition.start();
+          return;
+        } catch {
+          // abaikan
+        }
+      }
+
+      this.clearTimer();
+      this.state = 'idle';
+      if (this.currentOnEnd && !this.isExplicitlyStopped) {
+        this.currentOnEnd();
+      }
+    };
+
+    this.recognition.start();
+
+    // Timeout penjaga maksimal (default 12 detik)
+    const timeout = options.timeoutMs || 12000;
+    this.silenceTimer = setTimeout(() => {
+      if (this.state === 'listening') {
+        this.stopListening();
+      }
+    }, timeout);
   }
 
   /**
@@ -157,7 +171,7 @@ export class SpeechRecognitionService {
       try {
         this.recognition.stop();
       } catch {
-        // abaikan jika sudah berhenti
+        // abaikan
       }
       this.recognition = null;
     }
