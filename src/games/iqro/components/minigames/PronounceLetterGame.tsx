@@ -49,10 +49,9 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [showDevicePicker, setShowDevicePicker] = useState<boolean>(false);
-  const [recognitionLang, setRecognitionLang] = useState<'ar-SA' | 'id-ID'>('ar-SA');
+  const [recognitionLang, setRecognitionLang] = useState<'ar-SA' | 'id-ID'>('id-ID');
 
   const isAdvancingRef = useRef(false);
-  const vocalValidationTimerRef = useRef<any>(null);
 
   // Ambil daftar perangkat mikrofon yang tersedia
   useEffect(() => {
@@ -100,10 +99,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   }, [question.id]);
 
   const stopAllAudioEngines = () => {
-    if (vocalValidationTimerRef.current) {
-      clearTimeout(vocalValidationTimerRef.current);
-      vocalValidationTimerRef.current = null;
-    }
     speechRecognitionService.stopListening();
     audioLevelDetector.stop();
   };
@@ -131,7 +126,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     setIsVocalDetected(false);
     setVocalBurstDetected(false);
 
-    // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time & Deteksi Suara Lokal (VAD)
+    // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time
     await audioLevelDetector.start({
       deviceId: selectedDeviceId,
       sensitivity: sensitivity,
@@ -141,20 +136,8 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           setIsVocalDetected(true);
         }
       },
-      onVocalBurst: (peakVol) => {
-        // Suara manusia nyata terdeteksi (> 220ms)!
+      onVocalBurst: () => {
         setVocalBurstDetected(true);
-        setFeedbackMsg(`Suara terdeteksi (Volume ${peakVol}%)! Menganalisis lafal...`);
-
-        // Jembatan Penyelamat Cerdas: Jika pengenalan cloud lambat/tidak membalas,
-        // validasi suara pengguna secara lokal setelah 1.2 detik!
-        if (!vocalValidationTimerRef.current) {
-          vocalValidationTimerRef.current = setTimeout(() => {
-            if (!isAdvancingRef.current && !isSuccess) {
-              handleSuccess(question.targetName);
-            }
-          }, 1200);
-        }
       },
       onError: (err) => {
         console.warn('VU meter error:', err);
@@ -181,7 +164,20 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         if (evaluation.isMatch) {
           handleSuccess(evaluation.matchedWord || latestSample);
         } else {
-          setFeedbackMsg(`Terdengar: "${latestSample}". Ayo lafalkan "${question.targetName}" lagi ya!`);
+          // Jika pengguna melafalkan huruf hijaiyah lain (misal di layar Ta tapi ucapkan Ba)
+          if (
+            evaluation.identifiedLetter &&
+            evaluation.identifiedLetter.toLowerCase() !== question.targetName.toLowerCase()
+          ) {
+            setFeedbackMsg(
+              `Terdengar: "${evaluation.identifiedLetter}". Ini huruf "${question.targetName}", ayo ucapkan "${question.targetName}" ya! 🎯`
+            );
+          } else {
+            setFeedbackMsg(
+              `Terdengar: "${latestSample}". Ayo lafalkan "${question.targetName}" lagi ya!`
+            );
+          }
+          setFailedAttempts((prev) => prev + 1);
         }
       },
       onError: (errMessage, errCode) => {
@@ -190,7 +186,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           audioLevelDetector.stop();
           setMicErrorMsg('Izin mikrofon belum aktif. Silakan izinkan akses mikrofon di browser.');
         } else if (errCode === 'no-speech') {
-          // Abaikan no-speech pada mode hybrid karena VAD lokal tetap mendengarkan
+          // Abaikan no-speech
         } else {
           setFeedbackMsg(errMessage);
         }
@@ -201,9 +197,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     });
 
     if (!started) {
-      // Jika SpeechRecognition tidak didukung (misal Firefox atau browser tertentu),
-      // VAD Web Audio lokal tetap aktif mendengarkan suara pengguna!
-      setFeedbackMsg('Mode deteksi suara langsung aktif. Silakan lafalkan huruf!');
+      setFeedbackMsg('Mode mikrofon aktif. Silakan lafalkan huruf!');
     }
   };
 
@@ -279,10 +273,10 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <span>Peka: {sensitivity === 'high' ? 'Sangat Tinggi ⚡' : sensitivity === 'normal' ? 'Sedang' : 'Rendah'}</span>
         </button>
 
-        {/* Toggle Bahasa Pengenalan (Arab / Indo) */}
+        {/* Toggle Bahasa Pengenalan (Indo / Arab) */}
         <button
           onClick={() => {
-            const next = recognitionLang === 'ar-SA' ? 'id-ID' : 'ar-SA';
+            const next = recognitionLang === 'id-ID' ? 'ar-SA' : 'id-ID';
             setRecognitionLang(next);
             if (isListening) handleStopListening();
           }}
@@ -290,7 +284,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           className="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2.5 py-1.5 rounded-2xl transition"
         >
           <Globe className="w-3.5 h-3.5 text-blue-500" />
-          <span>Mode: {recognitionLang === 'ar-SA' ? '🇸🇦 Arab' : '🇮🇩 Indo'}</span>
+          <span>Mode: {recognitionLang === 'id-ID' ? '🇮🇩 Indo (Peka)' : '🇸🇦 Arab'}</span>
         </button>
       </div>
 

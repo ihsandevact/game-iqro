@@ -17,25 +17,25 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'a': {
     letter: 'اَ',
     name: 'A',
-    aliasesLatin: ['a', 'aa', 'aaa', 'ah', 'alif', 'ha'],
-    aliasesArabic: ['ا', 'أ', 'آ', 'ء', 'ألف', 'أَ'],
+    aliasesLatin: ['a', 'aa', 'aaa', 'ah', 'alif', 'hamzah', 'hamza'],
+    aliasesArabic: ['ا', 'أ', 'آ', 'ء', 'ألف', 'أَ', 'همزة'],
   },
   'ba': {
     letter: 'بَ',
     name: 'Ba',
-    aliasesLatin: ['ba', 'baa', 'bah', 'mbak', 'bar', 'pa', 'pak'],
+    aliasesLatin: ['ba', 'baa', 'baaa', 'bah', 'mbak', 'bar', 'be'],
     aliasesArabic: ['ب', 'با', 'باء', 'به', 'بَ'],
   },
   'ta': {
     letter: 'تَ',
     name: 'Ta',
-    aliasesLatin: ['ta', 'taa', 'tah', 'tar', 'te'],
+    aliasesLatin: ['ta', 'taa', 'taaa', 'tah', 'tar', 'te', 'tak'],
     aliasesArabic: ['ت', 'تا', 'تاء', 'ته', 'تَ'],
   },
   'tsa': {
     letter: 'ثَ',
     name: 'Tsa',
-    aliasesLatin: ['tsa', 'tsaa', 'sa', 'saa', 'sah', 'ca', 'tha'],
+    aliasesLatin: ['tsa', 'tsaa', 'tsah', 'sa', 'saa', 'sah', 'tha'],
     aliasesArabic: ['ث', 'ثا', 'ثاء', 'ثه', 'ثَ'],
   },
 
@@ -43,19 +43,19 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'ja': {
     letter: 'جَ',
     name: 'Ja',
-    aliasesLatin: ['ja', 'jaa', 'jah', 'za', 'jim'],
+    aliasesLatin: ['ja', 'jaa', 'jah', 'je', 'jim', 'zhim'],
     aliasesArabic: ['ج', 'جا', 'جيم', 'جه', 'جَ'],
   },
   'ha': {
     letter: 'حَ',
     name: 'Ha',
-    aliasesLatin: ['ha', 'haa', 'hah', 'hha', 'he', 'kha'],
+    aliasesLatin: ['ha', 'haa', 'hah', 'hha', 'he'],
     aliasesArabic: ['ح', 'حا', 'حاء', 'حه', 'حَ'],
   },
   'kho': {
     letter: 'خَ',
     name: 'Kho',
-    aliasesLatin: ['kho', 'khoo', 'kha', 'khaa', 'co', 'ko', 'khok', 'khot'],
+    aliasesLatin: ['kho', 'khoo', 'kha', 'khaa', 'co', 'ko', 'khok', 'khot', 'khe'],
     aliasesArabic: ['خ', 'خا', 'خاء', 'خه', 'خَ'],
   },
 
@@ -64,24 +64,24 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
     letter: 'دَ',
     name: 'Da',
     aliasesLatin: ['da', 'daa', 'dah', 'dal', 'de'],
-    aliasesArabic: ['د', 'دا', 'دال', 'ده', 'دَ'],
+    aliasesArabic: ['د', 'دا', 'دal', 'ده', 'دَ'],
   },
   'dza': {
     letter: 'ذَ',
     name: 'Dza',
-    aliasesLatin: ['dza', 'dzaa', 'za', 'zaa', 'zah', 'dhal', 'zal'],
-    aliasesArabic: ['ذ', 'ذا', 'ذال', 'ذه', 'ذَ'],
+    aliasesLatin: ['dza', 'dzaa', 'dzah', 'za', 'zaa', 'zah', 'dhal', 'zal'],
+    aliasesArabic: ['ذ', 'ذا', 'ذal', 'ذه', 'ذَ'],
   },
   'ro': {
     letter: 'رَ',
     name: 'Ro',
-    aliasesLatin: ['ro', 'roo', 'ra', 'raa', 'roh', 'rah'],
+    aliasesLatin: ['ro', 'roo', 'ra', 'raa', 'roh', 'rah', 're'],
     aliasesArabic: ['ر', 'را', 'راء', 'ره', 'رَ'],
   },
   'za': {
     letter: 'زَ',
     name: 'Za',
-    aliasesLatin: ['za', 'zaa', 'zah', 'zay', 'zai'],
+    aliasesLatin: ['za', 'zaa', 'zah', 'zay', 'zai', 'ze'],
     aliasesArabic: ['ز', 'زا', 'زاي', 'زه', 'زَ'],
   },
 
@@ -95,7 +95,7 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'sya': {
     letter: 'شَ',
     name: 'Sya',
-    aliasesLatin: ['sya', 'syaa', 'sha', 'shaa', 'syah', 'syin'],
+    aliasesLatin: ['sya', 'syaa', 'syah', 'sha', 'shaa', 'shah', 'syin', 'shin'],
     aliasesArabic: ['ش', 'شا', 'شين', 'شه', 'شَ'],
   },
   'sho': {
@@ -115,7 +115,7 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'tho': {
     letter: 'طَ',
     name: 'Tho',
-    aliasesLatin: ['tho', 'thoo', 'to', 'too', 'toh', 'thod', 'tha'],
+    aliasesLatin: ['tho', 'thoo', 'to', 'too', 'toh', 'thod'],
     aliasesArabic: ['ط', 'طا', 'طاء', 'طه', 'طَ'],
   },
   'zho': {
@@ -127,7 +127,7 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   "'a": {
     letter: 'عَ',
     name: "'A",
-    aliasesLatin: ["'a", 'a', 'aa', 'ah', 'ain', 'nga', 'ngah', 'nga'],
+    aliasesLatin: ["'a", "'aa", "'ah", 'ain', 'ayn', 'nga', 'ngah', 'ngaa', 'aain'],
     aliasesArabic: ['ع', 'عا', 'عين', 'عه', 'عَ'],
   },
   'gho': {
@@ -141,25 +141,25 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'fa': {
     letter: 'فَ',
     name: 'Fa',
-    aliasesLatin: ['fa', 'faa', 'fah', 'pa', 've'],
+    aliasesLatin: ['fa', 'faa', 'fah', 'fe', 've', 'pa'],
     aliasesArabic: ['ف', 'فا', 'فاء', 'فه', 'فَ'],
   },
   'qo': {
     letter: 'قَ',
     name: 'Qo',
-    aliasesLatin: ['qo', 'qoo', 'ko', 'koo', 'qof', 'kof', 'kopl'],
+    aliasesLatin: ['qo', 'qoo', 'ko', 'koo', 'qof', 'kof'],
     aliasesArabic: ['ق', 'قا', 'قاف', 'قه', 'قَ'],
   },
   'ka': {
     letter: 'كَ',
     name: 'Ka',
-    aliasesLatin: ['ka', 'kaa', 'kah', 'kaf'],
+    aliasesLatin: ['ka', 'kaa', 'kah', 'kaf', 'ke'],
     aliasesArabic: ['ك', 'كا', 'كاف', 'كه', 'كَ'],
   },
   'la': {
     letter: 'لَ',
     name: 'La',
-    aliasesLatin: ['la', 'laa', 'lah', 'lam'],
+    aliasesLatin: ['la', 'laa', 'lah', 'lam', 'le'],
     aliasesArabic: ['ل', 'لا', 'لام', 'له', 'لَ'],
   },
 
@@ -167,25 +167,25 @@ export const HIJAIYAH_PHONETIC_DICT: Record<string, PhoneticEntry> = {
   'ma': {
     letter: 'مَ',
     name: 'Ma',
-    aliasesLatin: ['ma', 'maa', 'mah', 'mim'],
+    aliasesLatin: ['ma', 'maa', 'mah', 'mim', 'me'],
     aliasesArabic: ['م', 'ما', 'ميم', 'مه', 'مَ'],
   },
   'na': {
     letter: 'نَ',
     name: 'Na',
-    aliasesLatin: ['na', 'naa', 'nah', 'nun'],
+    aliasesLatin: ['na', 'naa', 'nah', 'nun', 'ne'],
     aliasesArabic: ['ن', 'نا', 'نون', 'نه', 'نَ'],
   },
   'wa': {
     letter: 'وَ',
     name: 'Wa',
-    aliasesLatin: ['wa', 'waa', 'wah', 'wau', 'wawu'],
+    aliasesLatin: ['wa', 'waa', 'wah', 'wau', 'wawu', 'we'],
     aliasesArabic: ['و', 'وا', 'واو', 'وه', 'وَ'],
   },
   'ha2': {
     letter: 'هَ',
     name: 'Ha',
-    aliasesLatin: ['ha', 'haa', 'hah', 'he'],
+    aliasesLatin: ['ha', 'haa', 'hah', 'he', 'ha besar'],
     aliasesArabic: ['ه', 'ها', 'هاء', 'هه', 'هَ'],
   },
   'ya': {
@@ -248,7 +248,41 @@ export interface PronunciationMatchResult {
   isMatch: boolean;
   confidence: number;
   matchedWord?: string;
+  identifiedLetter?: string;
   transcriptSample: string;
+}
+
+/**
+ * Mendeteksi apakah suatu kata/kalimat mengandung pengucapan huruf Hijaiyah tertentu.
+ * Mengembalikan nama kanonikal huruf (misal "Ba", "Ta", "Alif", dll) atau null.
+ */
+export function identifySpokenHijaiyahLetter(text: string): string | null {
+  const norm = normalizeSpokenText(text);
+  if (!norm) return null;
+
+  const words = norm.split(' ');
+
+  for (const [, entry] of Object.entries(HIJAIYAH_PHONETIC_DICT)) {
+    const normName = normalizeSpokenText(entry.name);
+    const normLetter = normalizeSpokenText(entry.letter);
+    const latinAliases = entry.aliasesLatin.map(normalizeSpokenText);
+    const arabicAliases = entry.aliasesArabic.map(normalizeSpokenText);
+    const allAliases = new Set([normName, normLetter, ...latinAliases, ...arabicAliases]);
+
+    // Cek kecocokan kalimat utuh
+    if (allAliases.has(norm) || allAliases.has(norm.replace(/\s+/g, ''))) {
+      return entry.name;
+    }
+
+    // Cek kecocokan per kata
+    for (const w of words) {
+      if (allAliases.has(w)) {
+        return entry.name;
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -268,7 +302,7 @@ export function evaluatePronunciation(
   const normTargetName = normalizeSpokenText(targetName);
   const normTargetLetter = normalizeSpokenText(targetLetter);
 
-  // Kumpulkan semua kandidat yang sah
+  // Kumpulkan semua kandidat yang sah untuk target ini
   const validCandidates = new Set<string>();
   if (normTargetName) validCandidates.add(normTargetName);
   if (normTargetLetter) validCandidates.add(normTargetLetter);
@@ -308,7 +342,7 @@ export function evaluatePronunciation(
       }
     }
 
-    // 2. Cek apakah ada kata dalam transkripsi yang persis cocok
+    // 2. Cek apakah ada kata dalam transkripsi yang persis cocok (Word boundary match)
     for (const word of words) {
       for (const cand of validCandidates) {
         if (word === cand) {
@@ -322,9 +356,10 @@ export function evaluatePronunciation(
       }
     }
 
-    // 3. Cek Substring Match (e.g. anak bilang "ini huruf ba" -> mengandung "ba")
+    // 3. Cek Substring Match HANYA untuk target majemuk / panjang (>= 4 karakter, misal "bata", "alif")
+    // Jangan izinkan pada suku kata 2 huruf agar kata seperti "tidak" tidak salah mencocokkan "da"
     for (const cand of validCandidates) {
-      if (cand.length >= 2 && normalized.includes(cand)) {
+      if (cand.length >= 4 && normalized.includes(cand)) {
         return {
           isMatch: true,
           confidence: 0.85,
@@ -334,16 +369,17 @@ export function evaluatePronunciation(
       }
     }
 
-    // 4. Cek Fuzzy Levenshtein (jarak 1 karakter, e.g. "bah" vs "ba", "pa" vs "ba")
+    // 4. Cek Fuzzy Levenshtein HANYA untuk kata yang panjang (>= 4 karakter, misal "hamzah" vs "hamsah")
+    // DILARANG keras pada kata 1-3 huruf karena akan menukar huruf konsonan (e.g. 'ba' vs 'ta' berjarak 1)
     for (const word of words) {
       for (const cand of validCandidates) {
-        if (cand.length >= 2 && word.length >= 2) {
+        if (cand.length >= 4 && word.length >= 4) {
           const dist = getLevenshteinDistance(word, cand);
           if (dist <= 1) {
             return {
               isMatch: true,
               confidence: 0.8,
-              matchedWord: word,
+              matchedWord: cand,
               transcriptSample: rawTranscript,
             };
           }
@@ -352,9 +388,13 @@ export function evaluatePronunciation(
     }
   }
 
+  // Deteksi huruf lain yang mungkin diucapkan secara salah (misal dilayar TA tapi ucapkan BA)
+  const identifiedOther = transcripts.length > 0 ? identifySpokenHijaiyahLetter(transcripts[0]) : null;
+
   return {
     isMatch: false,
     confidence: 0,
+    identifiedLetter: identifiedOther || undefined,
     transcriptSample: transcripts[0] || '',
   };
 }
