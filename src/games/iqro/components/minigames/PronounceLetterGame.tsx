@@ -105,8 +105,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
   const playPromptAudio = () => {
     soundManager.playPop();
-    const letter = question.targetName || question.targetLetter;
-    ttsNarrator.speak(`Ayo ucapkan huruf: ${letter}!`);
+    ttsNarrator.speak('Ucapkan huruf di bawah ini!');
   };
 
   const playExampleAudio = () => {
@@ -290,7 +289,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
       {/* Spoken Prompt Title */}
       <h2 className="text-xl sm:text-2xl font-black text-slate-800 text-center mb-3 px-2">
-        {question.promptText || `Ayo ucapkan huruf: ${question.targetName}!`}
+        {question.promptText || 'Ucapkan huruf di bawah ini!'}
       </h2>
 
       {/* Kartu Huruf Hijaiyah Besar 3D */}

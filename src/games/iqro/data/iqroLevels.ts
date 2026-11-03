@@ -52,7 +52,7 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q3_speak',
                 type: 'pronounce',
-                promptText: 'Ayo ucapkan huruf: BA!',
+                promptText: 'Ucapkan huruf di bawah ini!',
                 targetLetter: 'بَ',
                 targetName: 'Ba',
                 options: []
@@ -91,7 +91,7 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q5_speak',
                 type: 'pronounce',
-                promptText: 'Ayo ucapkan huruf: TA!',
+                promptText: 'Ucapkan huruf di bawah ini!',
                 targetLetter: 'تَ',
                 targetName: 'Ta',
                 options: []
@@ -170,7 +170,7 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q9_speak',
                 type: 'pronounce',
-                promptText: 'Ayo ucapkan huruf: TSA!',
+                promptText: 'Ucapkan huruf di bawah ini!',
                 targetLetter: 'ثَ',
                 targetName: 'Tsa',
                 options: []
@@ -210,7 +210,7 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q10_speak',
                 type: 'pronounce',
-                promptText: 'Ayo ucapkan huruf: JA!',
+                promptText: 'Ucapkan huruf di bawah ini!',
                 targetLetter: 'جَ',
                 targetName: 'Ja',
                 options: []
@@ -240,7 +240,7 @@ export const IQRO_BOOKS: IqroBook[] = [
               {
                 id: 'q11_speak',
                 type: 'pronounce',
-                promptText: 'Ayo ucapkan huruf: KHO!',
+                promptText: 'Ucapkan huruf di bawah ini!',
                 targetLetter: 'خَ',
                 targetName: 'Kho',
                 options: []
