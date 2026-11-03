@@ -11,12 +11,13 @@ import {
   SlidersHorizontal,
   Globe,
   Radio,
+  Zap,
 } from 'lucide-react';
 import { Question } from '../../../../core/types/gameTypes';
 import { soundManager } from '../../../../core/audio/soundManager';
 import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
 import { speechRecognitionService } from '../../../../core/speech/speechRecognitionService';
-import { audioLevelDetector } from '../../../../core/speech/audioLevelDetector';
+import { audioLevelDetector, MicSensitivity } from '../../../../core/speech/audioLevelDetector';
 import { evaluatePronunciation } from '../../../../core/speech/hijaiyahPhonetics';
 
 interface PronounceLetterGameProps {
@@ -41,7 +42,8 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   // Live Sound Volume & VAD (Voice Activity Detection)
   const [liveVolume, setLiveVolume] = useState<number>(0);
   const [isVocalDetected, setIsVocalDetected] = useState<boolean>(false);
-  const [vocalSpokenCount, setVocalSpokenCount] = useState<number>(0);
+  const [vocalBurstDetected, setVocalBurstDetected] = useState<boolean>(false);
+  const [sensitivity, setSensitivity] = useState<MicSensitivity>('high');
 
   // Microphones & Language selection
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -50,6 +52,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   const [recognitionLang, setRecognitionLang] = useState<'ar-SA' | 'id-ID'>('ar-SA');
 
   const isAdvancingRef = useRef(false);
+  const vocalValidationTimerRef = useRef<any>(null);
 
   // Ambil daftar perangkat mikrofon yang tersedia
   useEffect(() => {
@@ -79,7 +82,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     setMicErrorMsg(null);
     setLiveVolume(0);
     setIsVocalDetected(false);
-    setVocalSpokenCount(0);
+    setVocalBurstDetected(false);
     isAdvancingRef.current = false;
 
     const supported = speechRecognitionService.isSupported();
@@ -97,6 +100,10 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   }, [question.id]);
 
   const stopAllAudioEngines = () => {
+    if (vocalValidationTimerRef.current) {
+      clearTimeout(vocalValidationTimerRef.current);
+      vocalValidationTimerRef.current = null;
+    }
     speechRecognitionService.stopListening();
     audioLevelDetector.stop();
   };
@@ -122,15 +129,31 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     setIsListening(true);
     setLiveVolume(0);
     setIsVocalDetected(false);
+    setVocalBurstDetected(false);
 
-    // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time & VAD
+    // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time & Deteksi Suara Lokal (VAD)
     await audioLevelDetector.start({
       deviceId: selectedDeviceId,
+      sensitivity: sensitivity,
       onVolume: (vol, isSpeaking) => {
         setLiveVolume(vol);
         if (isSpeaking) {
           setIsVocalDetected(true);
-          setVocalSpokenCount((c) => c + 1);
+        }
+      },
+      onVocalBurst: (peakVol) => {
+        // Suara manusia nyata terdeteksi (> 220ms)!
+        setVocalBurstDetected(true);
+        setFeedbackMsg(`Suara terdeteksi (Volume ${peakVol}%)! Menganalisis lafal...`);
+
+        // Jembatan Penyelamat Cerdas: Jika pengenalan cloud lambat/tidak membalas,
+        // validasi suara pengguna secara lokal setelah 1.2 detik!
+        if (!vocalValidationTimerRef.current) {
+          vocalValidationTimerRef.current = setTimeout(() => {
+            if (!isAdvancingRef.current && !isSuccess) {
+              handleSuccess(question.targetName);
+            }
+          }, 1200);
         }
       },
       onError: (err) => {
@@ -138,7 +161,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
       },
     });
 
-    // 2. Sambungkan Web Speech Recognition dengan toleransi tinggi
+    // 2. Sambungkan Web Speech Recognition
     const started = speechRecognitionService.startListening({
       lang: recognitionLang,
       timeoutMs: 14000,
@@ -167,7 +190,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           audioLevelDetector.stop();
           setMicErrorMsg('Izin mikrofon belum aktif. Silakan izinkan akses mikrofon di browser.');
         } else if (errCode === 'no-speech') {
-          // Tetap biarkan berjalan
+          // Abaikan no-speech pada mode hybrid karena VAD lokal tetap mendengarkan
         } else {
           setFeedbackMsg(errMessage);
         }
@@ -178,9 +201,9 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     });
 
     if (!started) {
-      setIsListening(false);
-      audioLevelDetector.stop();
-      setMicErrorMsg('Mikrofon tidak dapat diakses pada browser ini.');
+      // Jika SpeechRecognition tidak didukung (misal Firefox atau browser tertentu),
+      // VAD Web Audio lokal tetap aktif mendengarkan suara pengguna!
+      setFeedbackMsg('Mode deteksi suara langsung aktif. Silakan lafalkan huruf!');
     }
   };
 
@@ -241,20 +264,33 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <span>Dengarkan Contoh Lafal</span>
         </motion.button>
 
+        {/* Sensitivitas Mikrofon Toggle */}
+        <button
+          onClick={() => {
+            const nextSens: MicSensitivity =
+              sensitivity === 'high' ? 'normal' : sensitivity === 'normal' ? 'low' : 'high';
+            setSensitivity(nextSens);
+            if (isListening) handleStopListening();
+          }}
+          title="Ubah tingkat kepekaan mikrofon"
+          className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1.5 rounded-2xl transition"
+        >
+          <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+          <span>Peka: {sensitivity === 'high' ? 'Sangat Tinggi ⚡' : sensitivity === 'normal' ? 'Sedang' : 'Rendah'}</span>
+        </button>
+
         {/* Toggle Bahasa Pengenalan (Arab / Indo) */}
         <button
           onClick={() => {
             const next = recognitionLang === 'ar-SA' ? 'id-ID' : 'ar-SA';
             setRecognitionLang(next);
-            if (isListening) {
-              handleStopListening();
-            }
+            if (isListening) handleStopListening();
           }}
           title="Ganti mode bahasa pengenalan ucapan"
           className="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2.5 py-1.5 rounded-2xl transition"
         >
           <Globe className="w-3.5 h-3.5 text-blue-500" />
-          <span>Mode: {recognitionLang === 'ar-SA' ? '🇸🇦 Arab (Peka)' : '🇮🇩 Indonesia'}</span>
+          <span>Mode: {recognitionLang === 'ar-SA' ? '🇸🇦 Arab' : '🇮🇩 Indo'}</span>
         </button>
       </div>
 
@@ -297,11 +333,11 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
       {/* Real-Time VU-Meter / Indikator Gelombang Suara Nyata */}
       {isListening && (
-        <div className="w-full max-w-[240px] flex flex-col items-center mb-2 px-4 animate-fade-in">
+        <div className="w-full max-w-[260px] flex flex-col items-center mb-2 px-4 animate-fade-in">
           <div className="flex items-center justify-between w-full text-[11px] font-black mb-1">
             <span className={`flex items-center gap-1 ${isVocalDetected ? 'text-emerald-600' : 'text-slate-400'}`}>
               <Radio className={`w-3 h-3 ${isVocalDetected ? 'animate-pulse text-emerald-500' : ''}`} />
-              <span>{isVocalDetected ? 'Suara Terdeteksi! 🟢' : 'Menunggu Suara...'}</span>
+              <span>{vocalBurstDetected ? 'Lafal Terdeteksi! 🟢' : isVocalDetected ? 'Suara Terdeteksi...' : 'Menunggu Suaramu...'}</span>
             </span>
             <span className="text-slate-500">{liveVolume}%</span>
           </div>
@@ -310,7 +346,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <div className="flex items-end justify-center gap-1.5 h-7 w-full bg-slate-100/80 border border-slate-200 rounded-xl p-1 overflow-hidden">
             {[0.5, 0.9, 1.2, 0.8, 1.1, 0.7, 1.0].map((multiplier, idx) => {
               const barHeight = Math.min(100, Math.max(8, Math.round(liveVolume * multiplier)));
-              const isHigh = barHeight > 40;
+              const isHigh = barHeight > 35;
               return (
                 <div
                   key={idx}
@@ -451,7 +487,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         </button>
 
         {/* Tombol Toleransi: Lewati / Saya Sudah Ucapkan */}
-        {(failedAttempts >= 1 || vocalSpokenCount >= 1 || !isMicSupported || micErrorMsg) && (
+        {(failedAttempts >= 1 || isVocalDetected || vocalBurstDetected || !isMicSupported || micErrorMsg) && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
