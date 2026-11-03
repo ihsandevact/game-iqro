@@ -8,6 +8,7 @@ import { BoniMascot } from '../../../components/mascot/BoniMascot';
 import { ListenTapGame } from './minigames/ListenTapGame';
 import { BubblePopGame } from './minigames/BubblePopGame';
 import { LetterTracingGame } from './minigames/LetterTracingGame';
+import { PronounceLetterGame } from './minigames/PronounceLetterGame';
 import { CelebrationModal } from './CelebrationModal';
 
 interface StageModalProps {
@@ -121,6 +122,12 @@ export const StageModal: React.FC<StageModalProps> = ({
                   />
                 ) : currentQuestion.type === 'tracing' ? (
                   <LetterTracingGame
+                    question={currentQuestion}
+                    onCorrect={handleQuestionCorrect}
+                    childName={childName}
+                  />
+                ) : currentQuestion.type === 'pronounce' ? (
+                  <PronounceLetterGame
                     question={currentQuestion}
                     onCorrect={handleQuestionCorrect}
                     childName={childName}

@@ -1,6 +1,6 @@
 export type IqroLevelId = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type StageType = 'learn' | 'listen-tap' | 'bubble-pop' | 'tracing' | 'matching' | 'boss-challenge';
+export type StageType = 'learn' | 'listen-tap' | 'bubble-pop' | 'tracing' | 'matching' | 'boss-challenge' | 'pronounce';
 
 export interface Question {
   id: string;
@@ -16,6 +16,7 @@ export interface Question {
   }[];
   hint?: string;
   tracingPaths?: string[];   // SVG paths for letter tracing
+  expectedPronunciations?: string[]; // Kata kunci fonetik alternatif khusus
 }
 
 export interface Stage {

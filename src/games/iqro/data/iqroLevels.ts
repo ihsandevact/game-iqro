@@ -50,6 +50,14 @@ export const IQRO_BOOKS: IqroBook[] = [
                 hint: 'A berdiri tegak lurus seperti pensil!'
               },
               {
+                id: 'q3_speak',
+                type: 'pronounce',
+                promptText: 'Ayo ucapkan huruf: BA!',
+                targetLetter: 'بَ',
+                targetName: 'Ba',
+                options: []
+              },
+              {
                 id: 'q3',
                 type: 'tracing',
                 promptText: 'Ayo coba tulis huruf BA!',
@@ -79,6 +87,14 @@ export const IQRO_BOOKS: IqroBook[] = [
                   { letter: 'بَ', name: 'Ba', isCorrect: false },
                   { letter: 'اَ', name: 'A', isCorrect: false }
                 ]
+              },
+              {
+                id: 'q5_speak',
+                type: 'pronounce',
+                promptText: 'Ayo ucapkan huruf: TA!',
+                targetLetter: 'تَ',
+                targetName: 'Ta',
+                options: []
               },
               {
                 id: 'q5',
@@ -152,6 +168,14 @@ export const IQRO_BOOKS: IqroBook[] = [
                 ]
               },
               {
+                id: 'q9_speak',
+                type: 'pronounce',
+                promptText: 'Ayo ucapkan huruf: TSA!',
+                targetLetter: 'ثَ',
+                targetName: 'Tsa',
+                options: []
+              },
+              {
                 id: 'q9',
                 type: 'listen-tap',
                 promptText: 'Pilih huruf TSA!',
@@ -184,6 +208,14 @@ export const IQRO_BOOKS: IqroBook[] = [
             lettersCovered: ['جَ', 'حَ'],
             questions: [
               {
+                id: 'q10_speak',
+                type: 'pronounce',
+                promptText: 'Ayo ucapkan huruf: JA!',
+                targetLetter: 'جَ',
+                targetName: 'Ja',
+                options: []
+              },
+              {
                 id: 'q10',
                 type: 'listen-tap',
                 promptText: 'Cari huruf JA!',
@@ -205,6 +237,14 @@ export const IQRO_BOOKS: IqroBook[] = [
             stageNumber: 2,
             lettersCovered: ['حَ', 'خَ'],
             questions: [
+              {
+                id: 'q11_speak',
+                type: 'pronounce',
+                promptText: 'Ayo ucapkan huruf: KHO!',
+                targetLetter: 'خَ',
+                targetName: 'Kho',
+                options: []
+              },
               {
                 id: 'q11',
                 type: 'listen-tap',
