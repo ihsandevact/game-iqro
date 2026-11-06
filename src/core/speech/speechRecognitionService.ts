@@ -75,17 +75,17 @@ export class SpeechRecognitionService {
     this.recognition = new SpeechRecognitionClass();
     this.state = 'listening';
 
-    // Konfigurasi sensitif tinggi
-    this.recognition.continuous = true; // Tetap dengarkan tanpa terputus di tengah jalan
+    // Konfigurasi sensitif tinggi untuk pengucapan kata/huruf tunggal
+    this.recognition.continuous = false; // Mode single-utterance: respon super cepat (200ms) tanpa buffering tertunda
     this.recognition.interimResults = true; // Berikan hasil sementara secepat mungkin
     this.recognition.maxAlternatives = 10; // Ambil hingga 10 hipotesis kata dari Google ASR
-    this.recognition.lang = options.lang || 'ar-SA'; // Default Arab untuk fonetik huruf Hijaiyah
+    this.recognition.lang = options.lang || 'id-ID'; // Default bahasa Indonesia untuk santri lokal
 
     this.recognition.onresult = (event: any) => {
       const transcripts: string[] = [];
       let isFinal = false;
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const res = event.results[i];
         if (res.isFinal) isFinal = true;
 

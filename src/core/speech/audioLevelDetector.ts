@@ -44,14 +44,14 @@ export class AudioLevelDetector {
       const constraints: MediaStreamConstraints = {
         audio: options.deviceId
           ? {
-              deviceId: { exact: options.deviceId },
-              echoCancellation: true,
-              noiseSuppression: true,
+              deviceId: { ideal: options.deviceId },
+              echoCancellation: false,
+              noiseSuppression: false,
               autoGainControl: true,
             }
           : {
-              echoCancellation: true,
-              noiseSuppression: true,
+              echoCancellation: false,
+              noiseSuppression: false,
               autoGainControl: true,
             },
       };

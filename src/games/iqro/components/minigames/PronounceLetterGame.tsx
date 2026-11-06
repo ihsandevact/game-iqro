@@ -365,18 +365,22 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
             <Check className="w-4 h-4 stroke-[3]" />
             <span>{feedbackMsg}</span>
           </motion.div>
-        ) : feedbackMsg ? (
-          <p className="text-xs sm:text-sm font-bold text-slate-700 animate-fade-in">
-            {feedbackMsg}
-          </p>
-        ) : lastHeard ? (
-          <p className="text-xs sm:text-sm font-bold text-slate-600">
-            Terdengar: <span className="text-emerald-700 font-black">"{lastHeard}"</span>
-          </p>
         ) : (
-          <p className="text-xs sm:text-sm font-semibold text-slate-400">
-            Tekan mikrofon di bawah lalu lafalkan <b>"{question.targetName}"</b> dengan lantang!
-          </p>
+          <div className="flex flex-col items-center gap-1">
+            {lastHeard && (
+              <div className="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-2xs">
+                <span>Didengar mikrofon:</span>
+                <span className="text-emerald-700 font-black">"{lastHeard}"</span>
+              </div>
+            )}
+            <p className={`text-xs sm:text-sm font-bold animate-fade-in ${failedAttempts > 0 ? 'text-amber-700' : 'text-slate-700'}`}>
+              {feedbackMsg || (
+                <span>
+                  Tekan mikrofon di bawah lalu lafalkan <b>"{question.targetName}"</b> dengan lantang!
+                </span>
+              )}
+            </p>
+          </div>
         )}
       </div>
 
