@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Mic,
   Volume2,
@@ -8,16 +8,13 @@ import {
   RotateCcw,
   AlertCircle,
   ArrowRight,
-  SlidersHorizontal,
   Globe,
   Radio,
-  Zap,
 } from 'lucide-react';
 import { Question } from '../../../../core/types/gameTypes';
 import { soundManager } from '../../../../core/audio/soundManager';
 import { ttsNarrator } from '../../../../core/audio/ttsNarrator';
 import { speechRecognitionService } from '../../../../core/speech/speechRecognitionService';
-import { audioLevelDetector, MicSensitivity } from '../../../../core/speech/audioLevelDetector';
 import { evaluatePronunciation } from '../../../../core/speech/hijaiyahPhonetics';
 
 interface PronounceLetterGameProps {
@@ -26,12 +23,15 @@ interface PronounceLetterGameProps {
   childName?: string;
 }
 
+type SpeechStage = 'waiting' | 'sound_detected' | 'speech_detected' | 'evaluating';
+
 export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   question,
   onCorrect,
   childName = 'Faqih',
 }) => {
   const [isListening, setIsListening] = useState(false);
+  const [speechStage, setSpeechStage] = useState<SpeechStage>('waiting');
   const [isSuccess, setIsSuccess] = useState(false);
   const [lastHeard, setLastHeard] = useState<string>('');
   const [feedbackMsg, setFeedbackMsg] = useState<string>('');
@@ -39,38 +39,25 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   const [isMicSupported, setIsMicSupported] = useState(true);
   const [micErrorMsg, setMicErrorMsg] = useState<string | null>(null);
 
-  // Live Sound Volume & VAD (Voice Activity Detection)
-  const [liveVolume, setLiveVolume] = useState<number>(0);
+  // VAD flags for button & indicator triggers
   const [isVocalDetected, setIsVocalDetected] = useState<boolean>(false);
   const [vocalBurstDetected, setVocalBurstDetected] = useState<boolean>(false);
-  const [sensitivity, setSensitivity] = useState<MicSensitivity>('high');
-
-  // Microphones & Language selection
-  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
-  const [showDevicePicker, setShowDevicePicker] = useState<boolean>(false);
   const [recognitionLang, setRecognitionLang] = useState<'ar-SA' | 'id-ID'>('id-ID');
 
   const isAdvancingRef = useRef(false);
-
-  // Ambil daftar perangkat mikrofon yang tersedia
-  useEffect(() => {
-    audioLevelDetector.getAvailableMicrophones().then((devices) => {
-      setAudioDevices(devices);
-    });
-  }, []);
+  const evaluatingTimerRef = useRef<any>(null);
 
   // Inisialisasi & reset setiap kali soal berganti
   useEffect(() => {
     stopAllAudioEngines();
 
     setIsListening(false);
+    setSpeechStage('waiting');
     setIsSuccess(false);
     setLastHeard('');
     setFeedbackMsg('');
     setFailedAttempts(0);
     setMicErrorMsg(null);
-    setLiveVolume(0);
     setIsVocalDetected(false);
     setVocalBurstDetected(false);
     isAdvancingRef.current = false;
@@ -85,13 +72,13 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
     return () => {
       clearTimeout(timer);
+      if (evaluatingTimerRef.current) clearTimeout(evaluatingTimerRef.current);
       stopAllAudioEngines();
     };
   }, [question.id]);
 
   const stopAllAudioEngines = () => {
     speechRecognitionService.stopListening();
-    audioLevelDetector.stop();
   };
 
   const playPromptAudio = () => {
@@ -105,41 +92,45 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     ttsNarrator.speakLetter(letter);
   };
 
-  const handleStartListening = async () => {
+  const handleStartListening = () => {
     if (isSuccess || isAdvancingRef.current) return;
 
+    // Hentikan suara narator sebelumnya agar tidak masuk ke mikrofon
+    ttsNarrator.stop();
     soundManager.playPop();
+
     setMicErrorMsg(null);
     setFeedbackMsg('Mendengarkan suaramu...');
     setIsListening(true);
-    setLiveVolume(0);
+    setSpeechStage('waiting');
     setIsVocalDetected(false);
     setVocalBurstDetected(false);
 
-    // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time
-    await audioLevelDetector.start({
-      deviceId: selectedDeviceId || undefined,
-      sensitivity: sensitivity,
-      onVolume: (vol, isSpeaking) => {
-        setLiveVolume(vol);
-        if (isSpeaking) {
-          setIsVocalDetected(true);
-        }
-      },
-      onVocalBurst: () => {
-        setVocalBurstDetected(true);
-      },
-      onError: (err) => {
-        console.warn('VU meter error:', err);
-      },
-    });
-
-    // 2. Sambungkan Web Speech Recognition
+    // Sambungkan Web Speech Recognition langsung tanpa konflik getUserMedia
     const started = speechRecognitionService.startListening({
       lang: recognitionLang,
-      timeoutMs: 14000,
+      timeoutMs: 60000,
+      onAudioStart: () => {
+        setSpeechStage('waiting');
+      },
+      onSoundStart: () => {
+        setSpeechStage('sound_detected');
+        setIsVocalDetected(true);
+      },
+      onSpeechStart: () => {
+        setSpeechStage('speech_detected');
+        setIsVocalDetected(true);
+        setVocalBurstDetected(true);
+      },
+      onSpeechEnd: () => {
+        setSpeechStage('evaluating');
+      },
       onResult: (transcripts) => {
         if (transcripts.length === 0) return;
+        setSpeechStage('evaluating');
+        setIsVocalDetected(true);
+        setVocalBurstDetected(true);
+
         const latestSample = transcripts[0];
         setLastHeard(latestSample);
 
@@ -168,13 +159,19 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
             );
           }
           setFailedAttempts((prev) => prev + 1);
+
+          // Kembalikan status ke listening aktif setelah 1.5 detik
+          if (evaluatingTimerRef.current) clearTimeout(evaluatingTimerRef.current);
+          evaluatingTimerRef.current = setTimeout(() => {
+            setSpeechStage((prev) => (prev === 'evaluating' ? 'waiting' : prev));
+          }, 1500);
         }
       },
       onError: (errMessage, errCode) => {
         if (errCode === 'not-allowed' || errCode === 'permission-denied') {
           setIsListening(false);
-          audioLevelDetector.stop();
-          setMicErrorMsg('Izin mikrofon belum aktif. Silakan izinkan akses mikrofon di browser.');
+          setSpeechStage('waiting');
+          setMicErrorMsg('Izin mikrofon belum aktif. Silakan klik ikon gembok di address bar browser dan izinkan mikrofon.');
         } else if (errCode === 'no-speech') {
           // Abaikan no-speech
         } else {
@@ -182,19 +179,21 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         }
       },
       onEnd: () => {
-        // Biarkan ditangani oleh pengguna atau timer
+        // Biarkan auto-restart service yang menangani
       },
     });
 
     if (!started) {
-      setFeedbackMsg('Mode mikrofon aktif. Silakan lafalkan huruf!');
+      setIsListening(false);
+      setSpeechStage('waiting');
+      setFeedbackMsg('Mikrofon tidak dapat dimulai. Periksa izin browser.');
     }
   };
 
   const handleStopListening = () => {
     stopAllAudioEngines();
     setIsListening(false);
-    setLiveVolume(0);
+    setSpeechStage('waiting');
   };
 
   const handleSuccess = (matchedWord: string) => {
@@ -203,6 +202,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
     stopAllAudioEngines();
     setIsListening(false);
+    setSpeechStage('waiting');
     setIsSuccess(true);
     setFeedbackMsg(`Masya Allah! Pengucapan "${matchedWord}" sangat tepat! ⭐`);
     soundManager.playCorrect();
@@ -229,13 +229,9 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     handleSuccess(question.targetName);
   };
 
-  const currentDeviceLabel = selectedDeviceId
-    ? audioDevices.find((d) => d.deviceId === selectedDeviceId)?.label || 'Mikrofon Pilihan'
-    : 'Default Sistem (Otomatis)';
-
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto py-1">
-      {/* Baris Atas: Contoh Lafal & Pengaturan Sensitivitas/Bahasa */}
+      {/* Baris Atas: Contoh Lafal & Pengaturan Bahasa */}
       <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
         {/* Tombol Contoh Suara */}
         <motion.button
@@ -247,21 +243,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <Volume2 className="w-4 h-4 text-emerald-600 animate-pulse" />
           <span>Dengarkan Contoh Lafal</span>
         </motion.button>
-
-        {/* Sensitivitas Mikrofon Toggle */}
-        <button
-          onClick={() => {
-            const nextSens: MicSensitivity =
-              sensitivity === 'high' ? 'normal' : sensitivity === 'normal' ? 'low' : 'high';
-            setSensitivity(nextSens);
-            if (isListening) handleStopListening();
-          }}
-          title="Ubah tingkat kepekaan mikrofon"
-          className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1.5 rounded-2xl transition"
-        >
-          <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-          <span>Peka: {sensitivity === 'high' ? 'Sangat Tinggi ⚡' : sensitivity === 'normal' ? 'Sedang' : 'Rendah'}</span>
-        </button>
 
         {/* Toggle Bahasa Pengenalan (Indo / Arab) */}
         <button
@@ -315,29 +296,71 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         </div>
       </motion.div>
 
-      {/* Real-Time VU-Meter / Indikator Gelombang Suara Nyata */}
+      {/* Real-Time Status & Indikator Gelombang Suara (Equalizer Visualizer) */}
       {isListening && (
-        <div className="w-full max-w-[260px] flex flex-col items-center mb-2 px-4 animate-fade-in">
-          <div className="flex items-center justify-between w-full text-[11px] font-black mb-1">
-            <span className={`flex items-center gap-1 ${isVocalDetected ? 'text-emerald-600' : 'text-slate-400'}`}>
-              <Radio className={`w-3 h-3 ${isVocalDetected ? 'animate-pulse text-emerald-500' : ''}`} />
-              <span>{vocalBurstDetected ? 'Lafal Terdeteksi! 🟢' : isVocalDetected ? 'Suara Terdeteksi...' : 'Menunggu Suaramu...'}</span>
+        <div className="w-full max-w-[280px] flex flex-col items-center mb-2 px-4 animate-fade-in">
+          <div className="flex items-center justify-between w-full text-[11px] font-black mb-1.5">
+            <span
+              className={`flex items-center gap-1.5 transition-colors ${
+                speechStage === 'speech_detected' || speechStage === 'evaluating'
+                  ? 'text-emerald-600'
+                  : speechStage === 'sound_detected'
+                  ? 'text-teal-600'
+                  : 'text-blue-500'
+              }`}
+            >
+              <Radio
+                className={`w-3.5 h-3.5 ${
+                  speechStage !== 'waiting' ? 'animate-pulse text-emerald-500' : 'text-blue-400'
+                }`}
+              />
+              <span>
+                {speechStage === 'evaluating'
+                  ? 'Menganalisis Lafal... 🔍'
+                  : speechStage === 'speech_detected'
+                  ? 'Lafal Terdeteksi! 🟢'
+                  : speechStage === 'sound_detected'
+                  ? 'Suara Masuk... 🔊'
+                  : 'Menunggu Suaramu... 🎙️'}
+              </span>
             </span>
-            <span className="text-slate-500">{liveVolume}%</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              {speechStage !== 'waiting' ? 'Aktif' : 'Standby'}
+            </span>
           </div>
 
-          {/* Baris Gelombang Suara (Real-time equalizer bars) */}
-          <div className="flex items-end justify-center gap-1.5 h-7 w-full bg-slate-100/80 border border-slate-200 rounded-xl p-1 overflow-hidden">
-            {[0.5, 0.9, 1.2, 0.8, 1.1, 0.7, 1.0].map((multiplier, idx) => {
-              const barHeight = Math.min(100, Math.max(8, Math.round(liveVolume * multiplier)));
-              const isHigh = barHeight > 35;
+          {/* Baris Gelombang Suara Dinamis */}
+          <div className="flex items-end justify-center gap-1.5 h-8 w-full bg-slate-100/90 border border-slate-200 rounded-xl p-1.5 overflow-hidden">
+            {[0, 1, 2, 3, 4, 5, 6].map((barIdx) => {
+              const isSpeech = speechStage === 'speech_detected' || speechStage === 'evaluating';
+              const isSound = speechStage === 'sound_detected';
+
               return (
-                <div
-                  key={idx}
-                  className={`w-4 rounded-md transition-all duration-75 ${
-                    isHigh ? 'bg-emerald-500 shadow-xs' : barHeight > 15 ? 'bg-teal-400' : 'bg-slate-300'
-                  }`}
-                  style={{ height: `${barHeight}%` }}
+                <motion.div
+                  key={barIdx}
+                  animate={
+                    isSpeech
+                      ? {
+                          height: ['40%', '95%', '60%', '100%', '45%'],
+                          backgroundColor: '#10b981',
+                        }
+                      : isSound
+                      ? {
+                          height: ['25%', '65%', '35%', '70%', '30%'],
+                          backgroundColor: '#14b8a6',
+                        }
+                      : {
+                          height: ['15%', '28%', '15%'],
+                          backgroundColor: '#94a3b8',
+                        }
+                  }
+                  transition={{
+                    repeat: Infinity,
+                    duration: isSpeech ? 0.35 + barIdx * 0.05 : isSound ? 0.5 + barIdx * 0.07 : 1.2 + barIdx * 0.15,
+                    ease: 'easeInOut',
+                  }}
+                  className="w-4 rounded-md shadow-2xs"
+                  style={{ minHeight: '6px' }}
                 />
               );
             })}
@@ -416,67 +439,12 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
       </div>
 
       <span className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">
-        {isSuccess ? 'Lafal Tepat!' : isListening ? 'Sedang Mendengarkan...' : 'Ketuk untuk Bicara'}
+        {isSuccess
+          ? 'Lafal Tepat!'
+          : isListening
+          ? 'Sedang Mendengarkan (Katakan Sekarang!)'
+          : 'Ketuk untuk Bicara'}
       </span>
-
-      {/* Selector Pemilih Mikrofon (Jika di PC terdapat Virtual Mic vs Realtek Mic) */}
-      {audioDevices.length > 1 && (
-        <div className="relative mb-3">
-          <button
-            onClick={() => setShowDevicePicker(!showDevicePicker)}
-            className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl transition max-w-xs truncate"
-          >
-            <SlidersHorizontal className="w-3 h-3 text-slate-400 shrink-0" />
-            <span className="truncate">Mic: {currentDeviceLabel}</span>
-          </button>
-
-          <AnimatePresence>
-            {showDevicePicker && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 5 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-white border-2 border-slate-200 rounded-2xl shadow-xl p-2 z-50 text-left"
-              >
-                <div className="text-[10px] font-black text-slate-400 uppercase px-2 py-1">
-                  Pilih Mikrofon Aktif:
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedDeviceId('');
-                    setShowDevicePicker(false);
-                    if (isListening) handleStopListening();
-                  }}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold transition truncate mb-1 ${
-                    selectedDeviceId === ''
-                      ? 'bg-emerald-50 text-emerald-700 font-black'
-                      : 'text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  ⭐ Default Sistem (Otomatis)
-                </button>
-                {audioDevices.map((dev) => (
-                  <button
-                    key={dev.deviceId}
-                    onClick={() => {
-                      setSelectedDeviceId(dev.deviceId);
-                      setShowDevicePicker(false);
-                      if (isListening) handleStopListening();
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold transition truncate ${
-                      dev.deviceId === selectedDeviceId
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    {dev.label || `Mikrofon (${dev.deviceId.slice(0, 5)}...)`}
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
 
       {/* Fallback & Tombol Toleransi */}
       <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-2 px-4">
@@ -489,7 +457,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         </button>
 
         {/* Tombol Toleransi: Lewati / Saya Sudah Ucapkan */}
-        {(failedAttempts >= 1 || isVocalDetected || vocalBurstDetected || !isMicSupported || micErrorMsg) && (
+        {(failedAttempts >= 1 || isVocalDetected || vocalBurstDetected || isListening || !isMicSupported || micErrorMsg) && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
