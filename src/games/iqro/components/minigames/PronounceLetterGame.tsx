@@ -30,6 +30,8 @@ interface PronounceLetterGameProps {
 
 type CaptureStage = 'idle' | 'waiting' | 'capturing' | 'evaluating';
 
+const DEFAULT_BARS = [12, 12, 12, 12, 12, 12, 12, 12, 12];
+
 export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   question,
   onCorrect,
@@ -38,6 +40,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   const [stage, setStage] = useState<CaptureStage>('idle');
   const [isSuccess, setIsSuccess] = useState(false);
   const [liveVolume, setLiveVolume] = useState<number>(0);
+  const [spectrumBars, setSpectrumBars] = useState<number[]>(DEFAULT_BARS);
   const [speechProgressMs, setSpeechProgressMs] = useState<number>(0);
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
@@ -63,7 +66,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
   const isListening = stage === 'waiting' || stage === 'capturing';
 
-  // Muat daftar mikrofon saat komponen aktif
   const refreshDevices = async () => {
     const devices = await acousticPronunciationEngine.getAvailableMicrophones();
     if (isMountedRef.current) {
@@ -73,6 +75,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
   useEffect(() => {
     isMountedRef.current = true;
+    acousticPronunciationEngine.ensureAudioContextUnlocked();
     refreshDevices();
     return () => {
       isMountedRef.current = false;
@@ -86,6 +89,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     setStage('idle');
     setIsSuccess(false);
     setLiveVolume(0);
+    setSpectrumBars(DEFAULT_BARS);
     setSpeechProgressMs(0);
     setLastScore(null);
     setRecordedAudioUrl(null);
@@ -102,16 +106,16 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
       question.targetLetter
     );
 
-    // Mainkan instruksi suara narator lalu otomatis aktifkan mikrofon setelah instruksi selesai
+    // Mainkan instruksi suara narator lalu otomatis aktifkan mikrofon
     const promptTimer = setTimeout(() => {
       playPromptAudio();
-    }, 300);
+    }, 250);
 
     autoStartTimerRef.current = setTimeout(() => {
       if (isMountedRef.current && !isAdvancingRef.current) {
         startAcousticListening();
       }
-    }, 1850);
+    }, 1600);
 
     return () => {
       clearTimeout(promptTimer);
@@ -145,7 +149,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   };
 
   const playExampleAudio = () => {
-    // Jika sedang mendengarkan, hentikan sejenak agar suara speaker tidak masuk ke mic
+    acousticPronunciationEngine.ensureAudioContextUnlocked();
     const wasListening = isListening;
     if (wasListening) {
       acousticPronunciationEngine.stopSession();
@@ -161,7 +165,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         if (isMountedRef.current && !isAdvancingRef.current) {
           startAcousticListening();
         }
-      }, 1200);
+      }, 1150);
     }
   };
 
@@ -187,15 +191,16 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     onMicReady: (label: string) => {
       if (!isMountedRef.current) return;
       setActiveMicLabel(label);
+      setStage('waiting');
       refreshDevices();
     },
-    onVolume: (vol: number, speaking: boolean) => {
+    onVolume: (vol: number, speaking: boolean, bars: number[]) => {
       if (!isMountedRef.current) return;
       const now = performance.now();
-      // Throttle state update ke ~25fps agar UI tetap sangat mulus
-      if (now - lastVolumeUpdateRef.current >= 38 || speaking) {
+      if (now - lastVolumeUpdateRef.current >= 32 || speaking) {
         lastVolumeUpdateRef.current = now;
         setLiveVolume(vol);
+        setSpectrumBars(bars);
       }
     },
     onSpeechStart: () => {
@@ -211,6 +216,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
       if (!isMountedRef.current || isAdvancingRef.current) return;
       setStage('evaluating');
       setLiveVolume(0);
+      setSpectrumBars(DEFAULT_BARS);
       setSpeechProgressMs(0);
       setLastScore(result.score);
       if (result.recordedAudioUrl) {
@@ -225,18 +231,19 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         setFeedbackMsg(result.feedback);
         setStage('idle');
 
-        // Aktifkan kembali mikrofon secara otomatis setelah 1.1 detik agar anak bisa langsung coba lagi
+        // Aktifkan kembali mikrofon otomatis setelah 900ms agar bisa langsung bicara lagi
         retryListenTimerRef.current = setTimeout(() => {
           if (isMountedRef.current && !isAdvancingRef.current) {
             startAcousticListening(true);
           }
-        }, 1100);
+        }, 900);
       }
     },
     onError: (errMessage: string) => {
       if (!isMountedRef.current) return;
       setStage('idle');
       setLiveVolume(0);
+      setSpectrumBars(DEFAULT_BARS);
       setMicErrorMsg(errMessage);
     },
   });
@@ -253,7 +260,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
       retryListenTimerRef.current = null;
     }
 
-    // Hentikan suara narator agar tidak terekam mikrofon
+    acousticPronunciationEngine.ensureAudioContextUnlocked();
     ttsNarrator.stop();
     setMicErrorMsg(null);
     if (!keepFeedback) {
@@ -261,6 +268,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     }
     setStage('waiting');
     setLiveVolume(0);
+    setSpectrumBars(DEFAULT_BARS);
     setSpeechProgressMs(0);
 
     await acousticPronunciationEngine.startSession(getSessionOptions());
@@ -268,22 +276,15 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
   const handleMicButtonClick = () => {
     if (isSuccess || isAdvancingRef.current) return;
+    acousticPronunciationEngine.ensureAudioContextUnlocked();
     soundManager.playPop();
 
     if (stage === 'capturing') {
-      // Jika sedang merekam suara dan diklik, langsung evaluasi
       acousticPronunciationEngine.triggerManualFinish(getSessionOptions());
       return;
     }
 
-    if (stage === 'waiting') {
-      stopAllEngines();
-      setStage('idle');
-      setLiveVolume(0);
-      setFeedbackMsg('Mikrofon dijeda. Ketuk mikrofon untuk mulai bicara.');
-      return;
-    }
-
+    // Selalu mulai/segarkan sesi mikrofon saat tombol diklik
     startAcousticListening(false);
   };
 
@@ -327,7 +328,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     <div className="flex flex-col items-center w-full max-w-md mx-auto py-1">
       {/* Baris Atas: Contoh Lafal, Sensitivitas DSP & Putar Suaramu */}
       <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
-        {/* Tombol Contoh Suara Qari */}
         <motion.button
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
@@ -338,15 +338,13 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <span>Dengarkan Contoh Lafal</span>
         </motion.button>
 
-        {/* Tombol Sensitivitas Pre-Amp DSP */}
         <button
           onClick={() => {
+            acousticPronunciationEngine.ensureAudioContextUnlocked();
             const nextSens: MicSensitivityLevel =
               sensitivity === 'high' ? 'normal' : sensitivity === 'normal' ? 'low' : 'high';
             setSensitivity(nextSens);
-            if (isListening) {
-              setTimeout(() => startAcousticListening(true), 80);
-            }
+            setTimeout(() => startAcousticListening(true), 60);
           }}
           title="Ubah penguatan tangkapan suara mikrofon (DSP Gain)"
           className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2.5 py-1.5 rounded-2xl transition"
@@ -362,7 +360,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           </span>
         </button>
 
-        {/* Tombol Putar Rekaman Suara Anak (Voice Mirror) */}
         {recordedAudioUrl && (
           <motion.button
             initial={{ scale: 0.9, opacity: 0 }}
@@ -429,7 +426,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
             className={`flex items-center gap-1.5 transition-colors ${
               stage === 'capturing' || isSuccess
                 ? 'text-emerald-600'
-                : stage === 'waiting' && liveVolume > 12
+                : stage === 'waiting' && liveVolume > 10
                 ? 'text-teal-600'
                 : stage === 'waiting'
                 ? 'text-blue-600'
@@ -454,7 +451,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
                 ? 'Suara Masuk! Mendengarkan... 🟢'
                 : stage === 'waiting'
                 ? 'Mikrofon Aktif — Ucapkan Sekarang! 🎙️'
-                : 'Mikrofon Siap'}
+                : 'Ketuk Mikrofon untuk Bicara'}
             </span>
           </span>
           <span className="text-slate-500 font-mono text-[10px]">
@@ -463,32 +460,31 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         </div>
 
         {/* 9-Bar Real-time Acoustic Spectrum Visualizer */}
-        <div className="flex items-end justify-center gap-1.5 h-8 w-full bg-slate-100/90 border border-slate-200 rounded-xl p-1.5 overflow-hidden relative">
-          {[0.55, 0.8, 1.05, 0.75, 1.2, 0.85, 1.1, 0.7, 0.95].map((mult, idx) => {
-            const baseHeight = isListening ? Math.max(12, Math.min(100, Math.round(liveVolume * mult))) : 12;
-            const isCapturing = stage === 'capturing' || baseHeight >= 30;
+        <div className="flex items-end justify-center gap-1.5 h-9 w-full bg-slate-100/90 border border-slate-200 rounded-xl p-1.5 overflow-hidden relative">
+          {spectrumBars.map((barHeight, idx) => {
+            const h = isSuccess ? 88 : isListening ? Math.max(12, Math.min(100, barHeight)) : 12;
+            const isHigh = stage === 'capturing' || h >= 28;
             return (
               <div
                 key={idx}
                 className={`w-3.5 rounded-md transition-all duration-75 ${
                   isSuccess
                     ? 'bg-emerald-500'
-                    : isCapturing
+                    : isHigh
                     ? 'bg-emerald-500 shadow-xs'
-                    : baseHeight > 16
+                    : h > 14
                     ? 'bg-teal-400'
                     : 'bg-slate-300'
                 }`}
-                style={{ height: `${isSuccess ? 85 : baseHeight}%` }}
+                style={{ height: `${h}%` }}
               />
             );
           })}
 
-          {/* Progress Bar Durasi Tangkap Suara */}
           {stage === 'capturing' && (
             <div
               className="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-75"
-              style={{ width: `${Math.min(100, Math.round((speechProgressMs / 800) * 100))}%` }}
+              style={{ width: `${Math.min(100, Math.round((speechProgressMs / 750) * 100))}%` }}
             />
           )}
         </div>
@@ -508,7 +504,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
         ) : (
           <p
             className={`text-xs sm:text-sm font-bold animate-fade-in ${
-               stage === 'capturing'
+              stage === 'capturing'
                 ? 'text-emerald-700 font-black'
                 : failedAttempts > 0
                 ? 'text-amber-700'
@@ -578,10 +574,13 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           : 'Ketuk untuk Bicara'}
       </span>
 
-      {/* Pemilih Perangkat Mikrofon (Bermanfaat jika PC memiliki beberapa input audio) */}
+      {/* Pemilih Perangkat Mikrofon */}
       <div className="relative mb-3">
         <button
-          onClick={() => setShowDevicePicker(!showDevicePicker)}
+          onClick={() => {
+            acousticPronunciationEngine.ensureAudioContextUnlocked();
+            setShowDevicePicker(!showDevicePicker);
+          }}
           className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl transition max-w-xs truncate"
         >
           <SlidersHorizontal className="w-3 h-3 text-slate-400 shrink-0" />
@@ -603,7 +602,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
                 onClick={() => {
                   setSelectedDeviceId('');
                   setShowDevicePicker(false);
-                  setTimeout(() => startAcousticListening(true), 80);
+                  setTimeout(() => startAcousticListening(true), 60);
                 }}
                 className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold transition truncate mb-1 ${
                   selectedDeviceId === ''
@@ -611,7 +610,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
                     : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                ⭐ Otomatis (Hindari Stereo Mix)
+                ⭐ Default Sistem
               </button>
               {audioDevices.map((dev) => (
                 <button
@@ -619,7 +618,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
                   onClick={() => {
                     setSelectedDeviceId(dev.deviceId);
                     setShowDevicePicker(false);
-                    setTimeout(() => startAcousticListening(true), 80);
+                    setTimeout(() => startAcousticListening(true), 60);
                   }}
                   className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold transition truncate ${
                     dev.deviceId === selectedDeviceId
@@ -645,7 +644,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
           <span>Ulangi Instruksi</span>
         </button>
 
-        {/* Tombol Toleransi Ramah Anak */}
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

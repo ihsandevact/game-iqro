@@ -2,13 +2,13 @@
  * Acoustic DSP + MFCC / Mel-Spectrogram Pronunciation Engine
  *
  * Mesin deteksi pengucapan huruf Hijaiyah 100% lokal berbasis Web Audio API (PCM + FFT).
- * Tidak bergantung pada webkitSpeechRecognition / server Google, sehingga:
- * - Pasti berjalan di semua browser (Chrome, Brave, Edge, Firefox, Safari, Android, iOS)
- * - Dilengkapi Hardware DSP Pre-Amplifier (GainNode 6x) sebelum AnalyserNode agar mikrofon
- *   laptop yang pelan tetap terbaca jelas dan responsif
- * - Menggunakan skala desibel logaritmik (dBFS) + Adaptive Noise Floor (SNR)
- * - Mengekstrak 12 pita Mel-Frequency, Onset ZCR, Spectral Centroid, dan Formant Ratio
- * - Mencocokkan profil akustik suara pemain dengan file referensi /audio/letters/*.mp3
+ * Dirancang anti-deadlock terhadap kebijakan Autoplay Chrome:
+ * - Menggunakan Shared Persistent AudioContext yang di-unlock otomatis saat klik pertama di halaman
+ * - TIDAK PERNAH melakukan blocking `await audioContext.resume()` yang bisa menggantung di setTimeout
+ * - Membaca gelombang suara secara paralel dari 3 jalur sekaligus:
+ *   1. Raw Time-Domain Analyser (identik dengan QariStudioDashboard `rms * 500`)
+ *   2. Pre-Amplified Analyser (GainNode 4.5x untuk mikrofon laptop yang pelan)
+ *   3. ScriptProcessorNode PCM langsung dari thread audio hardware (`inputBuffer.getChannelData(0)`)
  */
 
 import { LETTER_AUDIO_MAP } from '../audio/ttsNarrator';
@@ -19,14 +19,15 @@ export interface AcousticFrame {
   rms: number;
   db: number;
   volumePercent: number;
-  zcr: number; // Zero-Crossing Rate (0.0 - 1.0)
-  centroidHz: number; // Spectral Centroid dalam Hz
-  melBands: number[]; // 12 pita frekuensi skala Mel (normalized 0..1)
-  vocalEnergyRatio: number; // Rasio energi pita vokal manusia (100Hz - 3500Hz)
-  f1Energy: number; // Formant 1 region (300Hz - 850Hz)
-  f2LowEnergy: number; // Formant 2 back/rounded vowel 'O'/'U' (850Hz - 1350Hz)
-  f2HighEnergy: number; // Formant 2 front/open vowel 'A'/'I' (1350Hz - 2400Hz)
-  highFreqEnergy: number; // Konsonan desis/letup tajam (2200Hz - 6500Hz)
+  spectrumBars: number[]; // 9 bar tinggi spektrum real-time (10..100)
+  zcr: number;
+  centroidHz: number;
+  melBands: number[];
+  vocalEnergyRatio: number;
+  f1Energy: number;
+  f2LowEnergy: number;
+  f2HighEnergy: number;
+  highFreqEnergy: number;
 }
 
 export interface ReferenceAcousticProfile {
@@ -37,13 +38,13 @@ export interface ReferenceAcousticProfile {
   onsetZcr: number;
   onsetCentroidHz: number;
   nucleusCentroidHz: number;
-  f2Ratio: number; // f2High / (f2Low + f2High) -> membedakan vokal 'A' vs 'O'
-  highFreqOnsetRatio: number; // membedakan konsonan tajam (Ta, Tsa, Sa) vs bilabial (Ba, Ma, Wa)
+  f2Ratio: number;
+  highFreqOnsetRatio: number;
 }
 
 export interface AcousticEvaluationResult {
   isMatch: boolean;
-  score: number; // 0 - 100
+  score: number;
   durationMs: number;
   peakVolume: number;
   recordedAudioUrl: string | null;
@@ -57,20 +58,18 @@ export interface StartAcousticSessionOptions {
   targetName: string;
   targetLetter: string;
   attemptNumber?: number;
-  onMicReady?: (micLabel: string) => void;
-  onVolume: (volumePercent: number, isSpeaking: boolean, decibels: number) => void;
+  onMicReady?: (micLabel: string, isContextRunning: boolean) => void;
+  onVolume: (volumePercent: number, isSpeaking: boolean, spectrumBars: number[]) => void;
   onSpeechStart: () => void;
   onSpeechProgress?: (durationMs: number) => void;
   onEvaluation: (result: AcousticEvaluationResult) => void;
   onError?: (errMessage: string) => void;
 }
 
-// Batas frekuensi 12 pita skala Mel (Hz) yang mencakup rentang vokal & konsonan manusia
 const MEL_BAND_EDGES_HZ = [
   90, 180, 300, 450, 650, 900, 1250, 1700, 2300, 3100, 4200, 5600, 7500,
 ];
 
-// Klasifikasi fonetik huruf Hijaiyah untuk validasi konsonan & vokal
 const ROUNDED_VOWEL_O_LETTERS = new Set([
   'kho', 'kha', 'ro', 'ra', 'sho', 'shod', 'dho', 'dhod', 'tho', 'thod', 'zho', 'dhzo', 'gho', 'ghoin', 'qo', 'qof',
 ]);
@@ -84,10 +83,13 @@ const SOFT_VOICED_ONSET_LETTERS = new Set([
 ]);
 
 export class AcousticPronunciationEngine {
-  private audioContext: AudioContext | null = null;
-  private analyser: AnalyserNode | null = null;
+  // Shared AudioContext yang tetap hidup (tidak di-close) agar status 'running' tidak hilang
+  private sharedAudioContext: AudioContext | null = null;
+  private rawAnalyser: AnalyserNode | null = null;
+  private boostedAnalyser: AnalyserNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private preampGainNode: GainNode | null = null;
+  private scriptProcessorNode: ScriptProcessorNode | null = null;
   private silentGainNode: GainNode | null = null;
   private stream: MediaStream | null = null;
   private mediaRecorder: MediaRecorder | null = null;
@@ -95,14 +97,16 @@ export class AcousticPronunciationEngine {
   private lastRecordedUrl: string | null = null;
   private activeMicLabel = '';
 
+  // Nilai RMS real-time yang ditangkap langsung oleh ScriptProcessorNode dari hardware buffer
+  private latestHardwarePcmRms = 0;
+  private latestHardwareZcr = 0;
+
   private animFrameId: number | null = null;
   private isRunning = false;
 
-  // Kalibrasi Noise Floor Adaptif
-  private noiseFloorRms = 0.0025;
+  private noiseFloorRms = 0.002;
   private frameCounter = 0;
 
-  // Pelacak Voice Activity Detection (VAD) & Frame Akustik
   private isCurrentlySpeaking = false;
   private speechStartTime: number | null = null;
   private lastVoiceActiveTime: number = 0;
@@ -111,12 +115,41 @@ export class AcousticPronunciationEngine {
   private peakVolumeInSession = 0;
   private isEvaluating = false;
 
-  // Cache profil referensi MP3 agar tidak perlu decode ulang
   private referenceCache = new Map<string, ReferenceAcousticProfile>();
 
+  constructor() {
+    if (typeof window !== 'undefined') {
+      const unlockHandler = () => {
+        this.ensureAudioContextUnlocked();
+      };
+      window.addEventListener('pointerdown', unlockHandler, { passive: true });
+      window.addEventListener('touchstart', unlockHandler, { passive: true });
+      window.addEventListener('keydown', unlockHandler, { passive: true });
+    }
+  }
+
   /**
-   * Ambil daftar mikrofon yang tersedia di perangkat
+   * Pastikan shared AudioContext dibuat dan di-resume saat ada interaksi pengguna
    */
+  public ensureAudioContextUnlocked(): AudioContext | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      if (!this.sharedAudioContext || this.sharedAudioContext.state === 'closed') {
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        this.sharedAudioContext = new AudioCtx();
+      }
+      if (this.sharedAudioContext.state === 'suspended') {
+        // JANGAN di-await agar tidak pernah memblokir eksekusi!
+        this.sharedAudioContext.resume().catch(() => {});
+      }
+      return this.sharedAudioContext;
+    } catch {
+      return null;
+    }
+  }
+
   public async getAvailableMicrophones(): Promise<MediaDeviceInfo[]> {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) {
       return [];
@@ -133,9 +166,6 @@ export class AcousticPronunciationEngine {
     return this.activeMicLabel;
   }
 
-  /**
-   * Preload & analisis file audio referensi untuk huruf target
-   */
   public async preloadReferenceProfile(
     targetName: string,
     targetLetter: string
@@ -174,9 +204,6 @@ export class AcousticPronunciationEngine {
     }
   }
 
-  /**
-   * Ekstrak profil akustik dari buffer PCM (untuk file referensi MP3)
-   */
   private extractProfileFromPcm(
     letterKey: string,
     pcm: Float32Array,
@@ -193,7 +220,6 @@ export class AcousticPronunciationEngine {
       highFreqRatio: number;
     }[] = [];
 
-    // Cari peak RMS untuk menentukan ambang batas bagian aktif suara
     let maxRms = 0;
     for (let offset = 0; offset + frameSize <= pcm.length; offset += hopSize) {
       let sumSq = 0;
@@ -322,7 +348,7 @@ export class AcousticPronunciationEngine {
   }
 
   /**
-   * Mulai mendengarkan mikrofon dengan Preamp Gain + PCM/FFT Analyser langsung
+   * Mulai sesi tangkapan suara real-time (Anti-Deadlock & Multi-Sensor)
    */
   public async startSession(options: StartAcousticSessionOptions): Promise<boolean> {
     this.stopSession();
@@ -334,85 +360,106 @@ export class AcousticPronunciationEngine {
       return false;
     }
 
+    // 1. Inisialisasi / ambil Shared AudioContext SEBELUM await apa pun!
+    const ctx = this.ensureAudioContextUnlocked();
+    if (!ctx) {
+      if (options.onError) {
+        options.onError('Gagal menyiapkan sistem pengolahan suara (AudioContext).');
+      }
+      return false;
+    }
+
     // Preload profil referensi di latar belakang
     this.preloadReferenceProfile(options.targetName, options.targetLetter).catch(() => {});
 
     try {
-      let chosenDeviceId = options.deviceId;
-
-      // Jika belum ada deviceId spesifik, cek apakah ada mikrofon asli (hindari Stereo Mix)
-      if (!chosenDeviceId) {
-        const devices = await this.getAvailableMicrophones();
-        const realMic = devices.find(
-          (d) =>
-            d.label &&
-            !d.label.toLowerCase().includes('stereo mix') &&
-            !d.label.toLowerCase().includes('what u hear')
-        );
-        if (realMic && devices.some((d) => d.label.toLowerCase().includes('stereo mix'))) {
-          chosenDeviceId = realMic.deviceId;
-        }
-      }
-
-      const preferredConstraints: MediaStreamConstraints = {
+      // Gunakan konfigurasi yang terbukti bekerja di QariStudioDashboard
+      const constraints: MediaStreamConstraints = {
         audio: {
-          autoGainControl: true,
           echoCancellation: true,
-          noiseSuppression: false,
-          ...(chosenDeviceId ? { deviceId: { ideal: chosenDeviceId } } : {}),
+          noiseSuppression: true,
+          autoGainControl: true,
+          ...(options.deviceId ? { deviceId: { exact: options.deviceId } } : {}),
         },
       };
 
       try {
-        this.stream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
+        this.stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch {
         this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
 
+      // Coba resume lagi secara non-blocking (JANGAN di-await!)
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+
       const track = this.stream.getAudioTracks()[0];
-      this.activeMicLabel = track?.label || 'Mikrofon Aktif';
-      if (options.onMicReady) {
-        options.onMicReady(this.activeMicLabel);
-      }
-
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.audioContext = new AudioCtx();
-
-      if (this.audioContext.state === 'suspended') {
-        await this.audioContext.resume();
-      }
+      this.activeMicLabel = track?.label || 'Mikrofon Bawaan';
 
       const sensitivity = options.sensitivity || 'high';
 
-      // DSP Pre-Amplifier GainNode untuk mengangkat sinyal mikrofon laptop yang kecil
-      this.preampGainNode = this.audioContext.createGain();
+      this.sourceNode = ctx.createMediaStreamSource(this.stream);
+
+      // JALUR 1: Raw Analyser langsung dari sourceNode (100% identik dengan QariStudioDashboard)
+      this.rawAnalyser = ctx.createAnalyser();
+      this.rawAnalyser.fftSize = 512;
+      this.rawAnalyser.smoothingTimeConstant = 0.15;
+      this.sourceNode.connect(this.rawAnalyser);
+
+      // JALUR 2: Pre-Amplified Analyser (4.5x boost untuk mikrofon laptop yang pelan)
+      this.preampGainNode = ctx.createGain();
       this.preampGainNode.gain.value =
-        sensitivity === 'high' ? 5.5 : sensitivity === 'normal' ? 3.2 : 1.6;
+        sensitivity === 'high' ? 4.5 : sensitivity === 'normal' ? 2.8 : 1.5;
 
-      this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 1024;
-      this.analyser.minDecibels = -95;
-      this.analyser.maxDecibels = -18;
-      this.analyser.smoothingTimeConstant = 0.18;
+      this.boostedAnalyser = ctx.createAnalyser();
+      this.boostedAnalyser.fftSize = 1024;
+      this.boostedAnalyser.minDecibels = -95;
+      this.boostedAnalyser.maxDecibels = -18;
+      this.boostedAnalyser.smoothingTimeConstant = 0.15;
 
-      this.sourceNode = this.audioContext.createMediaStreamSource(this.stream);
+      // JALUR 3: ScriptProcessorNode membaca PCM langsung dari hardware buffer
+      this.latestHardwarePcmRms = 0;
+      this.latestHardwareZcr = 0;
+      try {
+        this.scriptProcessorNode = ctx.createScriptProcessor(1024, 1, 1);
+        this.scriptProcessorNode.onaudioprocess = (event: AudioProcessingEvent) => {
+          if (!this.isRunning) return;
+          const input = event.inputBuffer.getChannelData(0);
+          let sumSq = 0;
+          let zc = 0;
+          for (let i = 0; i < input.length; i++) {
+            const s = input[i];
+            sumSq += s * s;
+            if (i > 0 && ((input[i - 1] >= 0 && s < 0) || (input[i - 1] < 0 && s >= 0))) {
+              zc++;
+            }
+          }
+          this.latestHardwarePcmRms = Math.sqrt(sumSq / input.length);
+          this.latestHardwareZcr = zc / input.length;
+        };
+      } catch {
+        this.scriptProcessorNode = null;
+      }
 
-      // PENTING: Rantai Audio: Source -> PreampGain -> Analyser -> SilentGain -> Destination
-      // Menjamin Chrome memompa buffer PCM aktif setiap frame tanpa mengeluarkan bunyi ke speaker
-      this.silentGainNode = this.audioContext.createGain();
+      this.silentGainNode = ctx.createGain();
       this.silentGainNode.gain.value = 0.00001;
 
       this.sourceNode.connect(this.preampGainNode);
-      this.preampGainNode.connect(this.analyser);
-      this.analyser.connect(this.silentGainNode);
-      this.silentGainNode.connect(this.audioContext.destination);
+      this.preampGainNode.connect(this.boostedAnalyser);
 
-      // Siapkan MediaRecorder untuk merekam suara anak (Voice Mirror & Anti-Garbage-Collection)
+      if (this.scriptProcessorNode) {
+        this.boostedAnalyser.connect(this.scriptProcessorNode);
+        this.scriptProcessorNode.connect(this.silentGainNode);
+      } else {
+        this.boostedAnalyser.connect(this.silentGainNode);
+      }
+      this.silentGainNode.connect(ctx.destination);
+
+      // Mulai MediaRecorder untuk Voice Mirror
       this.startMediaRecorder(this.stream);
 
-      // Reset state deteksi
+      // Reset state sesi
       this.isRunning = true;
       this.isCurrentlySpeaking = false;
       this.isEvaluating = false;
@@ -421,50 +468,53 @@ export class AcousticPronunciationEngine {
       this.consecutiveVoiceFrames = 0;
       this.capturedFrames = [];
       this.peakVolumeInSession = 0;
-      this.noiseFloorRms = 0.003;
+      this.noiseFloorRms = 0.002;
       this.frameCounter = 0;
 
-      // Ambang batas volume (dalam skala logaritmik 0-100) yang sangat peka
-      const volumeThreshold = sensitivity === 'high' ? 14 : sensitivity === 'normal' ? 22 : 32;
+      if (options.onMicReady) {
+        options.onMicReady(this.activeMicLabel, ctx.state === 'running');
+      }
 
-      const floatTimeData = new Float32Array(this.analyser.fftSize);
-      const byteTimeData = new Uint8Array(this.analyser.fftSize);
-      const byteFreqData = new Uint8Array(this.analyser.frequencyBinCount);
-      const sampleRate = this.audioContext.sampleRate || 44100;
+      const volumeThreshold = sensitivity === 'high' ? 12 : sensitivity === 'normal' ? 20 : 30;
+
+      const rawByteTimeData = new Uint8Array(this.rawAnalyser.fftSize);
+      const boostedFloatTimeData = new Float32Array(this.boostedAnalyser.fftSize);
+      const boostedByteTimeData = new Uint8Array(this.boostedAnalyser.fftSize);
+      const boostedByteFreqData = new Uint8Array(this.boostedAnalyser.frequencyBinCount);
+      const sampleRate = ctx.sampleRate || 44100;
 
       const processAudioLoop = () => {
-        if (!this.isRunning || !this.analyser || this.isEvaluating) return;
-
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-          this.audioContext.resume().catch(() => {});
+        if (!this.isRunning || !this.rawAnalyser || !this.boostedAnalyser || this.isEvaluating) {
+          return;
         }
 
-        const frame = this.extractRealtimeFrame(
-          this.analyser,
-          floatTimeData,
-          byteTimeData,
-          byteFreqData,
-          sampleRate
+        if (ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+
+        const frame = this.extractMultiPathFrame(
+          this.rawAnalyser,
+          this.boostedAnalyser,
+          rawByteTimeData,
+          boostedFloatTimeData,
+          boostedByteTimeData,
+          boostedByteFreqData,
+          sampleRate,
+          sensitivity
         );
 
         this.frameCounter++;
 
-        // Update noise floor secara adaptif saat sedang tidak berbicara
-        if (!this.isCurrentlySpeaking && frame.rms > 0.00005 && frame.rms < 0.025) {
-          if (this.frameCounter <= 12) {
+        // Kalibrasi noise floor adaptif saat hening
+        if (!this.isCurrentlySpeaking && frame.rms > 0.00005 && frame.rms < 0.02) {
+          if (this.frameCounter <= 10) {
             this.noiseFloorRms = this.noiseFloorRms * 0.7 + frame.rms * 0.3;
           } else if (frame.rms < this.noiseFloorRms * 1.25) {
             this.noiseFloorRms = this.noiseFloorRms * 0.95 + frame.rms * 0.05;
           }
         }
 
-        // Deteksi apakah frame ini memiliki suara vokal aktif
-        const snrRatio = frame.rms / Math.max(0.0004, this.noiseFloorRms);
-        const isFrameVocal =
-          frame.volumePercent >= volumeThreshold &&
-          (snrRatio >= 1.65 || frame.volumePercent >= 25) &&
-          frame.vocalEnergyRatio >= 0.15;
-
+        const isFrameVocal = frame.volumePercent >= volumeThreshold;
         const now = performance.now();
 
         if (isFrameVocal) {
@@ -475,7 +525,6 @@ export class AcousticPronunciationEngine {
             this.peakVolumeInSession = frame.volumePercent;
           }
 
-          // Mulai fase berbicara setelah minimal 2 frame berturut-turut (~32ms)
           if (!this.isCurrentlySpeaking && this.consecutiveVoiceFrames >= 2) {
             this.isCurrentlySpeaking = true;
             this.speechStartTime = now - 30;
@@ -489,8 +538,8 @@ export class AcousticPronunciationEngine {
               options.onSpeechProgress(Math.round(currentDur));
             }
 
-            // Jika pengguna telah mengucapkan suku kata cukup jelas (>= 950ms), langsung evaluasi otomatis!
-            if (currentDur >= 950 && this.capturedFrames.length >= 10) {
+            // Jika suara diucapkan jelas selama >= 850ms, langsung evaluasi otomatis!
+            if (currentDur >= 850 && this.capturedFrames.length >= 8) {
               this.finishAndEvaluate(options);
               return;
             }
@@ -502,19 +551,17 @@ export class AcousticPronunciationEngine {
             const totalDurationMs = this.lastVoiceActiveTime - this.speechStartTime;
             const silenceDurationMs = now - this.lastVoiceActiveTime;
 
-            // Simpan frame transisi ekor (coda) maksimal 3 frame setelah suara turun
             if (silenceDurationMs < 75) {
               this.capturedFrames.push(frame);
             }
 
-            // Jika pengguna selesai mengucapkan suku kata (durasi >= 110ms & jeda hening >= 320ms)
-            if (totalDurationMs >= 110 && silenceDurationMs >= 320 && this.capturedFrames.length >= 4) {
+            // Jika suku kata sudah selesai (durasi >= 100ms & hening >= 300ms), evaluasi otomatis!
+            if (totalDurationMs >= 100 && silenceDurationMs >= 300 && this.capturedFrames.length >= 4) {
               this.finishAndEvaluate(options);
               return;
             }
 
-            // Jika hanya bunyi klik sangat pendek (< 110ms) dan sudah hening > 380ms, reset untuk tunggu ucapan
-            if (totalDurationMs < 110 && silenceDurationMs > 380) {
+            if (totalDurationMs < 100 && silenceDurationMs > 360) {
               this.isCurrentlySpeaking = false;
               this.speechStartTime = null;
               this.capturedFrames = [];
@@ -522,7 +569,11 @@ export class AcousticPronunciationEngine {
           }
         }
 
-        options.onVolume(frame.volumePercent, this.isCurrentlySpeaking || isFrameVocal, frame.db);
+        options.onVolume(
+          frame.volumePercent,
+          this.isCurrentlySpeaking || isFrameVocal,
+          frame.spectrumBars
+        );
         this.animFrameId = requestAnimationFrame(processAudioLoop);
       };
 
@@ -540,49 +591,64 @@ export class AcousticPronunciationEngine {
   }
 
   /**
-   * Ekstrak fitur akustik real-time dari AnalyserNode
+   * Ekstrak volume, 9-bar spektrum, dan fitur fonetik dari 3 jalur paralel sekaligus
    */
-  private extractRealtimeFrame(
-    analyser: AnalyserNode,
-    floatTimeData: Float32Array<ArrayBuffer>,
-    byteTimeData: Uint8Array<ArrayBuffer>,
-    byteFreqData: Uint8Array<ArrayBuffer>,
-    sampleRate: number
+  private extractMultiPathFrame(
+    rawAnalyser: AnalyserNode,
+    boostedAnalyser: AnalyserNode,
+    rawByteTimeData: Uint8Array<ArrayBuffer>,
+    boostedFloatTimeData: Float32Array<ArrayBuffer>,
+    boostedByteTimeData: Uint8Array<ArrayBuffer>,
+    boostedByteFreqData: Uint8Array<ArrayBuffer>,
+    sampleRate: number,
+    sensitivity: MicSensitivityLevel
   ): AcousticFrame {
-    let sumSquares = 0;
-    let zeroCrossings = 0;
-
-    if (typeof analyser.getFloatTimeDomainData === 'function') {
-      analyser.getFloatTimeDomainData(floatTimeData);
-      for (let i = 0; i < floatTimeData.length; i++) {
-        const s = floatTimeData[i];
-        sumSquares += s * s;
-        if (
-          i > 0 &&
-          ((floatTimeData[i - 1] >= 0 && s < 0) || (floatTimeData[i - 1] < 0 && s >= 0))
-        ) {
-          zeroCrossings++;
-        }
-      }
-    } else {
-      analyser.getByteTimeDomainData(byteTimeData);
-      for (let i = 0; i < byteTimeData.length; i++) {
-        const s = (byteTimeData[i] - 128) / 128;
-        sumSquares += s * s;
-        if (i > 0) {
-          const prev = (byteTimeData[i - 1] - 128) / 128;
-          if ((prev >= 0 && s < 0) || (prev < 0 && s >= 0)) {
-            zeroCrossings++;
-          }
+    // 1. Jalur Raw Byte Time-Domain (identik dengan QariStudioDashboard)
+    rawAnalyser.getByteTimeDomainData(rawByteTimeData);
+    let rawSumSq = 0;
+    let rawZc = 0;
+    for (let i = 0; i < rawByteTimeData.length; i++) {
+      const norm = (rawByteTimeData[i] - 128) / 128;
+      rawSumSq += norm * norm;
+      if (i > 0) {
+        const prev = (rawByteTimeData[i - 1] - 128) / 128;
+        if ((prev >= 0 && norm < 0) || (prev < 0 && norm >= 0)) {
+          rawZc++;
         }
       }
     }
+    const rawRms = Math.sqrt(rawSumSq / rawByteTimeData.length);
+    const rawZcr = rawZc / rawByteTimeData.length;
 
-    const timeRms = Math.sqrt(sumSquares / floatTimeData.length);
-    const zcr = zeroCrossings / floatTimeData.length;
+    // 2. Jalur Boosted Float/Byte Time-Domain
+    let boostedSumSq = 0;
+    let boostedZc = 0;
+    if (typeof boostedAnalyser.getFloatTimeDomainData === 'function') {
+      boostedAnalyser.getFloatTimeDomainData(boostedFloatTimeData);
+      for (let i = 0; i < boostedFloatTimeData.length; i++) {
+        const s = boostedFloatTimeData[i];
+        boostedSumSq += s * s;
+        if (
+          i > 0 &&
+          ((boostedFloatTimeData[i - 1] >= 0 && s < 0) ||
+            (boostedFloatTimeData[i - 1] < 0 && s >= 0))
+        ) {
+          boostedZc++;
+        }
+      }
+    } else {
+      boostedAnalyser.getByteTimeDomainData(boostedByteTimeData);
+      for (let i = 0; i < boostedByteTimeData.length; i++) {
+        const s = (boostedByteTimeData[i] - 128) / 128;
+        boostedSumSq += s * s;
+      }
+    }
+    const boostedRms = Math.sqrt(boostedSumSq / boostedFloatTimeData.length);
+    const boostedZcr = boostedZc / boostedFloatTimeData.length;
 
-    analyser.getByteFrequencyData(byteFreqData);
-    const binHz = sampleRate / analyser.fftSize;
+    // 3. Jalur Frequency-Domain (Mel-Filterbank & 9 Spectrum Bars)
+    boostedAnalyser.getByteFrequencyData(boostedByteFreqData);
+    const binHz = sampleRate / boostedAnalyser.fftSize;
 
     const melBands = new Array(12).fill(0);
     let totalEnergy = 0;
@@ -593,29 +659,19 @@ export class AcousticPronunciationEngine {
     let f2HighEnergy = 0;
     let highFreqEnergy = 0;
 
-    for (let i = 1; i < byteFreqData.length; i++) {
-      const mag = byteFreqData[i];
+    for (let i = 1; i < boostedByteFreqData.length; i++) {
+      const mag = boostedByteFreqData[i];
       if (mag === 0) continue;
 
       const freq = i * binHz;
       totalEnergy += mag;
       weightedFreqSum += freq * mag;
 
-      if (freq >= 95 && freq <= 3500) {
-        vocalBandEnergy += mag;
-      }
-      if (freq >= 300 && freq <= 850) {
-        f1Energy += mag;
-      }
-      if (freq > 850 && freq <= 1350) {
-        f2LowEnergy += mag;
-      }
-      if (freq > 1350 && freq <= 2400) {
-        f2HighEnergy += mag;
-      }
-      if (freq >= 2200 && freq <= 6500) {
-        highFreqEnergy += mag;
-      }
+      if (freq >= 90 && freq <= 3500) vocalBandEnergy += mag;
+      if (freq >= 280 && freq <= 850) f1Energy += mag;
+      if (freq > 850 && freq <= 1350) f2LowEnergy += mag;
+      if (freq > 1350 && freq <= 2400) f2HighEnergy += mag;
+      if (freq >= 2200 && freq <= 6500) highFreqEnergy += mag;
 
       for (let m = 0; m < 12; m++) {
         if (freq >= MEL_BAND_EDGES_HZ[m] && freq < MEL_BAND_EDGES_HZ[m + 1]) {
@@ -626,27 +682,46 @@ export class AcousticPronunciationEngine {
     }
 
     const centroidHz = totalEnergy > 0 ? weightedFreqSum / totalEnergy : 0;
-    const vocalEnergyRatio = totalEnergy > 0 ? vocalBandEnergy / totalEnergy : 0;
+    const vocalEnergyRatio = totalEnergy > 0 ? vocalBandEnergy / totalEnergy : 0.5;
 
     const vocalBinCount = Math.max(1, Math.round(3400 / binHz));
-    const avgVocalByte = vocalBandEnergy / vocalBinCount;
-    const freqEquivalentRms = (avgVocalByte / 255) * 0.18;
+    const avgVocalByte = vocalBandEnergy / vocalBinCount; // 0..255
+    const freqVolPercent = Math.min(100, Math.round((avgVocalByte / 140) * 100));
 
-    const effectiveRms = Math.max(timeRms, freqEquivalentRms);
-
-    // Konversi ke skala Desibel Logaritmik (dBFS) + SNR Boost
+    // Gabungkan 4 pengukur volume:
+    // A. Rumus QariStudioDashboard (rawRms * 550)
+    const studioLinearVol = Math.min(100, Math.round(rawRms * 580));
+    // B. Boosted RMS
+    const boostedLinearVol = Math.min(100, Math.round(boostedRms * 260));
+    // C. Hardware ScriptProcessor RMS
+    const hwLinearVol = Math.min(100, Math.round(this.latestHardwarePcmRms * 320));
+    // D. Skala Desibel Logaritmik (dBFS)
+    const effectiveRms = Math.max(rawRms * 3.5, boostedRms, this.latestHardwarePcmRms, (avgVocalByte / 255) * 0.2);
     const db = 20 * Math.log10(Math.max(effectiveRms, 0.00005));
-    const dbVolume = Math.max(0, Math.min(100, Math.round(((db + 54) / 40) * 100)));
+    const sensOffset = sensitivity === 'high' ? 54 : sensitivity === 'normal' ? 48 : 42;
+    const dbVol = Math.max(0, Math.min(100, Math.round(((db + sensOffset) / 38) * 100)));
 
-    const snrDb = 20 * Math.log10(Math.max(1, effectiveRms / Math.max(0.0004, this.noiseFloorRms)));
-    const snrVolume = Math.max(0, Math.min(100, Math.round(snrDb * 3.8)));
+    const volumePercent = Math.min(
+      100,
+      Math.max(studioLinearVol, boostedLinearVol, hwLinearVol, freqVolPercent, dbVol)
+    );
 
-    const volumePercent = Math.min(100, Math.max(dbVolume, snrVolume));
+    // Hitung 9 bar spektrum real-time agar setiap bar bergerak lincah sesuai pita frekuensi + amplitudo
+    const barMultipliers = [0.65, 0.85, 1.1, 0.9, 1.25, 1.0, 1.15, 0.8, 0.95];
+    const spectrumBars = barMultipliers.map((mult, idx) => {
+      const melVal = melBands[idx] || 0;
+      const melContribution = Math.min(100, Math.round((melVal / 350) * 100));
+      const combined = Math.max(Math.round(volumePercent * mult), melContribution);
+      return Math.max(10, Math.min(100, combined));
+    });
+
+    const zcr = Math.max(rawZcr, boostedZcr, this.latestHardwareZcr);
 
     return {
       rms: effectiveRms,
       db: Math.round(db),
       volumePercent,
+      spectrumBars,
       zcr,
       centroidHz,
       melBands: this.normalizeVector(melBands),
@@ -658,9 +733,6 @@ export class AcousticPronunciationEngine {
     };
   }
 
-  /**
-   * Selesaikan rekaman satu ucapan dan jalankan evaluasi akustik + fonetik
-   */
   private async finishAndEvaluate(options: StartAcousticSessionOptions): Promise<void> {
     if (this.isEvaluating) return;
     this.isEvaluating = true;
@@ -668,7 +740,7 @@ export class AcousticPronunciationEngine {
     const frames = [...this.capturedFrames];
     const durationMs =
       this.speechStartTime && this.lastVoiceActiveTime
-        ? Math.max(140, Math.round(this.lastVoiceActiveTime - this.speechStartTime))
+        ? Math.max(130, Math.round(this.lastVoiceActiveTime - this.speechStartTime))
         : frames.length * 16;
     const peakVolume = this.peakVolumeInSession;
 
@@ -693,9 +765,6 @@ export class AcousticPronunciationEngine {
     options.onEvaluation(evaluation);
   }
 
-  /**
-   * Algoritma Penilaian Kemiripan Akustik (Onset Consonant + Formant Vowel + Mel Cosine Similarity)
-   */
   private computeEvaluation(
     frames: AcousticFrame[],
     durationMs: number,
@@ -707,10 +776,10 @@ export class AcousticPronunciationEngine {
   ): AcousticEvaluationResult {
     const cleanTarget = (targetName || '').trim().toLowerCase();
 
-    if (frames.length < 3 || durationMs < 95) {
+    if (frames.length < 3 || durationMs < 90) {
       return {
         isMatch: false,
-        score: 30,
+        score: 35,
         durationMs,
         peakVolume,
         recordedAudioUrl,
@@ -739,43 +808,26 @@ export class AcousticPronunciationEngine {
     const userNucleusMel = avgMel(nucleusFrames);
     const userOverallMel = avgMel(frames);
 
-    const sumF1 = nucleusFrames.reduce((a, b) => a + b.f1Energy, 0);
     const sumF2Low = nucleusFrames.reduce((a, b) => a + b.f2LowEnergy, 0);
     const sumF2High = nucleusFrames.reduce((a, b) => a + b.f2HighEnergy, 0);
     const userF2Ratio =
       sumF2Low + sumF2High > 0 ? sumF2High / (sumF2Low + sumF2High) : 0.5;
 
-    const avgVocalRatio =
-      nucleusFrames.reduce((a, b) => a + b.vocalEnergyRatio, 0) / nucleusFrames.length;
-
-    if (avgVocalRatio < 0.16 || sumF1 <= 0) {
-      return {
-        isMatch: false,
-        score: 38,
-        durationMs,
-        peakVolume,
-        recordedAudioUrl,
-        feedback: `Terdengar suara angin/ketukan. Yuk ucapkan huruf "${targetName}" dengan suaramu! 🎙️`,
-        detectedVowelType: 'unknown',
-      };
-    }
-
     const detectedVowelType: 'A' | 'O' = userF2Ratio >= 0.35 ? 'A' : 'O';
     const isTargetRoundedO = ROUNDED_VOWEL_O_LETTERS.has(cleanTarget);
 
-    // 1. Skor Kemiripan Spektrum Mel terhadap File Audio Referensi Asli (0..100)
-    // Bobot tinggi pada Onset (45%) untuk membedakan konsonan awal (misal Ba vs Ta)
-    let melSimilarityScore = 76;
+    let melSimilarityScore = 78;
     if (refProfile) {
       const onsetSim = this.cosineSimilarity(userOnsetMel, refProfile.onsetMel);
       const nucleusSim = this.cosineSimilarity(userNucleusMel, refProfile.nucleusMel);
       const overallSim = this.cosineSimilarity(userOverallMel, refProfile.overallMel);
 
       const rawSim = onsetSim * 0.45 + nucleusSim * 0.35 + overallSim * 0.2;
-      melSimilarityScore = Math.min(98, Math.max(48, Math.round(rawSim * 106)));
+      if (rawSim > 0.1) {
+        melSimilarityScore = Math.min(98, Math.max(55, Math.round(rawSim * 108)));
+      }
     }
 
-    // 2. Analisis Karakter Konsonan Onset (Membedakan Ta/Tsa vs Ba/Ma)
     let phoneticAdjustment = 0;
     const maxOnsetZcr = Math.max(...onsetFrames.map((f) => f.zcr));
     const maxOnsetCentroid = Math.max(...onsetFrames.map((f) => f.centroidHz));
@@ -787,39 +839,39 @@ export class AcousticPronunciationEngine {
       ) / onsetFrames.length;
 
     if (SHARP_BURST_OR_FRICATIVE_LETTERS.has(cleanTarget)) {
-      // Huruf dengan letupan dental/alveolar atau desis (Ta, Tsa, Sa, Sya, Ka, Ha, Kho)
-      if (maxOnsetZcr >= 0.05 || maxOnsetCentroid >= 880 || onsetHighFreqRatio >= 0.14) {
+      if (maxOnsetZcr >= 0.045 || maxOnsetCentroid >= 850 || onsetHighFreqRatio >= 0.12) {
         phoneticAdjustment += 9;
-      } else if (attemptNumber === 1 && maxOnsetZcr < 0.03 && maxOnsetCentroid < 580 && onsetHighFreqRatio < 0.07) {
-        // Suara bilabial murni (seperti "Ba" atau "Ma") saat target adalah "Ta" / "Tsa"
-        phoneticAdjustment -= 22;
+      } else if (
+        attemptNumber === 1 &&
+        maxOnsetZcr < 0.025 &&
+        maxOnsetCentroid > 0 &&
+        maxOnsetCentroid < 520 &&
+        onsetHighFreqRatio < 0.06
+      ) {
+        phoneticAdjustment -= 20;
       }
     } else if (SOFT_VOICED_ONSET_LETTERS.has(cleanTarget)) {
-      // Huruf bilabial/vokal lembut (A, Ba, Da, Ma, Na, La, Wa, Ya)
-      if (maxOnsetZcr <= 0.16 && onsetHighFreqRatio <= 0.35) {
+      if (maxOnsetZcr <= 0.18 && onsetHighFreqRatio <= 0.38) {
         phoneticAdjustment += 8;
-      } else if (attemptNumber === 1 && maxOnsetZcr > 0.24 && onsetHighFreqRatio > 0.48) {
-        // Desis sangat tajam saat diminta huruf lembut
-        phoneticAdjustment -= 18;
+      } else if (attemptNumber === 1 && maxOnsetZcr > 0.26 && onsetHighFreqRatio > 0.5) {
+        phoneticAdjustment -= 16;
       }
     }
 
-    // 3. Cek kesesuaian vokal bulat ('O' seperti Kho, Ro, Sho) vs terbuka ('A' seperti Ba, Ta)
     if (isTargetRoundedO && userF2Ratio <= 0.58) {
       phoneticAdjustment += 6;
     } else if (!isTargetRoundedO && userF2Ratio >= 0.32) {
       phoneticAdjustment += 6;
     }
 
-    // Toleransi ramah anak mulai percobaan ke-2 agar belajar tetap menyenangkan
-    const childEncouragementBoost = attemptNumber >= 2 ? (attemptNumber - 1) * 9 : 0;
+    const childEncouragementBoost = attemptNumber >= 2 ? (attemptNumber - 1) * 10 : 0;
 
     const finalScore = Math.min(
       99,
-      Math.max(42, Math.round(melSimilarityScore + phoneticAdjustment + childEncouragementBoost))
+      Math.max(45, Math.round(melSimilarityScore + phoneticAdjustment + childEncouragementBoost))
     );
 
-    const passThreshold = attemptNumber >= 2 ? 62 : 68;
+    const passThreshold = attemptNumber >= 2 ? 60 : 66;
     const isMatch = finalScore >= passThreshold;
 
     let feedback = '';
@@ -938,12 +990,26 @@ export class AcousticPronunciationEngine {
     this.cleanupAudioNodes();
   }
 
+  /**
+   * Putuskan node tanpa menutup sharedAudioContext agar izin AudioContext tetap 'running'
+   */
   private cleanupAudioNodes(): void {
     this.isRunning = false;
+    this.latestHardwarePcmRms = 0;
 
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
+    }
+
+    if (this.scriptProcessorNode) {
+      try {
+        this.scriptProcessorNode.onaudioprocess = null;
+        this.scriptProcessorNode.disconnect();
+      } catch {
+        // ignore
+      }
+      this.scriptProcessorNode = null;
     }
 
     if (this.sourceNode) {
@@ -955,6 +1021,15 @@ export class AcousticPronunciationEngine {
       this.sourceNode = null;
     }
 
+    if (this.rawAnalyser) {
+      try {
+        this.rawAnalyser.disconnect();
+      } catch {
+        // ignore
+      }
+      this.rawAnalyser = null;
+    }
+
     if (this.preampGainNode) {
       try {
         this.preampGainNode.disconnect();
@@ -964,13 +1039,13 @@ export class AcousticPronunciationEngine {
       this.preampGainNode = null;
     }
 
-    if (this.analyser) {
+    if (this.boostedAnalyser) {
       try {
-        this.analyser.disconnect();
+        this.boostedAnalyser.disconnect();
       } catch {
         // ignore
       }
-      this.analyser = null;
+      this.boostedAnalyser = null;
     }
 
     if (this.silentGainNode) {
@@ -989,15 +1064,6 @@ export class AcousticPronunciationEngine {
         // ignore
       }
       this.stream = null;
-    }
-
-    if (this.audioContext) {
-      try {
-        this.audioContext.close().catch(() => {});
-      } catch {
-        // ignore
-      }
-      this.audioContext = null;
     }
   }
 
