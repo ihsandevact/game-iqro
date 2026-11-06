@@ -57,15 +57,6 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
   useEffect(() => {
     audioLevelDetector.getAvailableMicrophones().then((devices) => {
       setAudioDevices(devices);
-      // Utamakan Realtek atau mikrofon fisik jika defaultnya adalah virtual audio device
-      if (devices.length > 0 && !selectedDeviceId) {
-        const physicalMic = devices.find(
-          (d) =>
-            !d.label.toLowerCase().includes('virtual') &&
-            !d.label.toLowerCase().includes('voice changer')
-        );
-        setSelectedDeviceId(physicalMic ? physicalMic.deviceId : devices[0].deviceId);
-      }
     });
   }, []);
 
@@ -127,7 +118,7 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
 
     // 1. Sambungkan Web Audio API Analyser untuk VU-meter real-time
     await audioLevelDetector.start({
-      deviceId: selectedDeviceId,
+      deviceId: selectedDeviceId || undefined,
       sensitivity: sensitivity,
       onVolume: (vol, isSpeaking) => {
         setLiveVolume(vol);
@@ -238,9 +229,9 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
     handleSuccess(question.targetName);
   };
 
-  const currentDeviceLabel =
-    audioDevices.find((d) => d.deviceId === selectedDeviceId)?.label ||
-    (audioDevices.length > 0 ? audioDevices[0].label : 'Mikrofon Default');
+  const currentDeviceLabel = selectedDeviceId
+    ? audioDevices.find((d) => d.deviceId === selectedDeviceId)?.label || 'Mikrofon Pilihan'
+    : 'Default Sistem (Otomatis)';
 
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto py-1">
@@ -450,6 +441,20 @@ export const PronounceLetterGame: React.FC<PronounceLetterGameProps> = ({
                 <div className="text-[10px] font-black text-slate-400 uppercase px-2 py-1">
                   Pilih Mikrofon Aktif:
                 </div>
+                <button
+                  onClick={() => {
+                    setSelectedDeviceId('');
+                    setShowDevicePicker(false);
+                    if (isListening) handleStopListening();
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold transition truncate mb-1 ${
+                    selectedDeviceId === ''
+                      ? 'bg-emerald-50 text-emerald-700 font-black'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  ⭐ Default Sistem (Otomatis)
+                </button>
                 {audioDevices.map((dev) => (
                   <button
                     key={dev.deviceId}

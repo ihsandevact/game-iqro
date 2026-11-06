@@ -37,21 +37,17 @@ export class AudioLevelDetector {
     }
 
     try {
-      // Sensitivitas ambang batas volume suara
+      // Sensitivitas ambang batas volume suara (dibuat sangat peka)
       const sensitivity = options.sensitivity || 'high';
-      const vocalThreshold = sensitivity === 'high' ? 10 : sensitivity === 'normal' ? 15 : 22;
+      const vocalThreshold = sensitivity === 'high' ? 8 : sensitivity === 'normal' ? 14 : 20;
 
       const constraints: MediaStreamConstraints = {
         audio: options.deviceId
           ? {
               deviceId: { ideal: options.deviceId },
-              echoCancellation: false,
-              noiseSuppression: false,
               autoGainControl: true,
             }
           : {
-              echoCancellation: false,
-              noiseSuppression: false,
               autoGainControl: true,
             },
       };
@@ -67,7 +63,7 @@ export class AudioLevelDetector {
 
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 256;
-      this.analyser.smoothingTimeConstant = 0.4;
+      this.analyser.smoothingTimeConstant = 0.3;
 
       this.sourceNode = this.audioContext.createMediaStreamSource(this.stream);
       this.sourceNode.connect(this.analyser);
@@ -77,23 +73,39 @@ export class AudioLevelDetector {
       this.peakVolumeInBurst = 0;
       this.hasEmittedBurst = false;
 
-      const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+      const timeData = new Uint8Array(this.analyser.fftSize);
+      const freqData = new Uint8Array(this.analyser.frequencyBinCount);
 
       const updateLoop = () => {
         if (!this.isRunning || !this.analyser) return;
 
-        this.analyser.getByteFrequencyData(dataArray);
-
-        // Hitung RMS rata-rata amplitudo
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
+        // Auto-resume jika audioContext tertidur
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+          this.audioContext.resume().catch(() => {});
         }
-        const avg = sum / dataArray.length;
 
-        // Skala 0 - 100 dengan kurva sensitif
-        const rawVolume = Math.round((avg / 128) * 100);
-        const volume = Math.min(100, Math.max(0, rawVolume));
+        // 1. Time-Domain RMS: Menangkap energi amplitudo gelombang suara asli seketika
+        this.analyser.getByteTimeDomainData(timeData);
+        let sumSquares = 0;
+        for (let i = 0; i < timeData.length; i++) {
+          const norm = (timeData[i] - 128) / 128;
+          sumSquares += norm * norm;
+        }
+        const rms = Math.sqrt(sumSquares / timeData.length);
+        const timeVolume = Math.min(100, Math.round(rms * 260));
+
+        // 2. Vocal-Range Frequency: Fokus pada rentang vokal manusia (100 Hz - 3500 Hz, bins 1..25)
+        this.analyser.getByteFrequencyData(freqData);
+        let vocalSum = 0;
+        const maxVocalBin = Math.min(26, freqData.length);
+        for (let i = 1; i < maxVocalBin; i++) {
+          vocalSum += freqData[i];
+        }
+        const vocalAvg = vocalSum / (maxVocalBin - 1);
+        const freqVolume = Math.min(100, Math.round((vocalAvg / 128) * 110));
+
+        // Gabungkan keduanya: sensitif terhadap letupan huruf vokal pendek (Ba, Ta)
+        const volume = Math.min(100, Math.max(timeVolume, freqVolume));
         const isSpeaking = volume >= vocalThreshold;
 
         // Voice Activity Detection (VAD) timing
@@ -108,8 +120,8 @@ export class AudioLevelDetector {
               this.peakVolumeInBurst = volume;
             }
             const burstDuration = now - this.vocalStartTime;
-            // Jika suara manusia berenergi berlangsung minimal 220ms (panjang 1 suku kata lafal seperti "Ba")
-            if (burstDuration >= 220 && !this.hasEmittedBurst && options.onVocalBurst) {
+            // Jika suara manusia berenergi berlangsung minimal 180ms
+            if (burstDuration >= 180 && !this.hasEmittedBurst && options.onVocalBurst) {
               this.hasEmittedBurst = true;
               options.onVocalBurst(this.peakVolumeInBurst, Math.round(burstDuration));
             }

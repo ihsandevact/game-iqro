@@ -24,6 +24,7 @@ export class SpeechRecognitionService {
   private recognition: any = null;
   private state: SpeechServiceState = 'idle';
   private silenceTimer: any = null;
+  private restartTimer: any = null;
   private currentOnEnd: (() => void) | null = null;
   private currentOnError: ((err: string, code?: string) => void) | null = null;
   private isExplicitlyStopped = false;
@@ -132,14 +133,19 @@ export class SpeechRecognitionService {
     };
 
     this.recognition.onend = () => {
-      // Auto-reconnect jika belum dihentikan secara sengaja
+      // Auto-reconnect dengan jeda aman agar sesi sebelumnya selesai bersih di browser
       if (!this.isExplicitlyStopped && this.state === 'listening' && this.activeOptions) {
-        try {
-          this.recognition.start();
-          return;
-        } catch {
-          // abaikan
-        }
+        if (this.restartTimer) clearTimeout(this.restartTimer);
+        this.restartTimer = setTimeout(() => {
+          if (!this.isExplicitlyStopped && this.state === 'listening' && this.activeOptions) {
+            try {
+              this.initRecognition(this.activeOptions);
+            } catch (err) {
+              console.warn('[Speech] Auto-reconnect failed:', err);
+            }
+          }
+        }, 120);
+        return;
       }
 
       this.clearTimer();
@@ -151,8 +157,8 @@ export class SpeechRecognitionService {
 
     this.recognition.start();
 
-    // Timeout penjaga maksimal (default 12 detik)
-    const timeout = options.timeoutMs || 12000;
+    // Timeout penjaga maksimal (default 14 detik)
+    const timeout = options.timeoutMs || 14000;
     this.silenceTimer = setTimeout(() => {
       if (this.state === 'listening') {
         this.stopListening();
@@ -165,6 +171,10 @@ export class SpeechRecognitionService {
    */
   public stopListening(): void {
     this.isExplicitlyStopped = true;
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer);
+      this.restartTimer = null;
+    }
     this.clearTimer();
 
     if (this.recognition) {
