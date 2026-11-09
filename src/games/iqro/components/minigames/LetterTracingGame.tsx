@@ -11,31 +11,24 @@ interface LetterTracingGameProps {
   childName?: string;
 }
 
-interface Particle {
-  x: number;
-  y: number;
-  color: string;
-  size: number;
-  alpha: number;
-}
-
 interface TargetZone {
   x: number;
   y: number;
   covered: boolean;
 }
 
+const PASSING_TRACE_RATIO = 0.90;
+const PASSING_TRACE_PERCENT = 90;
+const STROKE_COLOR = '#10B981';
+
 export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, onCorrect, childName = 'Faqih' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [traceProgress, setTraceProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const particlesRef = useRef<Particle[]>([]);
   const targetZonesRef = useRef<TargetZone[]>([]);
   const fallbackPointsRef = useRef(0);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  const SPARKLE_COLORS = ['#FFC800', '#58CC02', '#1CB0F6', '#FF9600', '#CE82FF', '#FFFFFF'];
 
   // Extract letter silhouette target zones whenever targetLetter changes
   useEffect(() => {
@@ -87,51 +80,6 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     return () => clearTimeout(timer);
   }, [question.id, question.targetLetter, childName]);
 
-  // Canvas drawing loop for magical sparkling particles
-  useEffect(() => {
-    let animId: number;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const render = () => {
-      // Fade particles
-      for (let i = particlesRef.current.length - 1; i >= 0; i--) {
-        const p = particlesRef.current[i];
-        p.alpha -= 0.03;
-        p.y -= 0.5; // float up slightly
-        if (p.alpha <= 0) {
-          particlesRef.current.splice(i, 1);
-        } else {
-          ctx.save();
-          ctx.globalAlpha = p.alpha;
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      animId = requestAnimationFrame(render);
-    };
-
-    animId = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(animId);
-  }, []);
-
-  const addSparkle = (x: number, y: number) => {
-    const color = SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)];
-    particlesRef.current.push({
-      x: x + (Math.random() - 0.5) * 14,
-      y: y + (Math.random() - 0.5) * 14,
-      color,
-      size: 3.5 + Math.random() * 4,
-      alpha: 1,
-    });
-  };
-
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -151,30 +99,48 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     }
   };
 
-  const checkZoneCoverage = (x: number, y: number) => {
+  const checkZoneCoverage = (x: number, y: number, prevPos?: { x: number; y: number } | null) => {
     const zones = targetZonesRef.current;
 
     // Fallback if zones couldn't be extracted
     if (zones.length === 0) {
       fallbackPointsRef.current += 1;
-      const fallbackRatio = Math.min(1, fallbackPointsRef.current / 40);
+      const fallbackRatio = Math.min(1, fallbackPointsRef.current / 45);
       setTraceProgress(Math.round(fallbackRatio * 100));
-      if (fallbackRatio >= 0.70 && !isCompleted) {
+      if (fallbackRatio >= PASSING_TRACE_RATIO && !isCompleted) {
         handleSuccess();
       }
       return;
     }
 
     let newlyCovered = false;
-    const TOLERANCE_RADIUS = 22; // 22px detection radius for child's finger around letter points
+    const TOLERANCE_RADIUS = 24;
+    const radiusSq = TOLERANCE_RADIUS * TOLERANCE_RADIUS;
+
+    // Interpolasi titik sepanjang garis agar goresan cepat tidak melompati zona huruf
+    const pointsToCheck: Array<{ x: number; y: number }> = [{ x, y }];
+    if (prevPos) {
+      const dist = Math.hypot(x - prevPos.x, y - prevPos.y);
+      const steps = Math.min(12, Math.floor(dist / 6));
+      for (let s = 1; s <= steps; s++) {
+        const t = s / (steps + 1);
+        pointsToCheck.push({
+          x: prevPos.x + (x - prevPos.x) * t,
+          y: prevPos.y + (y - prevPos.y) * t,
+        });
+      }
+    }
 
     for (let i = 0; i < zones.length; i++) {
       if (!zones[i].covered) {
-        const dx = zones[i].x - x;
-        const dy = zones[i].y - y;
-        if (dx * dx + dy * dy <= TOLERANCE_RADIUS * TOLERANCE_RADIUS) {
-          zones[i].covered = true;
-          newlyCovered = true;
+        for (let p = 0; p < pointsToCheck.length; p++) {
+          const dx = zones[i].x - pointsToCheck[p].x;
+          const dy = zones[i].y - pointsToCheck[p].y;
+          if (dx * dx + dy * dy <= radiusSq) {
+            zones[i].covered = true;
+            newlyCovered = true;
+            break;
+          }
         }
       }
     }
@@ -185,8 +151,8 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
       const percent = Math.min(100, Math.round(ratio * 100));
       setTraceProgress(percent);
 
-      // Successfully completed: child has written >= 70% of the entire letter!
-      if (ratio >= 0.70 && !isCompleted) {
+      // Syarat Lulus Tulis Huruf: >= 90% benar!
+      if (ratio >= PASSING_TRACE_RATIO && !isCompleted) {
         handleSuccess();
       }
     }
@@ -203,10 +169,11 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    ctx.fillStyle = STROKE_COLOR;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    addSparkle(x, y);
-    checkZoneCoverage(x, y);
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fill();
+    checkZoneCoverage(x, y, null);
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
@@ -218,22 +185,22 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Pencil stroke width: 14px (proportional to letter body)
+    // Goresan kuas 1 warna bersih (#10B981)
     ctx.lineWidth = 14;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#10B981';
+    ctx.strokeStyle = STROKE_COLOR;
 
-    if (lastPosRef.current) {
+    const prevPos = lastPosRef.current;
+    if (prevPos) {
       ctx.beginPath();
-      ctx.moveTo(lastPosRef.current.x, lastPosRef.current.y);
+      ctx.moveTo(prevPos.x, prevPos.y);
       ctx.lineTo(x, y);
       ctx.stroke();
     }
     lastPosRef.current = { x, y };
 
-    addSparkle(x, y);
-    checkZoneCoverage(x, y);
+    checkZoneCoverage(x, y, prevPos);
   };
 
   const stopDrawing = () => {
@@ -273,7 +240,6 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-    particlesRef.current = [];
     targetZonesRef.current.forEach((z) => {
       z.covered = false;
     });
@@ -313,18 +279,18 @@ export const LetterTracingGame: React.FC<LetterTracingGameProps> = ({ question, 
         </span>
         <div className="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
           <motion.div
-            className="h-full bg-gradient-to-r from-emerald-400 to-duo-green rounded-full transition-all duration-150"
+            className="h-full bg-duo-green rounded-full transition-all duration-150"
             style={{ width: `${traceProgress}%` }}
           />
         </div>
-        {traceProgress >= 70 ? (
+        {traceProgress >= PASSING_TRACE_PERCENT ? (
           <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-0.5 shrink-0 animate-pulse">
             <Check className="w-3 h-3 stroke-[3]" />
             <span>Utuh!</span>
           </span>
         ) : (
           <span className="text-[10px] font-bold text-slate-400 shrink-0">
-            Tulis utuh
+            Target 90%
           </span>
         )}
       </div>

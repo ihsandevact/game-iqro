@@ -14,7 +14,7 @@ export const HIJAIYAH_LIST: HijaiyahInfo[] = [
   { letter: 'ثَ', rawLetter: 'ث', latin: 'Tsa', makhraj: 'Ujung lidah keluar sedikit di antara gigi seri', mnemonic: 'Piring dengan 3 butir permen!', color: '#CE82FF' },
   { letter: 'جَ', rawLetter: 'ج', latin: 'Ja', makhraj: 'Tengah lidah bertemu langit-langit atas', mnemonic: 'Bebek gendut punya telur di perutnya!', color: '#FFC800' },
   { letter: 'حَ', rawLetter: 'ح', latin: 'Ha', makhraj: 'Tengah tenggorokan bersih dan halus', mnemonic: 'Bebek gendut tanpa telur!', color: '#22C55E' },
-  { letter: 'خَ', rawLetter: 'خ', latin: 'Kha', makhraj: 'Tenggorokan bagian atas dekat anak lidah', mnemonic: 'Bebek pakai topi satu di atas kepalanya!', color: '#F97316' },
+  { letter: 'خَ', rawLetter: 'خ', latin: 'Kho', makhraj: 'Tenggorokan bagian atas dekat anak lidah', mnemonic: 'Bebek pakai topi satu di atas kepalanya!', color: '#F97316' },
   { letter: 'دَ', rawLetter: 'د', latin: 'Da', makhraj: 'Ujung lidah menempel di pangkal gigi seri atas', mnemonic: 'Mulut buaya terbuka ke kiri!', color: '#06B6D4' },
   { letter: 'ذَ', rawLetter: 'ذ', latin: 'Dza', makhraj: 'Ujung lidah keluar sedikit disentuh gigi seri', mnemonic: 'Mulut buaya punya mahkota titik di atas!', color: '#8B5CF6' },
   { letter: 'رَ', rawLetter: 'ر', latin: 'Ro', makhraj: 'Ujung lidah bergetar sedikit di langit-langit depan', mnemonic: 'Perosotan meluncur ke bawah!', color: '#EC4899' },
