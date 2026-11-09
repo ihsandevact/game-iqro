@@ -104,7 +104,7 @@ export const LevelNode: React.FC<LevelNodeProps> = ({
 
       {/* Stars Badge Row (Underneath completed node) */}
       {isCompleted && (
-        <div className="flex items-center gap-1 mt-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full border border-amber-200 shadow-sm">
+        <div className="flex items-center gap-1 mt-3.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-amber-200 shadow-sm">
           {[1, 2, 3].map((starIdx) => (
             <Star
               key={starIdx}
@@ -119,8 +119,8 @@ export const LevelNode: React.FC<LevelNodeProps> = ({
       )}
 
       {/* Stage Title for Toddlers / Parents */}
-      <div className="mt-1 text-center max-w-[130px]">
-        <p className={`text-xs font-bold leading-tight line-clamp-1 ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}`}>
+      <div className={`${isCompleted ? 'mt-2' : 'mt-3.5'} text-center max-w-[160px] px-1`}>
+        <p className={`text-xs font-bold leading-snug line-clamp-2 ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}`}>
           {stage.title}
         </p>
       </div>

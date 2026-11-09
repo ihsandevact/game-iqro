@@ -115,7 +115,7 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
               }
               transition={{ duration: 0.4 }}
               className={`
-                min-h-[175px] sm:min-h-[210px] rounded-3xl flex flex-col items-center justify-between p-4 relative select-none
+                min-h-[185px] sm:min-h-[215px] rounded-3xl flex flex-col items-center justify-between p-4 relative select-none
                 border-4 transition-all duration-150 outline-none
                 ${
                   isSelected
@@ -134,15 +134,15 @@ export const ListenTapGame: React.FC<ListenTapGameProps> = ({ question, onCorrec
               )}
 
               {/* Big Arabic Letter with safe vertical breathing room */}
-              <div className="flex-1 w-full flex items-center justify-center pt-2 pb-1 overflow-visible">
-                <span className="font-arabic text-6xl sm:text-7xl font-bold leading-normal select-none">
+              <div className="flex-1 w-full flex items-center justify-center pt-2 pb-4 overflow-visible">
+                <span className="font-arabic text-6xl sm:text-7xl font-bold leading-normal select-none -translate-y-1.5">
                   {opt.letter}
                 </span>
               </div>
 
               {/* Latin Transliteration in a dedicated pill at the bottom - NO OVERLAP */}
               <div
-                className={`mt-auto px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wider uppercase transition ${
+                className={`mt-auto shrink-0 relative z-10 px-3.5 py-1 rounded-full text-xs sm:text-sm font-black tracking-wider uppercase transition ${
                   isSelected
                     ? 'bg-white/20 text-white'
                     : isDisabled
